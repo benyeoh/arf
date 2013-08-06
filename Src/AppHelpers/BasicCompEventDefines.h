@@ -1,0 +1,8 @@
+
+#if defined(_IS_USE_APPHELPER_LIB_BASIC)
+
+// Component Events
+EVENT_COMP_SPATIAL_CHANGED,
+//EVENT_COMP_ENTITY_MGR_INIT,
+
+#endif

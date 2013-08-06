@@ -1,0 +1,7 @@
+define PRTCOMPUTE_LIGHTING 70
+
+desc = PRTCompute, Screen Space Point Light, Deferred Lighting With Shadow
+
+begin_group PRTCOMPUTE_LIGHTING
+	mat = [mat]\AppHelpers\PRTCompute\ScreenSpacePLShadowBRDFParaboloid.bam
+end_group

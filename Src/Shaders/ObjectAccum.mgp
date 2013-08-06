@@ -1,0 +1,8 @@
+
+define ACCUM 4
+
+desc = Object, Deferred Lighting Accumulate
+
+begin_group ACCUM
+	mat = [mat]\AccumPass.bam
+end_group

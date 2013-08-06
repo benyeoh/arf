@@ -1,0 +1,465 @@
+//================================================================================
+//
+//		TriangleSetup.h
+//
+//			A description here
+//
+//		Author:		Ben Yeoh
+//		Date:		20/11/2011
+//
+//================================================================================
+
+#pragma once
+
+_NAMESPACE_BEGIN
+
+template <uint numInterpolants, uint bufferWidth, uint bufferHeight, uint numTileLevels>
+boolean TriangleSetup(const gmtl::VecA4f& v1, const gmtl::VecA4f& v2, const gmtl::VecA4f& v3,
+					  const float* pInterpolantsV1, const float* pInterpolantsV2, const float* pInterpolantsV3,
+					  RasterizationInfo<numInterpolants, numTileLevels>& raster)
+{
+	// Compute inverse of 3x3
+	
+	__m128 col1 = _mm_load_ps((float*) &v1);
+	__m128 col2 = _mm_load_ps((float*) &v2);
+	__m128 col3 = _mm_load_ps((float*) &v3);
+
+	// Get the 9 matrix values
+	__m128 _33_33_33_33 = _mm_shuffle_ps(col3, col3, _MM_SHUFFLE(3, 3, 3, 3));
+	
+	//__m128 _11_21_12_22	= _mm_shuffle_ps(col1, col2, _MM_SHUFFLE(1, 0, 1, 0));
+	//__m128 _11_12_21_22	= _mm_shuffle_ps(_11_21_12_22, _11_21_12_22, _MM_SHUFFLE(3, 1, 2, 0));
+
+	__m128 _11_12_21_22	= _mm_unpacklo_ps(col1, col2);
+
+	__m128 _31_31_32_32 = _mm_shuffle_ps(col1, col2, _MM_SHUFFLE(3, 3, 3, 3));
+	__m128 _32_31_32_31 = _mm_shuffle_ps(_31_31_32_32, _31_31_32_32, _MM_SHUFFLE(0, 3, 0, 3));
+
+	__m128 _23_23_13_13 = _mm_shuffle_ps(col3, col3, _MM_SHUFFLE(0, 0, 1, 1));
+
+	__m128 _22_21_12_11 = _mm_shuffle_ps(_11_12_21_22, _11_12_21_22, _MM_SHUFFLE(0, 1, 2, 3));
+	
+	__m128 _3311_3312_3321_3322 = _mm_mul_ps(_33_33_33_33, _11_12_21_22);
+	__m128 _3223_3123_3213_3113 = _mm_mul_ps(_32_31_32_31, _23_23_13_13);
+	__m128 _3211_3112_3221_3122 = _mm_mul_ps(_32_31_32_31, _11_12_21_22);
+	__m128 _2311_2312_2113_2213 = _mm_mul_ps(_23_23_13_13, _11_12_21_22);
+	__m128 _2211_2112_2112_2211 = _mm_mul_ps(_22_21_12_11, _11_12_21_22);
+
+	__m128 _3221_3112_2312_2113 = _mm_shuffle_ps(_3211_3112_3221_3122, _2311_2312_2113_2213, _MM_SHUFFLE(2, 1, 1, 2));
+	__m128 _3122_3211_2213_2311 = _mm_shuffle_ps(_3211_3112_3221_3122, _2311_2312_2113_2213, _MM_SHUFFLE(0, 3, 0, 3));
+	__m128 _3221s3122_3112s3211_2312s2213_2113s2311 = _mm_sub_ps(_3221_3112_2312_2113, _3122_3211_2213_2311);
+
+	__m128 _3322_3311_3123_3213 = _mm_shuffle_ps(_3311_3312_3321_3322, _3223_3123_3213_3113, _MM_SHUFFLE(2, 1, 0, 3));
+	__m128 _3223_3113_3321_3312 = _mm_shuffle_ps(_3223_3123_3213_3113, _3311_3312_3321_3322, _MM_SHUFFLE(1, 2, 3, 0));
+	__m128 _3322s3223_3311s3113_3123s3321_3213s3312 = _mm_sub_ps(_3322_3311_3123_3213, _3223_3113_3321_3312);
+
+	__m128 _2112_2112_2211_2211 = _mm_unpackhi_ps(_2211_2112_2112_2211, _2211_2112_2112_2211);
+	__m128 _2211s2112 = _mm_sub_ss(_2211_2112_2112_2211, _2112_2112_2211_2211);
+
+	// Shuffle to rows
+	// This is the 3x3 adjoint matrix
+	__m128 _3322s3223_3213s3312_2312s2213_2312s2213 = _mm_shuffle_ps(_3322s3223_3311s3113_3123s3321_3213s3312, _3221s3122_3112s3211_2312s2213_2113s2311, _MM_SHUFFLE(2, 2, 3, 0));
+	__m128 _3123s3321_3311s3113_2113s2311_2113s2311 = _mm_shuffle_ps(_3322s3223_3311s3113_3123s3321_3213s3312, _3221s3122_3112s3211_2312s2213_2113s2311, _MM_SHUFFLE(3, 3, 1, 2));
+	__m128 _3221s3122_3112s3211_2211s2112_2211s2112 = _mm_shuffle_ps(_3221s3122_3112s3211_2312s2213_2113s2311, _2211s2112, _MM_SHUFFLE(0, 0, 1, 0));
+
+	// Compute determinant
+	__m128 determinant		= _mm_mul_ps(col1, _3322s3223_3213s3312_2312s2213_2312s2213);
+	__m128 col1y_3213s3312	= _mm_shuffle_ps(determinant, determinant, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 col1w_2312s2213	= _mm_shuffle_ps(determinant, determinant, _MM_SHUFFLE(3, 3, 3, 3));
+
+	determinant = _mm_add_ss(determinant, col1y_3213s3312);
+	determinant = _mm_add_ss(determinant, col1w_2312s2213);
+
+	// Only accept front facing triangles for now
+	float det;
+	_mm_store_ss(&det, determinant);
+	if(det > 0)
+	{
+		// Compute the edge functions
+		// Make parameters relative to viewport space
+		const static __m128 SCREEN_BUFFER_SCALE = _mm_set_ps(1.0f, 1.0f, -2.0f / bufferHeight, 2.0f / bufferWidth);
+		
+		// Row 1
+		__m128 _B = _mm_shuffle_ps(_3322s3223_3213s3312_2312s2213_2312s2213, _3322s3223_3213s3312_2312s2213_2312s2213, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 _C = _mm_movehl_ps(_3322s3223_3213s3312_2312s2213_2312s2213, _3322s3223_3213s3312_2312s2213_2312s2213);
+		__m128 _CaBsA = _mm_add_ss(_C, _B);
+		_CaBsA = _mm_sub_ss(_CaBsA, _3322s3223_3213s3312_2312s2213_2312s2213);
+		__m128 _3322s3223_3213s3312_CaBsA_3213s3312 = _mm_movelh_ps(_3322s3223_3213s3312_2312s2213_2312s2213, _CaBsA);
+		__m128 row1_ABC = _mm_mul_ps(_3322s3223_3213s3312_CaBsA_3213s3312, SCREEN_BUFFER_SCALE);
+		
+		// Row 2
+		_B = _mm_shuffle_ps(_3123s3321_3311s3113_2113s2311_2113s2311, _3123s3321_3311s3113_2113s2311_2113s2311, _MM_SHUFFLE(1, 1, 1, 1));
+		_C = _mm_movehl_ps(_3123s3321_3311s3113_2113s2311_2113s2311, _3123s3321_3311s3113_2113s2311_2113s2311);
+		_CaBsA = _mm_add_ss(_C, _B);
+		_CaBsA = _mm_sub_ss(_CaBsA, _3123s3321_3311s3113_2113s2311_2113s2311);
+		__m128 _3123s3321_3311s3113_CaBsA_3311s3113 = _mm_movelh_ps(_3123s3321_3311s3113_2113s2311_2113s2311, _CaBsA);
+		__m128 row2_ABC = _mm_mul_ps(_3123s3321_3311s3113_CaBsA_3311s3113, SCREEN_BUFFER_SCALE);
+		
+		// Row 3
+		_B = _mm_shuffle_ps(_3221s3122_3112s3211_2211s2112_2211s2112, _3221s3122_3112s3211_2211s2112_2211s2112, _MM_SHUFFLE(1, 1, 1, 1));
+		_C = _mm_movehl_ps(_3221s3122_3112s3211_2211s2112_2211s2112, _3221s3122_3112s3211_2211s2112_2211s2112);
+		_CaBsA = _mm_add_ss(_C, _B);
+		_CaBsA = _mm_sub_ss(_CaBsA, _3221s3122_3112s3211_2211s2112_2211s2112);
+		__m128 _3221s3122_3112s3211_CaBsA_3112s3211 = _mm_movelh_ps(_3221s3122_3112s3211_2211s2112_2211s2112, _CaBsA);
+		__m128 row3_ABC = _mm_mul_ps(_3221s3122_3112s3211_CaBsA_3112s3211, SCREEN_BUFFER_SCALE);
+
+		// Normalize to A and B
+		// Since we only care about the half space aspect of the edge functions,
+		// we can normalize with respect to screen/pixel space to reduce floating point
+		// precision issues with very large triangles or very thin ones
+		__m128 _B2 = _mm_shuffle_ps(row1_ABC, row1_ABC, _MM_SHUFFLE(1, 1, 1, 1));
+		_B2 = _mm_mul_ss(_B2, _B2);
+		__m128 _A2 = _mm_mul_ss(row1_ABC, row1_ABC);
+		__m128 rcpSqrtAB = _mm_add_ss(_B2, _A2);
+		rcpSqrtAB = _mm_rsqrt_ss(rcpSqrtAB);
+		rcpSqrtAB = _mm_shuffle_ps(rcpSqrtAB, rcpSqrtAB, _MM_SHUFFLE(0, 0, 0, 0));
+		row1_ABC = _mm_mul_ps(row1_ABC, rcpSqrtAB);
+
+		_B2 = _mm_shuffle_ps(row2_ABC, row2_ABC, _MM_SHUFFLE(1, 1, 1, 1));
+		_B2 = _mm_mul_ss(_B2, _B2);
+		_A2 = _mm_mul_ss(row2_ABC, row2_ABC);
+		rcpSqrtAB = _mm_add_ss(_B2, _A2);
+		rcpSqrtAB = _mm_rsqrt_ss(rcpSqrtAB);
+		rcpSqrtAB = _mm_shuffle_ps(rcpSqrtAB, rcpSqrtAB, _MM_SHUFFLE(0, 0, 0, 0));
+		row2_ABC = _mm_mul_ps(row2_ABC, rcpSqrtAB);
+
+		_B2 = _mm_shuffle_ps(row3_ABC, row3_ABC, _MM_SHUFFLE(1, 1, 1, 1));
+		_B2 = _mm_mul_ss(_B2, _B2);
+		_A2 = _mm_mul_ss(row3_ABC, row3_ABC);
+		rcpSqrtAB = _mm_add_ss(_B2, _A2);
+		rcpSqrtAB = _mm_rsqrt_ss(rcpSqrtAB);
+		rcpSqrtAB = _mm_shuffle_ps(rcpSqrtAB, rcpSqrtAB, _MM_SHUFFLE(0, 0, 0, 0));
+		row3_ABC = _mm_mul_ps(row3_ABC, rcpSqrtAB);
+
+		const static __m128 NEG = _mm_set_ps1(-1.0f);
+		const static __m128 ZERO = _mm_set_ps1(0.0f);
+		static const __m128 ONE = _mm_set_ps1(1.0f);
+		
+		// Edge 1 -> (0, 0, 1) -> row 3
+		// Edge 2 -> (1, 0, 0) -> row 1
+		// Edge 3 -> (0, 1, 0) -> row 2
+		__m128 edge1 = row3_ABC;
+		__m128 edge2 = row1_ABC;
+		__m128 edge3 = row2_ABC;
+
+		raster.edge1 = edge1;
+		raster.edge2 = edge2;
+		raster.edge3 = edge3;		
+
+		//static volatile float edge1Test[4];
+		//_mm_storeu_ps((float*)edge1Test, edge1);
+		//static volatile float edge2Test[4];
+		//_mm_storeu_ps((float*)edge2Test, edge2);
+		//static volatile float edge3Test[4];
+		//_mm_storeu_ps((float*)edge3Test, edge3);
+
+		// Compute the trivial accept/reject offsets for each edge and tile level
+        __m128 edge_Reject[numTileLevels > 0 ? numTileLevels : 1];
+		__m128 edge_Accept[numTileLevels > 0 ? numTileLevels : 1];
+		
+		// Move e1A, e2A, e3A
+		__m128 edge_AAA = _mm_unpacklo_ps(edge1, edge2);
+		edge_AAA = _mm_shuffle_ps(edge_AAA, edge3, _MM_SHUFFLE(0, 0, 1, 0));
+		
+		// Move e1B, e2B, e3B
+		__m128 edge_BBB = _mm_shuffle_ps(edge1, edge2, _MM_SHUFFLE(1, 1, 1, 1));
+		edge_BBB = _mm_shuffle_ps(edge_BBB, edge_BBB, _MM_SHUFFLE(2, 2, 2, 0));
+		edge_BBB = _mm_shuffle_ps(edge_BBB, edge3, _MM_SHUFFLE(1, 1, 1, 0));
+
+		// Reject
+		_DEBUG_COMPILE_ASSERT( ((int) (bufferWidth / (1 << ((NUM_TILES_SHIFT+1) * numTileLevels)) - 1)) > 0 );
+		_DEBUG_COMPILE_ASSERT( ((int) (bufferHeight / (1 << ((NUM_TILES_SHIFT+1) * numTileLevels)) - 1)) > 0 );
+	
+		__m128 edge_AAACmpGt = _mm_cmpgt_ps(edge_AAA, ZERO);
+		__m128 rejectFactorAAA = _mm_and_ps(edge_AAACmpGt, edge_AAA);
+
+		_LOOPi(numTileLevels)
+		{
+			// Move edge1 C into r0
+			edge_Reject[i] = _mm_movehl_ps(edge1, edge1);
+		
+			//_mm_storeu_ps((float*)edge_RejectTestXXX, edge_Reject[i]);
+		
+			// Move edge2 C into r1
+			edge_Reject[i] = _mm_shuffle_ps(edge_Reject[i], edge2, _MM_SHUFFLE(2, 2, 1, 0));
+			edge_Reject[i] = _mm_shuffle_ps(edge_Reject[i], edge_Reject[i], _MM_SHUFFLE(3, 2, 2, 0));
+
+			//_mm_storeu_ps((float*)edge_RejectTestXXX, edge_Reject[i]);
+			
+			// Move edge3 C into r2
+			edge_Reject[i] = _mm_shuffle_ps(edge_Reject[i], edge3, _MM_SHUFFLE(2, 2, 1, 0));
+
+			// The quad offset is actually the quadSize - 1
+			// Therefore, for a quadSize of 4, the pixel offset is 0.5 - 3.5 instead of 0.5 - 4.5
+			__m128 quadSize = _mm_set_ps1( (float) (bufferWidth / (1 << ((NUM_TILES_SHIFT+1) * (i+1))) - 1) );
+
+			__m128 offset = _mm_mul_ps(rejectFactorAAA, quadSize);		// A * quadSize
+			edge_Reject[i] = _mm_add_ps(edge_Reject[i], offset);		// C + A * quadSize	
+		}
+
+		__m128 edge_BBBCmpGt = _mm_cmpgt_ps(edge_BBB, ZERO);
+		__m128 rejectFactorBBB = _mm_and_ps(edge_BBBCmpGt, edge_BBB);
+		_LOOPi(numTileLevels)
+		{			
+			__m128 quadSize = _mm_set_ps1( (float) (bufferHeight / (1 << ((NUM_TILES_SHIFT+1) * (i+1))) - 1) );
+			__m128 offset = _mm_mul_ps(rejectFactorBBB, quadSize);		// B * quadSize
+			edge_Reject[i] = _mm_add_ps(edge_Reject[i], offset);		// C + A * quadSize + B * quadSize
+		}
+
+		// Accept
+		__m128 edge_AAACmpLt = _mm_cmplt_ps(edge_AAA, ZERO);
+		__m128 acceptFactorAAA = _mm_and_ps(edge_AAACmpLt, edge_AAA);
+		_LOOPi(numTileLevels)
+		{
+			edge_Accept[i] = _mm_movehl_ps(edge1, edge1);
+	
+			edge_Accept[i] = _mm_shuffle_ps(edge_Accept[i], edge2, _MM_SHUFFLE(2, 2, 1, 0));
+			edge_Accept[i] = _mm_shuffle_ps(edge_Accept[i], edge_Accept[i], _MM_SHUFFLE(3, 2, 2, 0));
+
+			// Move edge3 C into r2	
+			edge_Accept[i] = _mm_shuffle_ps(edge_Accept[i], edge3, _MM_SHUFFLE(2, 2, 1, 0));
+		
+			__m128 quadSize = _mm_set_ps1( (float) (bufferWidth / (1 << ((NUM_TILES_SHIFT+1) * (i+1))) - 1) );
+			__m128 offset = _mm_mul_ps(acceptFactorAAA, quadSize);		// A * quadSize
+			edge_Accept[i] = _mm_add_ps(edge_Accept[i], offset);		// C + A * quadSize			
+		}
+
+		__m128 edge_BBBCmpLt = _mm_cmplt_ps(edge_BBB, ZERO);
+		__m128 acceptFactorBBB = _mm_and_ps(edge_BBBCmpLt, edge_BBB);
+		_LOOPi(numTileLevels)
+		{		
+			__m128 quadSize = _mm_set_ps1( (float) (bufferHeight / (1 << ((NUM_TILES_SHIFT+1) * (i+1))) - 1) );
+			__m128 offset = _mm_mul_ps(acceptFactorBBB, quadSize);		// B * quadSize
+			edge_Accept[i] = _mm_add_ps(edge_Accept[i], offset);		// C + A * quadSize + B * quadSize			
+		}
+
+		_LOOPi(numTileLevels)
+		{
+			raster.edgeRejectC[i] = edge_Reject[i];
+			raster.edgeAcceptC[i] = edge_Accept[i];
+		}
+
+		//// Store determinant in edge1.w
+		//_mm_store_ss(((float*) &(pOut->edge1)) + 3, determinant);
+
+		__m128 rcpDeterminant = _mm_div_ss(ONE, determinant);
+		//__m128 rcpDeterminant = _mm_rcp_ss(determinant);
+
+		rcpDeterminant = _mm_shuffle_ps(rcpDeterminant, rcpDeterminant, _MM_SHUFFLE(0, 0, 0, 0));
+
+		// Finally, this is the inv 3x3 matrix
+		__m128 invMatRow1 = _mm_mul_ps(rcpDeterminant, _3322s3223_3213s3312_2312s2213_2312s2213);
+		__m128 invMatRow2 = _mm_mul_ps(rcpDeterminant, _3123s3321_3311s3113_2113s2311_2113s2311);
+		__m128 invMatRow3 = _mm_mul_ps(rcpDeterminant, _3221s3122_3112s3211_2211s2112_2211s2112);
+
+		//// TEST CODE
+		//gmtl::VecA3f testInvRow1;
+		//gmtl::VecA3f testInvRow2;
+		//gmtl::VecA3f testInvRow3;
+		//_mm_store_ps((float*) &testInvRow1, invMatRow1);
+		//_mm_store_ps((float*) &testInvRow2, invMatRow2);
+		//_mm_store_ps((float*) &testInvRow3, invMatRow3);
+		//
+		//gmtl::Matrix33f testInvMat;
+		//testInvMat.set( testInvRow1[0], testInvRow1[1], testInvRow1[2],
+		//				testInvRow2[0], testInvRow2[1], testInvRow2[2],
+		//				testInvRow3[0], testInvRow3[1], testInvRow3[2] );
+		//gmtl::Matrix33f origMat;
+		//origMat.set( v1[0], v2[0], v3[0],
+		//			 v1[1], v2[1], v3[1],
+		//			 v1[3], v2[3], v3[3] );
+		//gmtl::Matrix33f invertOrig;
+		//gmtl::invertFull(invertOrig, origMat);
+
+		//gmtl::Matrix33f newMat = testInvMat * origMat;
+		//gmtl::Matrix33f newMa2t = origMat * invertOrig;
+		
+		// Find invW interpolants
+		__m128 invWInterpolant = _mm_add_ps(invMatRow1, invMatRow2);
+		invWInterpolant = _mm_add_ps(invWInterpolant, invMatRow3);
+
+		_B = _mm_shuffle_ps(invWInterpolant, invWInterpolant, _MM_SHUFFLE(1, 1, 1, 1));
+		_C = _mm_movehl_ps(invWInterpolant, invWInterpolant);
+		_CaBsA = _mm_add_ss(_C, _B);
+		_CaBsA = _mm_sub_ss(_CaBsA, invWInterpolant);
+		__m128 invWInterpolantAB_CaBsA = _mm_movelh_ps(invWInterpolant, _CaBsA);
+		raster.invWInterpolant = _mm_mul_ps(invWInterpolantAB_CaBsA, SCREEN_BUFFER_SCALE);
+
+		//_mm_store_ps( ((float*) &(pOut->invWInterpolant)), invWInterpolant );
+
+		//// Scale edge fns to [0, bufferWidth] and [0, bufferHeight]
+		//pOut->invWInterpolant[2] = pOut->invWInterpolant[2] + pOut->invWInterpolant[1] - pOut->invWInterpolant[0];
+		//pOut->invWInterpolant[0] = pOut->invWInterpolant[0] * SCREEN_BUFFER_SCALEX;
+		//pOut->invWInterpolant[1] = pOut->invWInterpolant[1] * SCREEN_BUFFER_SCALEY;
+
+		// Compute depth
+		__m128 v1Depth = _mm_shuffle_ps(col1, col1, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 v2Depth = _mm_shuffle_ps(col2, col2, _MM_SHUFFLE(2, 2, 2, 2));
+		__m128 v3Depth = _mm_shuffle_ps(col3, col3, _MM_SHUFFLE(2, 2, 2, 2));
+
+		v1Depth = _mm_mul_ps(v1Depth, invMatRow1);
+		v2Depth = _mm_mul_ps(v2Depth, invMatRow2);
+		v3Depth = _mm_mul_ps(v3Depth, invMatRow3);
+
+		__m128 depthInterpolant = _mm_add_ps(v1Depth, v2Depth);
+		depthInterpolant = _mm_add_ps(depthInterpolant, v3Depth);
+		_B = _mm_shuffle_ps(depthInterpolant, depthInterpolant, _MM_SHUFFLE(1, 1, 1, 1));
+		_C = _mm_movehl_ps(depthInterpolant, depthInterpolant);
+		_CaBsA = _mm_add_ss(_C, _B);
+		_CaBsA = _mm_sub_ss(_CaBsA, depthInterpolant);
+		__m128 depthInterpolantAB_CaBsA = _mm_movelh_ps(depthInterpolant, _CaBsA);
+		raster.depthInterpolant = _mm_mul_ps(depthInterpolantAB_CaBsA, SCREEN_BUFFER_SCALE);
+
+		//_LOOPi(numTileLevels)
+		//{
+		//	// For hierarchical depth writes/tests
+		//	__m128 quadSize = _mm_set_ps1( (float) (bufferWidth / (1 << ((NUM_TILES_SHIFT+1) * (i+1))) - 1) );
+
+		//}
+
+		// Now compute additional interpolants
+		_LOOPi(numInterpolants)
+		{
+			__m128 v1 = _mm_load1_ps(pInterpolantsV1+i);
+			__m128 v2 = _mm_load1_ps(pInterpolantsV2+i);
+			__m128 v3 = _mm_load1_ps(pInterpolantsV3+i);
+
+			v1 = _mm_mul_ps(v1, invMatRow1);
+			v2 = _mm_mul_ps(v2, invMatRow2);
+			v3 = _mm_mul_ps(v3, invMatRow3);
+
+			__m128 res = _mm_add_ps(v1, v2);
+			res = _mm_add_ps(res, v3);
+			_B = _mm_shuffle_ps(res, res, _MM_SHUFFLE(1, 1, 1, 1));
+			_C = _mm_movehl_ps(res, res);
+			_CaBsA = _mm_add_ss(_C, _B);
+			_CaBsA = _mm_sub_ss(_CaBsA, res);
+			__m128 resAB_CaBsA = _mm_movelh_ps(res, _CaBsA);
+			raster.edgeInterpolants[i] = _mm_mul_ps(resAB_CaBsA, SCREEN_BUFFER_SCALE);
+
+			//_mm_store_ps( ((float*) &(pOut->edgeInterpolants[i])), res );
+
+			// Scale edge fns to [0, bufferWidth] and [0, bufferHeight]
+			//pOut->edgeInterpolants[i][2] = pOut->edgeInterpolants[i][2] + pOut->edgeInterpolants[i][1] - pOut->edgeInterpolants[i][0];
+			//pOut->edgeInterpolants[i][0] = pOut->edgeInterpolants[i][0] * SCREEN_BUFFER_SCALEX;
+			//pOut->edgeInterpolants[i][1] = pOut->edgeInterpolants[i][1] * SCREEN_BUFFER_SCALEY;
+		}
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+_NAMESPACE_END
+
+
+//////////////////////////////////////////////////////////////////////////
+// Fill convention and rounding dead code
+//////////////////////////////////////////////////////////////////////////
+
+		//// Truncate to 10 binary decimal places for 32-bit floating point
+		//// This allows up to 1/1024 precision and will be effective for framebuffer sizes up to 4096
+		//// Because the edge function will be multiplied by half during edge interpolation
+		//// we need to account for that when we compute the constant offset for the top-left fill convention
+		//// (ie, +1/2048)
+		//const static float ROUND_EPS = 1.0f / 64.0f;
+		//const static __m128 FLOAT_ROUND = _mm_set_ps1(16777216.0f * ROUND_EPS);
+
+		//__m128 row1_SignABC = _mm_add_ps( _mm_and_ps( _mm_cmplt_ps(row1_ABC, ZERO), NEG ), _mm_and_ps( _mm_cmpge_ps(row1_ABC, ZERO), ONE ) );
+		//row1_ABC = _mm_mul_ps(row1_ABC, row1_SignABC);
+		//row1_ABC = _mm_add_ps(row1_ABC, FLOAT_ROUND);
+		//row1_ABC = _mm_sub_ps(row1_ABC, FLOAT_ROUND);
+		//row1_ABC = _mm_mul_ps(row1_ABC, row1_SignABC);
+		//__m128 row2_SignABC = _mm_add_ps( _mm_and_ps( _mm_cmplt_ps(row2_ABC, ZERO), NEG ), _mm_and_ps( _mm_cmpge_ps(row2_ABC, ZERO), ONE ) );
+		//row2_ABC = _mm_mul_ps(row2_ABC, row2_SignABC);
+		//row2_ABC = _mm_add_ps(row2_ABC, FLOAT_ROUND);
+		//row2_ABC = _mm_sub_ps(row2_ABC, FLOAT_ROUND);
+		//row2_ABC = _mm_mul_ps(row2_ABC, row2_SignABC);
+		//__m128 row3_SignABC = _mm_add_ps( _mm_and_ps( _mm_cmplt_ps(row3_ABC, ZERO), NEG ), _mm_and_ps( _mm_cmpge_ps(row3_ABC, ZERO), ONE ) );
+		//row3_ABC = _mm_mul_ps(row3_ABC, row3_SignABC);
+		//row3_ABC = _mm_add_ps(row3_ABC, FLOAT_ROUND);
+		//row3_ABC = _mm_sub_ps(row3_ABC, FLOAT_ROUND);
+		//row3_ABC = _mm_mul_ps(row3_ABC, row3_SignABC);
+
+		////volatile float toRound = 16777216.0f * ROUND_EPS; // Implies 2^(24-n) where n is the number of bits saved
+		////volatile float init = 0.99975586f;
+		////volatile float init2 = -0.83190918f;
+		////volatile float init3 = ROUND_EPS * 2.0f;
+		//////_TRACE(_W("init: %f \n"), init);
+		////float amount = init;
+		////amount += toRound;
+		//////_TRACE(_W("amount1: %f \n"), amount);
+		////amount -= toRound;
+		//////_TRACE(_W("amount2: %f \n"), amount);
+		////float amount2 = init2;
+		////amount2 += toRound;
+		////amount2 -= toRound;
+
+		////float amount3 = init3 * 0.5f;
+		////amount3 += 4096.0f;
+
+		////amount3 += toRound;
+		////amount3 -= toRound;
+
+
+//		// Compute the top-left fill convention offset
+//		// Add if A > 0 || (A == 0 && B > 0)
+//		const static __m128 TOP_LEFT_OFFSET = _mm_set_ps(0.0f, ROUND_EPS, 0.0f, 0.0f);
+//
+//		// Edge 1
+//		__m128 edge1_ABCCmpGt = _mm_cmpgt_ps(edge1, ZERO);
+//		int moveMask = _mm_movemask_ps(edge1_ABCCmpGt);
+//		if( moveMask & 0x1 )
+//		{
+//			edge1 = _mm_add_ps(edge1, TOP_LEFT_OFFSET);	
+//		}
+//		else
+//		{
+//			__m128 edge1_ACmpEq = _mm_cmpeq_ss(edge1, ZERO);
+//			if( _mm_movemask_ps(edge1_ACmpEq) & 0x1 )
+//			{
+//				if( moveMask & 0x2 )
+//				{
+//					edge1 = _mm_add_ps(edge1, TOP_LEFT_OFFSET);				
+//				}
+//			}
+//		}
+//
+//		// Edge 2
+//		__m128 edge2_ABCCmpGt = _mm_cmpgt_ps(edge2, ZERO);
+//		moveMask = _mm_movemask_ps(edge2_ABCCmpGt);
+//		if( moveMask & 0x1 )
+//		{
+//			edge2 = _mm_add_ps(edge2, TOP_LEFT_OFFSET);	
+//		}
+//		else
+//		{
+//			__m128 edge2_ACmpEq = _mm_cmpeq_ss(edge2, ZERO);
+//			if( _mm_movemask_ps(edge2_ACmpEq) & 0x1 )
+//			{
+//				if( moveMask & 0x2 )
+//				{
+//					edge2 = _mm_add_ps(edge2, TOP_LEFT_OFFSET);				
+//				}
+//			}
+//		}
+//
+//		// Edge 3
+//		__m128 edge3_ABCCmpGt = _mm_cmpgt_ps(edge3, ZERO);
+//		moveMask = _mm_movemask_ps(edge3_ABCCmpGt);
+//		if( moveMask & 0x1 )
+//		{
+//			edge3 = _mm_add_ps(edge3, TOP_LEFT_OFFSET);	
+//		}
+//		else
+//		{
+//			__m128 edge3_ACmpEq = _mm_cmpeq_ss(edge3, ZERO);
+//			if( _mm_movemask_ps(edge3_ACmpEq) & 0x1 )
+//			{
+//				if( moveMask & 0x2 )
+//				{
+//					edge3 = _mm_add_ps(edge3, TOP_LEFT_OFFSET);				
+//				}
+//			}
+//		}

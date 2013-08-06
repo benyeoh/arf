@@ -1,0 +1,5 @@
+C:\Dev\X2010\Bin\Minotaur\Plugins\BFXUtilMatEd.dll
+C:\Dev\X2010\Bin\Minotaur\Plugins\BFXUtilMatEd.pdb
+C:\Dev\X2010\Src\BFXUtilMatEd\obj\Debug\ResolveAssemblyReference.cache
+C:\Dev\X2010\Src\BFXUtilMatEd\obj\Debug\BFXUtilMatEd.dll
+C:\Dev\X2010\Src\BFXUtilMatEd\obj\Debug\BFXUtilMatEd.pdb

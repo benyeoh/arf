@@ -1,0 +1,8 @@
+
+define SHPRTCOMPUTE_MAT_OCCLUSION 8
+
+desc = TestSHPRTFX, Internal Use Only, Paraboloid Radiance BRDF
+
+begin_group SHPRTCOMPUTE_MAT_OCCLUSION
+	mat = [mat]\TestSHPRTFX\ParaboloidRadianceBRDF.bam
+end_group	

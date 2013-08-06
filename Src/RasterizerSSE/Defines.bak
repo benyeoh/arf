@@ -1,0 +1,52 @@
+//================================================================================
+//
+//		Defines.h
+//
+//			A description here
+//
+//		Author:		Ben Yeoh
+//		Date:		1/12/2011
+//
+//================================================================================
+
+#pragma once
+
+_NAMESPACE_BEGIN
+
+#define _RASTERIZER_SSE_INLINE	__forceinline
+
+//const static uint NUM_TILES_SHIFT	= 1;
+//const static uint NUM_TILES			= 1 << NUM_TILES_SHIFT;
+//const static uint SIMD_BLOCK_SHIFT	= 1;
+//const static uint SIMD_BLOCK_SIZE	= 1 << SIMD_BLOCK_SHIFT;
+//	
+//typedef __m128 FloatSIMD;
+//
+//template <uint numInterpolants, uint numTileLevels>
+//struct RasterizationInfo
+//{
+//	FloatSIMD edge1;
+//	FloatSIMD edge2;
+//	FloatSIMD edge3;
+//
+//	FloatSIMD depthInterpolant;	
+//	FloatSIMD invWInterpolant;
+//
+//	FloatSIMD edgeRejectC[numTileLevels];
+//	FloatSIMD edgeAcceptC[numTileLevels];
+//	FloatSIMD edgeInterpolants[numInterpolants];
+//
+//	//float depthMax[numTileLevels];
+//	//float depthMin[numTileLevels];
+//
+//	RasterizationInfo()
+//	{
+//	}
+//
+//private:
+//	RasterizationInfo(RasterizationInfo<numInterpolants, numTileLevels> const&);
+//	RasterizationInfo<numInterpolants, numTileLevels>& operator=(RasterizationInfo<numInterpolants, numTileLevels> const&);
+//};
+
+
+_NAMESPACE_END

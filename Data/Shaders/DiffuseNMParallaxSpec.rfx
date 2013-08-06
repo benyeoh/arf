@@ -1,0 +1,7 @@
+
+desc = Diffuse, Specular, Parallax Mapping
+
+begin_group LIGHTING
+	effect = [shd]\NM_P_HLDL1Spec.fx
+	effect = [shd]\NM_P_PL1Spec.fx
+end_group	

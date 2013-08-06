@@ -1,0 +1,28 @@
+
+define BASE_LIGHTING 0
+define ACCUM 12
+define CAST_DIR_LIGHT_SHADOW 4
+define CAST_POINT_LIGHT_SHADOW 5
+define CAST_CUBE_POINT_LIGHT_SHADOW 6
+
+desc = TestDeferredFX, Object, Accum, Self-Illum
+
+begin_group BASE_LIGHTING
+	mat = [mat]\BaseFX\SelfIlluminated.bam
+end_group	
+
+begin_group CAST_DIR_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastDirLightVarShadow.bam
+end_group
+
+begin_group CAST_POINT_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastPointLightVarShadow.bam
+end_group
+
+begin_group ACCUM
+	mat = [mat]\DeferredFX\Accum.bam
+end_group
+
+begin_group CAST_CUBE_POINT_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastCubePointLightVarShadow.bam
+end_group

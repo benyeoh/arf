@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C1B96A8B-F34A-4B51-95D0-F7CFEF2DF947}</ProjectGuid>
+    <RootNamespace>MaterialGen</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\LibPropertySheetRelease.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\LibPropertySheetDebug.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_USRDLL;MATERIALGEN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>MaterialGenFramework.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4530;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>..\Core\lib;..\MathUtil\lib;..\Renderer\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_USRDLL;MATERIALGEN_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>MaterialGenFramework.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DisableSpecificWarnings>4530;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>..\Core\lib;..\MathUtil\lib;..\Renderer\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="CMGFunction.cpp" />
+    <ClCompile Include="CMGFunctionOp.cpp" />
+    <ClCompile Include="CMGGlobal.cpp" />
+    <ClCompile Include="CMGInputResource.cpp" />
+    <ClCompile Include="CMGLocal.cpp" />
+    <ClCompile Include="CMGMaterialGen.cpp" />
+    <ClCompile Include="CMGMaterialTemplate.cpp" />
+    <ClCompile Include="CMGOutputResource.cpp" />
+    <ClCompile Include="CMGPass.cpp" />
+    <ClCompile Include="CMGPixelIn.cpp" />
+    <ClCompile Include="CMGPixelOut.cpp" />
+    <ClCompile Include="CMGPixelShader.cpp" />
+    <ClCompile Include="CMGPixelShaderOp.cpp" />
+    <ClCompile Include="CMGRenderState.cpp" />
+    <ClCompile Include="CMGResourceMgr.cpp" />
+    <ClCompile Include="CMGTechnique.cpp" />
+    <ClCompile Include="CMGVertexIn.cpp" />
+    <ClCompile Include="CMGVertexOut.cpp" />
+    <ClCompile Include="CMGVertexShader.cpp" />
+    <ClCompile Include="CMGVertexShaderOp.cpp" />
+    <ClCompile Include="MaterialGenFramework.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CMGFunction.h" />
+    <ClInclude Include="CMGFunctionOp.h" />
+    <ClInclude Include="CMGGlobal.h" />
+    <ClInclude Include="CMGInputResource.h" />
+    <ClInclude Include="CMGLocal.h" />
+    <ClInclude Include="CMGMaterialGen.h" />
+    <ClInclude Include="CMGMaterialTemplate.h" />
+    <ClInclude Include="CMGOutputResource.h" />
+    <ClInclude Include="CMGPass.h" />
+    <ClInclude Include="CMGPixelIn.h" />
+    <ClInclude Include="CMGPixelOut.h" />
+    <ClInclude Include="CMGPixelShader.h" />
+    <ClInclude Include="CMGPixelShaderOp.h" />
+    <ClInclude Include="CMGRenderState.h" />
+    <ClInclude Include="CMGResourceMgr.h" />
+    <ClInclude Include="CMGTechnique.h" />
+    <ClInclude Include="CMGVertexIn.h" />
+    <ClInclude Include="CMGVertexOut.h" />
+    <ClInclude Include="CMGVertexShader.h" />
+    <ClInclude Include="CMGVertexShaderOp.h" />
+    <ClInclude Include="IMGShaderNode.h" />
+    <ClInclude Include="Interfaces.h" />
+    <ClInclude Include="MaterialGen.h" />
+    <ClInclude Include="MaterialGenFramework.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

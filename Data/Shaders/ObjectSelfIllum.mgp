@@ -1,0 +1,8 @@
+
+define BASE_LIGHTING 0
+
+desc = Object, Self Illuminated
+
+begin_group BASE_LIGHTING
+	mat = [mat]\BaseFX\SelfIlluminated.bam
+end_group

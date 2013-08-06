@@ -1,0 +1,10 @@
+
+#if defined(_IS_USE_APPHELPER_LIB_BASIC)
+
+// Basic components
+COMP_RENDER,
+COMP_SPATIAL,
+COMP_POINTLIGHT,
+COMP_DIRLIGHT,
+
+#endif

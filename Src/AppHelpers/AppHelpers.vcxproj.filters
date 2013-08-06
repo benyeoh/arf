@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Basic">
+      <UniqueIdentifier>{fbbf4cdd-bb88-4fb0-ad36-cd1ee2366bd4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PRTCompute">
+      <UniqueIdentifier>{27c2e80a-a69d-40db-94d7-e8c74c4cb419}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AHPointLightComponent.cpp">
+      <Filter>Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="AHRenderComponent.cpp">
+      <Filter>Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="AHSceneRenderPhase_Process.cpp">
+      <Filter>Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="AHSceneRenderPhase.cpp">
+      <Filter>Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="AHEntity.cpp" />
+    <ClCompile Include="LoadSaveFns.cpp" />
+    <ClCompile Include="AHEntityManager.cpp" />
+    <ClCompile Include="AHScreenSpaceFrustumCuller.cpp" />
+    <ClCompile Include="AppHelpers.cpp" />
+    <ClCompile Include="ComputeBounds.cpp" />
+    <ClCompile Include="AHSpatialComponent.cpp">
+      <Filter>Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="AHDirLightComponent.cpp">
+      <Filter>Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="AHMaterialCreateCallbackDeferred.cpp">
+      <Filter>Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="AHMaterialCreateCallbackImmed.cpp">
+      <Filter>Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="AHScenePRTComputePhase.cpp">
+      <Filter>PRTCompute</Filter>
+    </ClCompile>
+    <ClCompile Include="AHScenePRTComputeSetup.cpp">
+      <Filter>PRTCompute</Filter>
+    </ClCompile>
+    <ClCompile Include="AHScenePRTComputePhase_Process.cpp">
+      <Filter>PRTCompute</Filter>
+    </ClCompile>
+    <ClCompile Include="AHScenePRTCompute.cpp">
+      <Filter>PRTCompute</Filter>
+    </ClCompile>
+    <ClCompile Include="AHPRTComputePipeline.cpp">
+      <Filter>PRTCompute</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AHPointLightComponent.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="AHRenderComponent.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="AHDirLightComponent.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="AHSceneRenderPhase.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="Basic.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="PRTCompute.h">
+      <Filter>PRTCompute</Filter>
+    </ClInclude>
+    <ClInclude Include="AHComponent.h" />
+    <ClInclude Include="AHEntity.h" />
+    <ClInclude Include="LoadSaveFns.h" />
+    <ClInclude Include="AHEntityManager.h" />
+    <ClInclude Include="AHScreenSpaceFrustumCuller.h" />
+    <ClInclude Include="AppHelpers.h" />
+    <ClInclude Include="ComputeBounds.h" />
+    <ClInclude Include="Defines.h" />
+    <ClInclude Include="BasicCompDefines.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicCompEventDefines.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="AHSpatialComponent.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="AHScenePRTComputePhase.h">
+      <Filter>PRTCompute</Filter>
+    </ClInclude>
+    <ClInclude Include="AHMaterialCreateCallbackDeferred.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="AHMaterialCreateCallbackImmed.h">
+      <Filter>Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="AHScenePRTComputeSetup.h">
+      <Filter>PRTCompute</Filter>
+    </ClInclude>
+    <ClInclude Include="AHScenePRTCompute.h">
+      <Filter>PRTCompute</Filter>
+    </ClInclude>
+    <ClInclude Include="AHPRTComputePipeline.h">
+      <Filter>PRTCompute</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,463 @@
+//================================================================================
+//
+//		RasterizeTiles.h
+//
+//			A description here
+//
+//		Author:		Ben Yeoh
+//		Date:		1/12/2011
+//
+//================================================================================
+
+#pragma once
+
+_NAMESPACE_BEGIN
+
+template <uint numInterpolants, uint numPixelsH, uint numPixelsV, uint numTileLevels, CustomPixelShaderFn pixelShaderFn>
+inline void RasterizePixelBlock(RasterizationInfo<numInterpolants, numTileLevels>& raster, float startX, float startY)
+{
+	_DEBUG_COMPILE_ASSERT(numPixelsH >= 2);
+	_DEBUG_COMPILE_ASSERT(numPixelsV >= 2);
+	_DEBUG_COMPILE_ASSERT((numPixelsH % 2) == 0);
+	_DEBUG_COMPILE_ASSERT((numPixelsV % 2) == 0);
+
+	const static _ALIGN(16) float __BLOCK_OFFSETS_X[4]		= {0.0f, 1.0f, 0.0f, 1.0f};
+	const static _ALIGN(16) float __BLOCK_OFFSETS_Y[4]		= {0.0f, 0.0f, 1.0f, 1.0f};
+	const static _ALIGN(16) float __BLOCK_SIZE_OFFSET[4]	= {2.0f, 2.0f, 2.0f, 2.0f};
+	const static _ALIGN(16) float __ZERO[4]					= {0.0f, 0.0f, 0.0f, 0.0f};
+
+	__m128 xxxx = _mm_load_ps1(&startX);
+	__m128 BLOCK_OFFSETS_X = _mm_load_ps(__BLOCK_OFFSETS_X); 
+	xxxx = _mm_add_ps(xxxx, BLOCK_OFFSETS_X);
+	__m128 yyyy = _mm_load_ps1(&startY);
+	__m128 BLOCK_OFFSETS_Y = _mm_load_ps(__BLOCK_OFFSETS_Y); 
+	yyyy = _mm_add_ps(yyyy, BLOCK_OFFSETS_Y);
+
+	__m128 edges = raster.edge1;
+	__m128 e1aaaa = _mm_shuffle_ps(edges, edges, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 e1bbbb = _mm_shuffle_ps(edges, edges, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 e1 = _mm_mul_ps( e1aaaa, xxxx );
+	e1 = _mm_add_ps( _mm_mul_ps( e1bbbb, yyyy ), e1 );
+	e1 = _mm_add_ps( _mm_shuffle_ps(edges, edges, _MM_SHUFFLE(2, 2, 2, 2)), e1 );
+	//e1 = _mm_add_ps(raster.e1OffsetA, e1);
+	//e1 = _mm_add_ps(raster.e1OffsetB, e1);
+
+	edges = raster.edge2;
+	__m128 e2aaaa = _mm_shuffle_ps(edges, edges, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 e2bbbb = _mm_shuffle_ps(edges, edges, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 e2 = _mm_mul_ps( e2aaaa, xxxx );
+	e2 = _mm_add_ps( _mm_mul_ps( e2bbbb, yyyy ), e2 );
+	e2 = _mm_add_ps( _mm_shuffle_ps(edges, edges, _MM_SHUFFLE(2, 2, 2, 2)), e2 );
+	//e2 = _mm_add_ps(raster.e2OffsetA, e2);
+	//e2 = _mm_add_ps(raster.e2OffsetB, e2);
+
+	edges = raster.edge3;
+	__m128 e3aaaa = _mm_shuffle_ps(edges, edges, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 e3bbbb = _mm_shuffle_ps(edges, edges, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 e3 = _mm_mul_ps( e3aaaa, xxxx );
+	e3 = _mm_add_ps( _mm_mul_ps( e3bbbb, yyyy ), e3 );
+	e3 = _mm_add_ps( _mm_shuffle_ps(edges, edges, _MM_SHUFFLE(2, 2, 2, 2)), e3 );
+	//e3 = _mm_add_ps(raster.e3OffsetA, e3);
+	//e3 = _mm_add_ps(raster.e3OffsetB, e3);
+
+	// Note: For clamping to implement fill convention, need to clamp here
+	__m128 BLOCK_SIZE_OFFSET	= _mm_load_ps(__BLOCK_SIZE_OFFSET); 
+	__m128 e1XAdd = _mm_mul_ps(e1aaaa, BLOCK_SIZE_OFFSET);
+	__m128 e2XAdd = _mm_mul_ps(e2aaaa, BLOCK_SIZE_OFFSET);
+	__m128 e3XAdd = _mm_mul_ps(e3aaaa, BLOCK_SIZE_OFFSET);
+
+	__m128 e1YAdd = _mm_mul_ps(e1bbbb, BLOCK_SIZE_OFFSET);
+	__m128 e2YAdd = _mm_mul_ps(e2bbbb, BLOCK_SIZE_OFFSET);
+	__m128 e3YAdd = _mm_mul_ps(e3bbbb, BLOCK_SIZE_OFFSET);
+
+	__m128 ZERO = _mm_load_ps(__ZERO);
+
+	// Unroll loop
+	_LOOPi(numPixelsV / 2)
+	{		
+		_LOOPj(numPixelsH / 2)
+		{
+			__m128 numHOffset = _mm_set_ps1((float) j);
+
+			__m128 curE1 = _mm_add_ps(e1, _mm_mul_ps(numHOffset, e1XAdd));
+			__m128 curE2 = _mm_add_ps(e2, _mm_mul_ps(numHOffset, e2XAdd));
+			__m128 curE3 = _mm_add_ps(e3, _mm_mul_ps(numHOffset, e3XAdd));
+
+			__m128 e1Inside = _mm_cmpgt_ps(curE1, ZERO);
+			__m128 e2Inside = _mm_cmpgt_ps(curE2, ZERO);
+			__m128 e3Inside = _mm_cmpgt_ps(curE3, ZERO);
+
+			__m128 insideAll = _mm_and_ps(e1Inside, e2Inside);
+			insideAll = _mm_and_ps(insideAll, e3Inside);
+			int insideMask = _mm_movemask_ps(insideAll);
+
+			if(insideMask > 0)
+			{
+				__m128 curXXXX = _mm_add_ps(xxxx, _mm_mul_ps(numHOffset, BLOCK_SIZE_OFFSET));
+
+				// Interpolate depth
+				__m128 zAAAA = _mm_shuffle_ps(raster.depthInterpolant, raster.depthInterpolant, _MM_SHUFFLE(0, 0, 0, 0));
+				__m128 depthX = _mm_mul_ps(zAAAA, curXXXX);
+				__m128 zBBBB = _mm_shuffle_ps(raster.depthInterpolant, raster.depthInterpolant, _MM_SHUFFLE(1, 1, 1, 1));
+				__m128 depthY = _mm_mul_ps(zBBBB, yyyy);
+				__m128 depth = _mm_add_ps(depthX, depthY);
+				depth = _mm_add_ps( depth, _mm_shuffle_ps(raster.depthInterpolant, raster.depthInterpolant, _MM_SHUFFLE(2, 2, 2, 2)) );
+
+				// Interpolate all user params
+				// TODO: Do something about the +1 to get around compiler array of 0 size
+				__m128 inter[numInterpolants > 0 ? numInterpolants : 1];
+				if(numInterpolants)
+				{
+					// Interpolate w for the parameters
+					__m128 invWaaaa = _mm_shuffle_ps(raster.invWInterpolant, raster.invWInterpolant, _MM_SHUFFLE(0, 0, 0, 0));
+					__m128 invWx = _mm_mul_ps(invWaaaa, curXXXX);
+					__m128 invWbbbb = _mm_shuffle_ps(raster.invWInterpolant, raster.invWInterpolant, _MM_SHUFFLE(1, 1, 1, 1));
+					__m128 invWy = _mm_mul_ps(invWbbbb, yyyy);
+					__m128 w = _mm_add_ps(invWx, invWy);
+					w = _mm_add_ps( w, _mm_shuffle_ps(raster.invWInterpolant, raster.invWInterpolant, _MM_SHUFFLE(2, 2, 2, 2)) );
+					w = _mm_rcp_ps(w);
+
+					_LOOPk(numInterpolants)
+					{
+						__m128 interAAAA = _mm_shuffle_ps(raster.edgeInterpolants[k], raster.edgeInterpolants[k], _MM_SHUFFLE(0, 0, 0, 0)); 
+						__m128 interX = _mm_mul_ps(interAAAA, curXXXX); 
+						__m128 interBBBB = _mm_shuffle_ps(raster.edgeInterpolants[k], raster.edgeInterpolants[k], _MM_SHUFFLE(1, 1, 1, 1)); 
+						__m128 interY = _mm_mul_ps(interBBBB, yyyy);
+						inter[k] = _mm_add_ps(interX, interY);
+						inter[k] = _mm_add_ps( inter[k], _mm_shuffle_ps(raster.edgeInterpolants[k], raster.edgeInterpolants[k], _MM_SHUFFLE(2, 2, 2, 2)) );
+
+						// Multiply by w to get perspective correct params
+						inter[k] = _mm_mul_ps(inter[k], w);
+					}
+				}
+				
+				// Call shader function
+				int pixelBlockX = _mm_cvtt_ss2si(curXXXX);
+				int pixelBlockY = _mm_cvtt_ss2si(yyyy);
+
+				pixelShaderFn(pixelBlockX, pixelBlockY, insideAll, depth, inter);
+			}
+		}
+
+		// Increment to the next block Y
+		e1 = _mm_add_ps(e1, e1YAdd);
+		e2 = _mm_add_ps(e2, e2YAdd);
+		e3 = _mm_add_ps(e3, e3YAdd);
+
+		yyyy = _mm_add_ps(yyyy, BLOCK_SIZE_OFFSET);
+	}
+}
+
+template <uint numInterpolants, uint numPixelsH, uint numPixelsV, uint numTileLevels, CustomPixelShaderFn pixelShaderFn>
+inline void RasterizePixelBlockNoCheck(RasterizationInfo<numInterpolants, numTileLevels>& raster, float startX, float startY)
+{
+	_DEBUG_COMPILE_ASSERT(numPixelsH >= 2);
+	_DEBUG_COMPILE_ASSERT(numPixelsV >= 2);
+	_DEBUG_COMPILE_ASSERT((numPixelsH % 2) == 0);
+	_DEBUG_COMPILE_ASSERT((numPixelsV % 2) == 0);
+
+	const static _ALIGN(16) float __BLOCK_OFFSETS_X[4]		= {0.0f, 1.0f, 0.0f, 1.0f};
+	const static _ALIGN(16) float __BLOCK_OFFSETS_Y[4]		= {0.0f, 0.0f, 1.0f, 1.0f};
+	const static _ALIGN(16) float __BLOCK_SIZE_OFFSET[4]	= {2.0f, 2.0f, 2.0f, 2.0f};
+	const static _ALIGN(16) int __FULL_MASK[4]				= {0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
+
+	__m128 xxxx = _mm_load_ps1(&startX);
+	__m128 BLOCK_OFFSETS_X = _mm_load_ps(__BLOCK_OFFSETS_X); 
+	xxxx = _mm_add_ps(xxxx, BLOCK_OFFSETS_X);
+	__m128 yyyy = _mm_load_ps1(&startY);
+	__m128 BLOCK_OFFSETS_Y = _mm_load_ps(__BLOCK_OFFSETS_Y); 
+	yyyy = _mm_add_ps(yyyy, BLOCK_OFFSETS_Y);
+
+	// Compute depth
+	__m128 zAAAA = _mm_shuffle_ps(raster.depthInterpolant, raster.depthInterpolant, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 depthX = _mm_mul_ps(zAAAA, xxxx);
+	__m128 zBBBB = _mm_shuffle_ps(raster.depthInterpolant, raster.depthInterpolant, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 depthY = _mm_mul_ps(zBBBB, yyyy);
+	__m128 depth = _mm_add_ps(depthX, depthY);
+	depth = _mm_add_ps( depth, _mm_shuffle_ps(raster.depthInterpolant, raster.depthInterpolant, _MM_SHUFFLE(2, 2, 2, 2)) );
+
+	__m128 BLOCK_SIZE_OFFSET	= _mm_load_ps(__BLOCK_SIZE_OFFSET); 
+
+	__m128 depthXAdd = _mm_mul_ps(zAAAA, BLOCK_SIZE_OFFSET);
+	__m128 depthYAdd = _mm_mul_ps(zBBBB, BLOCK_SIZE_OFFSET);
+
+	// Compute all interpolants (if they exist)
+	__m128 invW;
+	__m128 invWXAdd;
+	__m128 invWYAdd;
+
+	__m128 inter[numInterpolants > 0 ? numInterpolants : 1];
+	__m128 interXAdd[numInterpolants > 0 ? numInterpolants : 1];
+	__m128 interYAdd[numInterpolants > 0 ? numInterpolants : 1];
+	if(numInterpolants)
+	{
+		// Interpolate w for the parameters
+		__m128 invWaaaa = _mm_shuffle_ps(raster.invWInterpolant, raster.invWInterpolant, _MM_SHUFFLE(0, 0, 0, 0));
+		__m128 invWx = _mm_mul_ps(invWaaaa, xxxx);
+		__m128 invWbbbb = _mm_shuffle_ps(raster.invWInterpolant, raster.invWInterpolant, _MM_SHUFFLE(1, 1, 1, 1));
+		__m128 invWy = _mm_mul_ps(invWbbbb, yyyy);
+		invW = _mm_add_ps(invWx, invWy);
+		invW = _mm_add_ps( invW, _mm_shuffle_ps(raster.invWInterpolant, raster.invWInterpolant, _MM_SHUFFLE(2, 2, 2, 2)) );
+		//w = _mm_rcp_ps(w);
+
+		invWXAdd = _mm_mul_ps(invWaaaa, BLOCK_SIZE_OFFSET);
+		invWYAdd = _mm_mul_ps(invWbbbb, BLOCK_SIZE_OFFSET);
+
+		_LOOPk(numInterpolants)
+		{
+			__m128 interAAAA = _mm_shuffle_ps(raster.edgeInterpolants[k], raster.edgeInterpolants[k], _MM_SHUFFLE(0, 0, 0, 0)); 
+			__m128 interX = _mm_mul_ps(interAAAA, xxxx); 
+			__m128 interBBBB = _mm_shuffle_ps(raster.edgeInterpolants[k], raster.edgeInterpolants[k], _MM_SHUFFLE(1, 1, 1, 1)); 
+			__m128 interY = _mm_mul_ps(interBBBB, yyyy);
+			inter[k] = _mm_add_ps(interX, interY);
+			inter[k] = _mm_add_ps( inter[k], _mm_shuffle_ps(raster.edgeInterpolants[k], raster.edgeInterpolants[k], _MM_SHUFFLE(2, 2, 2, 2)) );
+
+			interXAdd[k] = _mm_mul_ps(interAAAA, BLOCK_SIZE_OFFSET);
+			interYAdd[k] = _mm_mul_ps(interBBBB, BLOCK_SIZE_OFFSET);
+
+			// Multiply by w to get perspective correct params
+			//inter[k] = _mm_mul_ps(inter[k], w);
+		}
+	}
+
+	__m128 FULL_MASK = _mm_load_ps((float*) __FULL_MASK);
+	_LOOPi(numPixelsV / 2)
+	{	
+		int pixelBlockY = _mm_cvtt_ss2si(yyyy);
+
+		_LOOPj(numPixelsH / 2)
+		{
+			__m128 numHOffset = _mm_set_ps1((float) j);
+
+			// Interpolate all user params
+			__m128 finalInter[numInterpolants > 0 ? numInterpolants : 1];
+			if(numInterpolants)
+			{
+				__m128 curInvW = _mm_add_ps(invW, _mm_mul_ps(numHOffset, invWXAdd));
+				__m128 w = _mm_rcp_ps(curInvW);
+
+				_LOOPk(numInterpolants)
+				{
+					__m128 curInter = _mm_add_ps(inter[k], _mm_mul_ps(numHOffset, interXAdd[k]));
+					finalInter[k] = _mm_mul_ps(curInter, w);
+				}
+			}
+			
+			// Call shader function
+			__m128 curXXXX = _mm_add_ss(xxxx, _mm_mul_ss(numHOffset, BLOCK_SIZE_OFFSET));
+			int pixelBlockX = _mm_cvtt_ss2si(curXXXX);
+			
+			// Increment to the next block X
+			__m128 curDepth = _mm_add_ps(depth, _mm_mul_ps(numHOffset, depthXAdd));
+
+			pixelShaderFn(pixelBlockX, pixelBlockY, FULL_MASK, curDepth, finalInter);
+		}
+
+		// Increment to the next block Y
+		if(numInterpolants)
+		{
+			// Increment invW to the next block in Y
+			invW = _mm_add_ps(invW, invWYAdd);
+
+			_LOOPk(numInterpolants)
+			{
+				// Increment interpolated values
+				inter[k] = _mm_add_ps(inter[k], interYAdd[k]);
+			}
+		}
+			
+		depth = _mm_add_ps(depth, depthYAdd);
+		yyyy = _mm_add_ss(yyyy, BLOCK_SIZE_OFFSET);
+	}
+}
+
+template <uint numInterpolants, uint numPixelsH, uint numPixelsV, uint numTileLevels, uint tileLevel, 
+		  RasterizeTilesFullyFn rasterizeFullyFn, RasterizeTilesFn rasterizeFn>
+inline void RasterizeTiles(RasterizationInfo<numInterpolants, numTileLevels>& raster, float startX, float startY)
+{
+	_DEBUG_COMPILE_ASSERT((numPixelsH % NUM_TILES) == 0);
+	_DEBUG_COMPILE_ASSERT((numPixelsV % NUM_TILES) == 0);
+
+	const static uint tileSizeH = numPixelsH / NUM_TILES;
+	const static uint tileSizeV = numPixelsV / NUM_TILES;
+
+	_DEBUG_COMPILE_ASSERT((tileSizeH % 2) == 0);
+	_DEBUG_COMPILE_ASSERT((tileSizeV % 2) == 0);
+
+	const static float HALF_TILE_SIZE_H = tileSizeH / 2;
+	const static float HALF_TILE_SIZE_V = tileSizeV / 2;
+
+	const static _ALIGN(16) float __QUAD_IN_TILE_OFFSETS_X[4] = {0.0f, tileSizeH / 2, 0.0f, tileSizeH / 2}; // [0, tileSizeH * 0.5f, 0, tileSizeH * 0.5f]
+	const static _ALIGN(16) float __QUAD_IN_TILE_OFFSETS_Y[4] = {0.0f, 0.0f, tileSizeV / 2, tileSizeV / 2}; // [0, 0, tileSizeV * 0.5f, tileSizeV * 0.5f]
+	const static _ALIGN(16) float __TILE_SIZE_X[4] = {tileSizeH, tileSizeH, tileSizeH, tileSizeH};
+	const static _ALIGN(16) float __TILE_SIZE_Y[4] = {tileSizeV, tileSizeV, tileSizeV, tileSizeV};
+	const static _ALIGN(16) float __ZERO[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+
+	//const static __m128 QUAD_IN_TILE_OFFSETS_X = _mm_set_ps(HALF_TILE_SIZE_H, 0.0f, HALF_TILE_SIZE_H, 0.0f); // [0, tileSizeH * 0.5f, 0, tileSizeH * 0.5f]
+	//const static __m128 QUAD_IN_TILE_OFFSETS_Y = _mm_set_ps(HALF_TILE_SIZE_V, HALF_TILE_SIZE_V, 0.0f, 0.0f); // [0, 0, tileSizeV * 0.5f, tileSizeV * 0.5f]
+	////const static __m128 QUAD_IN_TILE_SIZE_X = _mm_shuffle_ps(QUAD_IN_TILE_OFFSETS_X, QUAD_IN_TILE_OFFSETS_X, _MM_SHUFFLE(3, 3, 3, 3));
+	////const static __m128 QUAD_IN_TILE_SIZE_Y = _mm_shuffle_ps(QUAD_IN_TILE_OFFSETS_Y, QUAD_IN_TILE_OFFSETS_Y, _MM_SHUFFLE(3, 3, 3, 3));
+	//const static __m128 TILE_SIZE_X = _mm_set_ps1( (float) tileSizeH );
+	//const static __m128 TILE_SIZE_Y = _mm_set_ps1( (float) tileSizeV );
+	//const static __m128 ZERO = _mm_setzero_ps();
+
+	// Start at tile pixel corners
+	__m128 xxxx = _mm_load_ps1(&startX);
+	__m128 QUAD_IN_TILE_OFFSETS_X = _mm_load_ps(__QUAD_IN_TILE_OFFSETS_X);
+	xxxx = _mm_add_ps(xxxx, QUAD_IN_TILE_OFFSETS_X);
+	__m128 yyyy = _mm_load_ps1(&startY);
+	__m128 QUAD_IN_TILE_OFFSETS_Y = _mm_load_ps(__QUAD_IN_TILE_OFFSETS_Y);
+	yyyy = _mm_add_ps(yyyy, QUAD_IN_TILE_OFFSETS_Y);
+
+	// Get edge functions
+	__m128 e1aaaa = _mm_shuffle_ps(raster.edge1, raster.edge1, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 e1bbbb = _mm_shuffle_ps(raster.edge1, raster.edge1, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 e1 = _mm_mul_ps(e1aaaa, xxxx);
+	e1 = _mm_add_ps( _mm_mul_ps(e1bbbb, yyyy), e1 );
+	//static volatile float e1Test[4];
+	//_mm_storeu_ps((float*)e1Test, e1);
+
+	__m128 e1Reject = _mm_add_ps( _mm_shuffle_ps(raster.edgeRejectC[tileLevel], raster.edgeRejectC[tileLevel], _MM_SHUFFLE(0, 0, 0, 0)), e1 );
+	__m128 e1Accept = _mm_add_ps( _mm_shuffle_ps(raster.edgeAcceptC[tileLevel], raster.edgeAcceptC[tileLevel], _MM_SHUFFLE(0, 0, 0, 0)), e1 );
+
+	__m128 e2aaaa = _mm_shuffle_ps(raster.edge2, raster.edge2, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 e2bbbb = _mm_shuffle_ps(raster.edge2, raster.edge2, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 e2 = _mm_mul_ps(e2aaaa, xxxx);
+	e2 = _mm_add_ps( _mm_mul_ps(e2bbbb, yyyy), e2 );
+	__m128 e2Reject = _mm_add_ps( _mm_shuffle_ps(raster.edgeRejectC[tileLevel], raster.edgeRejectC[tileLevel], _MM_SHUFFLE(1, 1, 1, 1)), e2 );
+	__m128 e2Accept = _mm_add_ps( _mm_shuffle_ps(raster.edgeAcceptC[tileLevel], raster.edgeAcceptC[tileLevel], _MM_SHUFFLE(1, 1, 1, 1)), e2 );
+
+	//static volatile float e2Test[4];
+	//_mm_storeu_ps((float*)e2Test, e2);
+
+	__m128 e3aaaa = _mm_shuffle_ps(raster.edge3, raster.edge3, _MM_SHUFFLE(0, 0, 0, 0));
+	__m128 e3bbbb = _mm_shuffle_ps(raster.edge3, raster.edge3, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 e3 = _mm_mul_ps(e3aaaa, xxxx);
+	e3 = _mm_add_ps( _mm_mul_ps(e3bbbb, yyyy), e3 );
+	__m128 e3Reject = _mm_add_ps( _mm_shuffle_ps(raster.edgeRejectC[tileLevel], raster.edgeRejectC[tileLevel], _MM_SHUFFLE(2, 2, 2, 2)), e3 );
+	__m128 e3Accept = _mm_add_ps( _mm_shuffle_ps(raster.edgeAcceptC[tileLevel], raster.edgeAcceptC[tileLevel], _MM_SHUFFLE(2, 2, 2, 2)), e3 );
+
+	//static volatile float e3Test[4];
+	//_mm_storeu_ps((float*)e3Test, e3);
+
+	__m128 TILE_SIZE_X = _mm_load_ps(__TILE_SIZE_X);
+	__m128 e1XAdd = _mm_mul_ps(e1aaaa, TILE_SIZE_X);
+	__m128 e2XAdd = _mm_mul_ps(e2aaaa, TILE_SIZE_X);
+	__m128 e3XAdd = _mm_mul_ps(e3aaaa, TILE_SIZE_X);
+
+	__m128 TILE_SIZE_Y = _mm_load_ps(__TILE_SIZE_Y);
+	__m128 e1YAdd = _mm_mul_ps(e1bbbb, TILE_SIZE_Y);
+	__m128 e2YAdd = _mm_mul_ps(e2bbbb, TILE_SIZE_Y);
+	__m128 e3YAdd = _mm_mul_ps(e3bbbb, TILE_SIZE_Y);
+
+	__m128 ZERO = _mm_load_ps(__ZERO);
+
+	_LOOPi(NUM_TILES)
+	{	
+		__m128 curE1Reject = e1Reject;
+		__m128 curE2Reject = e2Reject;
+		__m128 curE3Reject = e3Reject;
+
+		__m128 curE1Accept = e1Accept;
+		__m128 curE2Accept = e2Accept;
+		__m128 curE3Accept = e3Accept;
+
+		float curX = startX;
+		float curY = startY;
+
+		_LOOPj(NUM_TILES)
+		{
+			// Trivial reject test
+			__m128 e1NotRejectInside = _mm_cmpgt_ps(curE1Reject, ZERO);
+			__m128 e2NotRejectInside = _mm_cmpgt_ps(curE2Reject, ZERO);
+			__m128 e3NotRejectInside = _mm_cmpgt_ps(curE3Reject, ZERO);
+
+			//static volatile float curE1RejectTest[4];
+			//_mm_storeu_ps((float*)curE1RejectTest, curE1Reject);
+
+			//static volatile float curE2RejectTest[4];
+			//_mm_storeu_ps((float*)curE2RejectTest, curE2Reject);
+
+			//static volatile float curE3RejectTest[4];
+			//_mm_storeu_ps((float*)curE3RejectTest, curE3Reject);
+
+			__m128 notRejectInside = _mm_and_ps(e1NotRejectInside, e2NotRejectInside);
+			notRejectInside = _mm_and_ps(notRejectInside, e3NotRejectInside);
+			int notRejectInsideMask = _mm_movemask_ps(notRejectInside);
+
+			// Trivial accept test
+			__m128 e1AcceptInside = _mm_cmpgt_ps(curE1Accept, ZERO);
+			__m128 e2AcceptInside = _mm_cmpgt_ps(curE2Accept, ZERO);
+			__m128 e3AcceptInside = _mm_cmpgt_ps(curE3Accept, ZERO);
+
+			__m128 acceptInside = _mm_and_ps(e1AcceptInside, e2AcceptInside);
+			acceptInside = _mm_and_ps(acceptInside, e3AcceptInside);
+			int acceptInsideMask = _mm_movemask_ps(acceptInside);
+			
+			// Test block 1 (top left)
+			if(acceptInsideMask & 0x1)
+			{
+				rasterizeFullyFn(&raster, curX, curY);
+			}
+			else if(notRejectInsideMask & 0x1)
+			{
+				rasterizeFn(&raster, curX, curY);
+			}
+			
+			// Block 2 (top right)
+			if(acceptInsideMask & 0x2)
+			{
+				rasterizeFullyFn(&raster, curX + HALF_TILE_SIZE_H, curY);
+			}
+			else if(notRejectInsideMask & 0x2)
+			{
+				rasterizeFn(&raster, curX + HALF_TILE_SIZE_H, curY);
+			}
+
+			// Block 3 (bottom left)
+			if(acceptInsideMask & 0x4)
+			{
+				rasterizeFullyFn(&raster, curX, curY + HALF_TILE_SIZE_V);
+			}
+			else if(notRejectInsideMask & 0x4)
+			{
+				rasterizeFn(&raster, curX, curY + HALF_TILE_SIZE_V);
+			}
+			
+			// Block 4 (bottom right)
+			if(acceptInsideMask & 0x8)
+			{
+				rasterizeFullyFn(&raster, curX + HALF_TILE_SIZE_H, curY + HALF_TILE_SIZE_V);
+			}
+			else if(notRejectInsideMask & 0x8)
+			{
+				rasterizeFn(&raster, curX + HALF_TILE_SIZE_H, curY + HALF_TILE_SIZE_V);
+			}
+
+			// Increment to the next block X
+			curE1Reject = _mm_add_ps(curE1Reject, e1XAdd);
+			curE2Reject = _mm_add_ps(curE2Reject, e2XAdd);
+			curE3Reject = _mm_add_ps(curE3Reject, e3XAdd);
+
+			curE1Accept = _mm_add_ps(curE1Accept, e1XAdd);
+			curE2Accept = _mm_add_ps(curE2Accept, e2XAdd);
+			curE3Accept = _mm_add_ps(curE3Accept, e3XAdd);
+
+			curX += tileSizeH;
+		}
+
+		// Increment to the next block Y
+		e1Reject = _mm_add_ps(e1Reject, e1YAdd);
+		e2Reject = _mm_add_ps(e2Reject, e2YAdd);
+		e3Reject = _mm_add_ps(e3Reject, e3YAdd);
+
+		e1Accept = _mm_add_ps(e1Accept, e1YAdd);
+		e2Accept = _mm_add_ps(e2Accept, e2YAdd);
+		e3Accept = _mm_add_ps(e3Accept, e3YAdd);
+
+		startY += tileSizeV;
+	}
+}
+
+
+_NAMESPACE_END

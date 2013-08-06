@@ -1,0 +1,8 @@
+
+define DEFERRED_LIGHTING 13
+
+desc = Point Light, Deferred Lighting With Shadow
+
+begin_group DEFERRED_LIGHTING
+	mat = [mat]\AppHelpers\Basic\PointLightShadowBRDF.bam
+end_group
