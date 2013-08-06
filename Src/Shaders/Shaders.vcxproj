@@ -1,0 +1,182 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{045292EB-1224-41B3-863B-83952426E1D3}</ProjectGuid>
+    <RootNamespace>Shaders</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="..\ShaderVerfier\ShaderVerifier.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <PreBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</PreBuildEventUseInBuild>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PreBuildEvent>
+      <Message>Copying To Shader Folder...</Message>
+      <Command>robocopyNoErrorCode.bat $(ProjectDir) $(ProjectDir)..\..\Data\Shaders\</Command>
+    </PreBuildEvent>
+    <X_Shader_Verifier>
+      <AdditionalOptions>
+      </AdditionalOptions>
+    </X_Shader_Verifier>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PreBuildEvent>
+      <Message>Copying To Shader Folder...</Message>
+      <Command>robocopyNoErrorCode.bat $(ProjectDir) $(ProjectDir)..\..\Data\Shaders\</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="BaseFXUtils\ParamSemanticDefs.fxh" />
+    <None Include="FontFX\AllFontFX.fxh" />
+    <None Include="FontFX\ParamSemanticDefs.fxh" />
+    <None Include="FontFX\ScreenSpaceFont.fxh" />
+    <None Include="FontFX\VarParams.fxh" />
+    <None Include="FontFX\VarTextures.fxh" />
+    <None Include="DebugFX\AllDebugFX.fxh" />
+    <None Include="DebugFX\DebugBasic.fxh" />
+    <None Include="DebugFX\DebugBasicPoint.fxh" />
+    <None Include="DebugFX\DebugTexturedQuad.fxh" />
+    <None Include="DebugFX\ParamSemanticDefs.fxh" />
+    <None Include="DebugFX\ShaderDefs.fxh" />
+    <None Include="DebugFX\VarParams.fxh" />
+    <X_Shader_Verifier Include="AppHelpers\ObjectAccumRadiancePhongSH.mgp" />
+    <X_Shader_Verifier Include="AppHelpers\PRTComputeDirLight.mgp" />
+    <X_Shader_Verifier Include="AppHelpers\PRTComputePointLight.mgp" />
+    <X_Shader_Verifier Include="AppHelpers\SimpleSkydome.mgp" />
+    <X_Shader_Verifier Include="BaseFXUtils\PoissonDiskCubeBlur.fx" />
+    <None Include="TestScreenAmbOccl\ParamSemanticDefs.fxh" />
+    <None Include="TestSHPRTFX\TestSHPRTFXRadianceBRDF.mgp" />
+    <X_Shader_Verifier Include="AppHelpers\DirLight.mgp" />
+    <X_Shader_Verifier Include="AppHelpers\ObjectAccumRadianceSH.mgp" />
+    <X_Shader_Verifier Include="AppHelpers\PointLight.mgp" />
+    <X_Shader_Verifier Include="BaseFXUtils\PoissonDiskBlur.fx" />
+    <X_Shader_Verifier Include="ObjectSelfIllum.mgp" />
+    <X_Shader_Verifier Include="SHPRTCompute\InitializeOcclBlue.fx" />
+    <X_Shader_Verifier Include="SHPRTCompute\InitializeOcclGreen.fx" />
+    <X_Shader_Verifier Include="SHPRTCompute\InitializeOcclRed.fx" />
+    <None Include="SHPRTCompute\AccumulateOccl.fxh">
+      <FileType>Document</FileType>
+    </None>
+    <X_Shader_Verifier Include="SHPRTCompute\AccumulateOccl.fx" />
+    <X_Shader_Verifier Include="SHPRTCompute\ParaboloidOcclusion.mgp" />
+    <X_Shader_Verifier Include="TestAppHelpers\TestAppHelpersAccumSelfIllum.mgp" />
+    <X_Shader_Verifier Include="TestAppHelpers\TestAppHelpersAccumSelfIllumInst.mgp" />
+    <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXDirLight.mgp" />
+    <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXObjectAccum.mgp" />
+    <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXPointLight.mgp" />
+    <X_Shader_Verifier Include="TestScreenAmbOccl\AOPass.fx" />
+    <X_Shader_Verifier Include="TestScreenAmbOccl\BilateralBlurPass.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestScreenAmbOccl\DownsampleZPass.fx" />
+    <X_Shader_Verifier Include="TestScreenAmbOccl\TestScreenAmbOcclAccumBase.mgp" />
+    <X_Shader_Verifier Include="TestShadowFX\TestShadowFXObjectParallaxSpec.mgp" />
+    <X_Shader_Verifier Include="TestShadowFX\TestShadowFXObjectParallaxSpecInst.mgp" />
+    <X_Shader_Verifier Include="TestShadowFX\TestShadowFXObjectSelfIllum.mgp" />
+    <X_Shader_Verifier Include="TestShadowFX\TestShadowFXObjectSelfIllumInst.mgp" />
+    <X_Shader_Verifier Include="TestSHPRTFX\TestSHPRTFXParaboloidRadianceBRDF.mgp" />
+    <X_Shader_Verifier Include="TestSHPRTFX\TestSHPRTFXParaboloidSimpleSkydome.mgp" />
+    <X_Shader_Verifier Include="TestSHPRTFX\TestSHPRTFXSimpleSkyDome.mgp" />
+    <X_Shader_Verifier Include="TestSHPRTFX\TestSHPRTFXDiffuse.mgp">
+      <FileType>Document</FileType>
+    </X_Shader_Verifier>
+    <None Include="SHPRTCompute\AllSHPRTCompute.fxh" />
+    <None Include="SHPRTCompute\ParamSemanticDefs.fxh" />
+    <None Include="SHPRTCompute\VarParams.fxh" />
+    <None Include="SHPRTCompute\VarTextures.fxh" />
+    <None Include="TestRasterizer\CubeDepth.fxh" />
+    <None Include="TestRasterizer\CubeTextured.fxh" />
+    <None Include="TestRasterizer\ScreenTexturedQuad.fxh" />
+    <None Include="TestRasterizer\ScreenTriangle.fxh" />
+    <None Include="robocopyNoErrorCode.bat">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </None>
+    <X_Shader_Verifier Include="FontFX\ScreenSpaceFont.fx" />
+    <X_Shader_Verifier Include="DebugFX\DebugBasic.fx" />
+    <X_Shader_Verifier Include="DebugFX\DebugBasicPoint.fx" />
+    <X_Shader_Verifier Include="DebugFX\DebugTexturedQuad.fx" />
+    <X_Shader_Verifier Include="DebugFX\WireFrameSetup.fx" />
+    <X_Shader_Verifier Include="BloomFX\AdditivePipeSetup.fx" />
+    <X_Shader_Verifier Include="BloomFX\Blend.fx" />
+    <X_Shader_Verifier Include="BloomFX\BrightPass.fx" />
+    <X_Shader_Verifier Include="BloomFX\StarBlur.fx" />
+    <X_Shader_Verifier Include="BaseFXUtils\2DPipeSetup.fx" />
+    <X_Shader_Verifier Include="BaseFXUtils\ColorChannelEnable.fx" />
+    <X_Shader_Verifier Include="BaseFXUtils\ColorFill.fx" />
+    <X_Shader_Verifier Include="BaseFXUtils\CopyToDepth.fx" />
+    <X_Shader_Verifier Include="BaseFXUtils\CopyToTarget.fx" />
+    <X_Shader_Verifier Include="BaseFXUtils\GaussianBlur1D.fx" />
+    <X_Shader_Verifier Include="ShadowFX\SMDebug.fx" />
+    <X_Shader_Verifier Include="BaseFX\AlphaTestedPipeSetup.fx" />
+    <X_Shader_Verifier Include="BaseFX\OpaqueAdditivePipeSetup.fx" />
+    <X_Shader_Verifier Include="BaseFX\OpaquePipeSetup.fx" />
+    <X_Shader_Verifier Include="BaseFX\TranslucentPipeSetup.fx" />
+    <X_Shader_Verifier Include="BaseFX\WireFrameSetup.fx" />
+    <X_Shader_Verifier Include="DeferredFX\CopyAccum.fx" />
+    <X_Shader_Verifier Include="DeferredFX\DeferredPipelineSetup.fx" />
+    <X_Shader_Verifier Include="SHExpLightingFX\OcclAccumPipeSetup.fx" />
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\BlurAODepth.fx" />
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\BlurAONormalDepth.fx" />
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\SSAOFilter.fx" />
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\SSAOFilterDepth.fx" />
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\SSAOFilterWS.fx" />
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\Upsample.fx" />
+    <X_Shader_Verifier Include="TestBaseFX\TestBaseFXLaFortuneMod.mgp" />
+    <X_Shader_Verifier Include="TestBaseFX\TestBaseFXParallaxSpec.mgp" />
+    <X_Shader_Verifier Include="TestRasterizer\CubeDepth.fx" />
+    <X_Shader_Verifier Include="TestRasterizer\CubeTextured.fx" />
+    <X_Shader_Verifier Include="TestRasterizer\ScreenTexturedQuad.fx" />
+    <X_Shader_Verifier Include="TestRasterizer\ScreenTriangle.fx" />
+    <X_Shader_Verifier Include="ObjectAccum.mgp">
+      <FileType>Document</FileType>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ObjectAmbientSH.mgp">
+      <FileType>Document</FileType>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ObjectParallaxSpec.mgp" />
+    <X_Shader_Verifier Include="ObjectParallaxSpecInst.mgp" />
+    <X_Shader_Verifier Include="ObjectSelfIllumInst.mgp">
+      <FileType>Document</FileType>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="SHExpCollapseLighting.mgp" />
+    <X_Shader_Verifier Include="SHExpOcclusionAccum.mgp" />
+    <X_Shader_Verifier Include="SHExpStencilVolume.mgp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\ShaderVerfier\ShaderVerifier.targets" />
+  </ImportGroup>
+</Project>

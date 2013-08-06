@@ -1,0 +1,71 @@
+//==============================================================================
+//
+//		Defines.h
+//
+//			A description here
+//
+//		Author:		Ben Yeoh
+//		Date:		7/19/2008
+//
+//==============================================================================
+
+#pragma once
+
+_NAMESPACE_BEGIN
+
+// Effect Dynamic Parameter Semantics
+enum
+{
+	BLFX_DYNAMIC_SEMANTIC_BEGIN = 51,
+
+	BLFX_EXPOSURE = BLFX_DYNAMIC_SEMANTIC_BEGIN,
+	BLFX_BLOOM_THRESHOLD = 52,	
+	//BLFX_BLOOM_OFFSET = 53,
+	BLFX_DYN_RT1 = 53,
+	BLFX_DYN_RT2 = 54,
+	
+	BLFX_DYNAMIC_SEMANTIC_END = 64,
+};
+
+// Effect Constant Parameter Semantics
+enum
+{
+	BLFX_CONSTANT_SEMANTIC_BEGIN = 4250,
+
+	BLFX_RT1 = BLFX_CONSTANT_SEMANTIC_BEGIN,
+	BLFX_RT2 = 4251,
+	//BLFX_FILTER_TEXTURE_OFFSETS = 4252,
+	//BLFX_FILTER_WEIGHTS = 4253,
+	
+	BLFX_CONSTANT_SEMANTIC_END = 4264,
+};
+
+// Render Group ID
+enum
+{	
+	BLFX_GROUP_BRIGHT_PASS_DOWN_SAMPLE = 48000,
+	BLFX_GROUP_PREPARE_COMPOSITION = 48001,
+	
+	BLFX_GROUP_BLOOM_MED_DOWN_SAMPLE = 48002,
+	BLFX_GROUP_BLOOM_FILTER_H_MED = 48003,
+	BLFX_GROUP_BLOOM_FILTER_V_MED = 48004,
+	BLFX_GROUP_BLOOM_UP_SAMPLE_COMPOSE_MED = 48005,
+		
+	BLFX_GROUP_BLOOM_FILTER_H_LARGE = 48006,
+	BLFX_GROUP_BLOOM_FILTER_V_LARGE = 48007,
+	
+	BLFX_GROUP_STAR_PRE_FILTER_H = 48008,
+	BLFX_GROUP_STAR_PRE_FILTER_V = 48009,
+	
+	BLFX_GROUP_STAR_H			= 48010,
+	BLFX_GROUP_STAR_H_COMPOSE	= 48011,
+	BLFX_GROUP_STAR_V			= 48012,
+	BLFX_GROUP_STAR_V_COMPOSE	= 48013,
+	
+	BLFX_GROUP_BLEND = 48014,
+};
+
+const static int BLFX_MAX_STAR_LINE_SIZE = 8;
+//const static int BLFX_MIN_FILTER_KERNEL_SIZE = 2;
+
+_NAMESPACE_END

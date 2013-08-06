@@ -1,0 +1,377 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A6A91393-BC3C-4239-8627-410EF20CA5D5}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MaterialEditor</RootNamespace>
+    <AssemblyName>Minotaur</AssemblyName>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+    <ApplicationIcon>minotaur48x48.ico</ApplicationIcon>
+    <StartupObject>
+    </StartupObject>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <TargetFrameworkProfile />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\bin\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Common, Version=1.0.3042.31718, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\Common.dll</HintPath>
+    </Reference>
+    <Reference Include="CoreManaged, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CoreMemoryManaged, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="MaterialGenManaged, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\MaterialGenManaged.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="RendererManaged, Version=0.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\RendererManaged.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=2.2.2864.18696, Culture=neutral, PublicKeyToken=d481317c817cec47, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Bin\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CodeOutputWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CodeOutputWin.Designer.cs">
+      <DependentUpon>CodeOutputWin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GlobalAvailableWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GlobalAvailableWin.Designer.cs">
+      <DependentUpon>GlobalAvailableWin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ListBoxSemanticTypeEditor.cs" />
+    <Compile Include="ListBoxUsageTypeEditor.cs" />
+    <Compile Include="MaterialEditorAppCallback.cs" />
+    <Compile Include="NodePanel\AbstractionInDragBehavior.cs" />
+    <Compile Include="NodePanel\AbstractionNodePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NodePanel\AbstractionNodeProxyDragBehavior.cs" />
+    <Compile Include="NodePanel\AbstractionOutDragBehavior.cs" />
+    <Compile Include="NodePanel\InputNodeAltDragBehavior.cs" />
+    <Compile Include="Nodes\AbstractionInNode.cs" />
+    <Compile Include="Nodes\AbstractionNode.cs" />
+    <Compile Include="Nodes\AbstractionNodeProxy.cs" />
+    <Compile Include="Nodes\AbstractionNodeProxyIn.cs" />
+    <Compile Include="Nodes\AbstractionOutNode.cs" />
+    <Compile Include="Nodes\IInput.cs" />
+    <Compile Include="Nodes\IOutput.cs" />
+    <Compile Include="Nodes\AbstractionNodeProxyOut.cs" />
+    <Compile Include="Events.cs" />
+    <Compile Include="EventManager.cs" />
+    <Compile Include="PluginManagerWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PluginManagerWin.Designer.cs">
+      <DependentUpon>PluginManagerWin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PreferencesWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PreferencesWin.Designer.cs">
+      <DependentUpon>PreferencesWin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ResourceImages.cs" />
+    <Compile Include="NodePanel\DragBehavior.cs" />
+    <Compile Include="NodePanel\FunctionOpNodeDragBehavior.cs" />
+    <Compile Include="NodePanel\GlobalNodeDragBehavior.cs" />
+    <Compile Include="NodePanel\GlobalNodeProxyDragBehavior.cs" />
+    <Compile Include="NodePanel\InputNodeDragBehavior.cs" />
+    <Compile Include="NodePanel\NodePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NodePanel\NodePanel.Designer.cs">
+      <DependentUpon>NodePanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NodePanel\PixelInNodeDragBehavior.cs" />
+    <Compile Include="NodePanel\PixelOutNodeDragBehavior.cs" />
+    <Compile Include="NodePanel\PixelShaderNodePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NodePanel\RenderStateNodeDragBehavior.cs" />
+    <Compile Include="NodePanel\RenderStateNodePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="NodePanel\ScrollDragBehavior.cs" />
+    <Compile Include="NodePanel\VertexInNodeDragBehavior.cs" />
+    <Compile Include="NodePanel\VertexOutNodeDragBehavior.cs" />
+    <Compile Include="NodePanel\VertexShaderNodePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ZoomControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ZoomControl.Designer.cs">
+      <DependentUpon>ZoomControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Nodes\FolderNode.cs" />
+    <Compile Include="Nodes\Labels\EllipseLabel.cs" />
+    <Compile Include="Nodes\Labels\RectLabel.cs" />
+    <Compile Include="DropDownTextAreaEditor.cs" />
+    <Compile Include="ExplorerWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExplorerWin.Designer.cs">
+      <DependentUpon>ExplorerWin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NodePanel\GlobalNodePanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Nodes\FunctionNode.cs" />
+    <Compile Include="Nodes\FunctionOpNode.cs" />
+    <Compile Include="Nodes\GlobalDescriptionNode.cs" />
+    <Compile Include="Nodes\GlobalNode.cs" />
+    <Compile Include="Nodes\GlobalNodeProxy.cs" />
+    <Compile Include="Nodes\InputNode.cs" />
+    <Compile Include="MainWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainWin.Designer.cs">
+      <DependentUpon>MainWin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Nodes\IOutputNodeOwner.cs" />
+    <Compile Include="Nodes\LocalNode.cs" />
+    <Compile Include="Nodes\LocalNodeProxy.cs" />
+    <Compile Include="Nodes\MaterialTemplateNode.cs" />
+    <Compile Include="Nodes\OutputNode.cs" />
+    <Compile Include="Nodes\PassNode.cs" />
+    <Compile Include="Nodes\PixelInNode.cs" />
+    <Compile Include="Nodes\PixelOutNode.cs" />
+    <Compile Include="Nodes\PixelShaderNode.cs" />
+    <Compile Include="Nodes\PixelShaderOpNode.cs" />
+    <Compile Include="Nodes\RenderStateNode.cs" />
+    <Compile Include="Nodes\TechniqueNode.cs" />
+    <Compile Include="Nodes\VertexInNode.cs" />
+    <Compile Include="Nodes\VertexOutNode.cs" />
+    <Compile Include="Nodes\VertexShaderNode.cs" />
+    <Compile Include="Nodes\VertexShaderOpNode.cs" />
+    <Compile Include="OutputWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OutputWin.Designer.cs">
+      <DependentUpon>OutputWin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="EditorTextBox.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>EditorTextBox.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExplorerWin.resx">
+      <DependentUpon>ExplorerWin.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainWin.resx">
+      <DependentUpon>MainWin.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="NodePanel\NodePanel.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>NodePanel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ZoomControl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ZoomControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OutputWin.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>OutputWin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PropertyWin.resx">
+      <DependentUpon>PropertyWin.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DrawWin.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>DrawWin.cs</DependentUpon>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="app.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Nodes\PropertyNode.cs" />
+    <Compile Include="PropertyWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PropertyWin.Designer.cs">
+      <DependentUpon>PropertyWin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="EditorTextBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="EditorTextBox.Designer.cs">
+      <DependentUpon>EditorTextBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DrawWin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DrawWin.Designer.cs">
+      <DependentUpon>DrawWin.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\abstraction.bmp" />
+    <EmbeddedResource Include="Images\abstraction_proxy.bmp" />
+    <EmbeddedResource Include="Images\folder_closed.bmp" />
+    <EmbeddedResource Include="Images\folder_open.bmp" />
+    <EmbeddedResource Include="Images\global.bmp" />
+    <EmbeddedResource Include="Images\global_proxy.bmp" />
+    <EmbeddedResource Include="Images\local.bmp" />
+    <EmbeddedResource Include="Images\local_proxy.bmp" />
+    <EmbeddedResource Include="Images\material_template.bmp" />
+    <EmbeddedResource Include="Images\ps.bmp" />
+    <EmbeddedResource Include="Images\ps_op.bmp" />
+    <EmbeddedResource Include="Images\vs.bmp" />
+    <EmbeddedResource Include="Images\vs_op.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Images\description.bmp" />
+    <EmbeddedResource Include="Images\function.bmp" />
+    <EmbeddedResource Include="Images\function_op.bmp" />
+    <EmbeddedResource Include="Images\input.bmp" />
+    <EmbeddedResource Include="Images\output.bmp" />
+    <EmbeddedResource Include="Images\pass.bmp" />
+    <EmbeddedResource Include="Images\pixel_in.bmp" />
+    <EmbeddedResource Include="Images\pixel_out.bmp" />
+    <EmbeddedResource Include="Images\render_state.bmp" />
+    <EmbeddedResource Include="Images\technique.bmp" />
+    <EmbeddedResource Include="Images\vertex_in.bmp" />
+    <EmbeddedResource Include="Images\vertex_out.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="CodeOutputWin.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>CodeOutputWin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GlobalAvailableWin.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>GlobalAvailableWin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Images\abstract_in.bmp" />
+    <EmbeddedResource Include="Images\abstract_out.bmp" />
+    <EmbeddedResource Include="PluginManagerWin.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>PluginManagerWin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PreferencesWin.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>PreferencesWin.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="minotaur48x48.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

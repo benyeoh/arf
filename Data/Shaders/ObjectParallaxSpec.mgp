@@ -1,0 +1,18 @@
+
+define BASE_LIGHTING 0
+define CAST_DIR_LIGHT_SHADOW 4
+define CAST_POINT_LIGHT_SHADOW 5
+
+desc = Object, Parallax Specular
+
+begin_group BASE_LIGHTING
+	mat = [mat]\ShadowFX\ParallaxSpecularVarShadow.bam
+end_group	
+
+begin_group CAST_DIR_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastDirLightVarShadow.bam
+end_group
+
+begin_group CAST_POINT_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastPointLightExpShadow.bam
+end_group

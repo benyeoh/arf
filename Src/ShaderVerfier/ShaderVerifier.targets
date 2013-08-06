@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="X_Shader_Verifier">
+      <Targets>_X_Shader_Verifier</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="X_Shader_Verifier"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_X_Shader_Verifier"
+    BeforeTargets="$(X_Shader_VerifierBeforeTargets)"
+    AfterTargets="$(X_Shader_VerifierAfterTargets)"
+    Condition="'@(X_Shader_Verifier)' != ''"
+    DependsOnTargets="$(X_Shader_VerifierDependsOn);ComputeX_Shader_VerifierOutput"
+    Outputs="@(X_Shader_Verifier-&gt;'%(Outputs)')"
+    Inputs="@(X_Shader_Verifier);%(X_Shader_Verifier.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <!--<X_Shader_Verifier
+        Remove="@(X_Shader_Verifier)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" /> -->
+    </ItemGroup>
+    <ItemGroup>
+      <X_Shader_Verifier_tlog
+        Include="%(X_Shader_Verifier.Outputs)"
+        Condition="'%(X_Shader_Verifier.Outputs)' != '' and '%(X_Shader_Verifier.ExcludedFromBuild)' != 'true'">
+        <Source>@(X_Shader_Verifier, '|')</Source>
+      </X_Shader_Verifier_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(X_Shader_Verifier.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(X_Shader_Verifier_tlog)' != '' and '%(X_Shader_Verifier_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(X_Shader_Verifier_tlog.Source);@(X_Shader_Verifier_tlog-&gt;'%(Fullpath)')" />
+    <X_Shader_Verifier
+      Condition="'@(X_Shader_Verifier)' != '' and '%(X_Shader_Verifier.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(X_Shader_Verifier.CommandLineTemplate)"
+      AdditionalOptions="%(X_Shader_Verifier.AdditionalOptions)"
+      Inputs="@(X_Shader_Verifier)" 
+      StandardOutputImportance="High"
+      StandardErrorImportance="High"
+      EchoOff="true"/>
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeX_Shader_VerifierOutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeX_Shader_VerifierOutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeX_Shader_VerifierOutput"
+    Condition="'@(X_Shader_Verifier)' != ''">
+    <ItemGroup>
+      <X_Shader_VerifierDirsToMake
+        Condition="'@(X_Shader_Verifier)' != '' and '%(X_Shader_Verifier.ExcludedFromBuild)' != 'true'"
+        Include="%(X_Shader_Verifier.Outputs)" />
+      <Link
+        Include="%(X_Shader_VerifierDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(X_Shader_VerifierDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(X_Shader_VerifierDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(X_Shader_VerifierDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

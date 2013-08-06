@@ -1,0 +1,28 @@
+
+define ACCUM 12
+define CAST_DIR_LIGHT_SHADOW 4
+define CAST_CUBE_POINT_LIGHT_SHADOW 6
+define PRTCOMPUTE_ACCUM 68
+define PRTCOMPUTE_BACKFACE 69
+
+desc = Object, Accum, Radiance Phong SH
+
+begin_group CAST_DIR_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastDirLightVarShadow.bam
+end_group
+
+begin_group ACCUM
+	mat = [mat]\AppHelpers\Basic\AccumRadiancePhongSH.bam
+end_group
+
+begin_group CAST_CUBE_POINT_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastCubePointLightVarShadow.bam
+end_group
+
+begin_group PRTCOMPUTE_ACCUM
+	mat = [mat]\AppHelpers\PRTCompute\AccumRadiancePhongSHParaboloid.bam
+end_group
+
+begin_group PRTCOMPUTE_BACKFACE
+	mat = [mat]\AppHelpers\PRTCompute\ParaboloidOcclusion.bam
+end_group

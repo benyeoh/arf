@@ -1,0 +1,7 @@
+
+desc = Diffuse, Specular, Env Mapping, Normal Mapping
+
+begin_group LIGHTING
+	effect = [shd]\CE_NM_HLDL1Spec.fx
+	effect = [shd]\CE_NM_PL1Spec.fx
+end_group

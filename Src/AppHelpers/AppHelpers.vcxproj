@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{38A37EC4-9917-4499-8757-761CB7DE1E91}</ProjectGuid>
+    <RootNamespace>AppHelpers</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\LibPropertySheetRelease.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\LibPropertySheetDebug.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>AppHelpers.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Lib />
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>AppHelpers.h</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Lib />
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AHDirLightComponent.cpp" />
+    <ClCompile Include="AHEntityManager.cpp" />
+    <ClCompile Include="AHMaterialCreateCallbackImmed.cpp" />
+    <ClCompile Include="AHPRTComputePipeline.cpp" />
+    <ClCompile Include="AHScenePRTCompute.cpp" />
+    <ClCompile Include="AHScenePRTComputePhase.cpp" />
+    <ClCompile Include="AHScenePRTComputePhase_Process.cpp" />
+    <ClCompile Include="AHScenePRTComputeSetup.cpp" />
+    <ClCompile Include="AHSceneRenderPhase.cpp" />
+    <ClCompile Include="AHSceneRenderPhase_Process.cpp" />
+    <ClCompile Include="AHScreenSpaceFrustumCuller.cpp" />
+    <ClCompile Include="AHMaterialCreateCallbackDeferred.cpp" />
+    <ClCompile Include="ComputeBounds.cpp" />
+    <ClCompile Include="LoadSaveFns.cpp" />
+    <ClCompile Include="AHEntity.cpp" />
+    <ClCompile Include="AHPointLightComponent.cpp" />
+    <ClCompile Include="AHRenderComponent.cpp" />
+    <ClCompile Include="AHSpatialComponent.cpp" />
+    <ClCompile Include="AppHelpers.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AHDirLightComponent.h" />
+    <ClInclude Include="AHEntityManager.h" />
+    <ClInclude Include="AHMaterialCreateCallbackImmed.h" />
+    <ClInclude Include="AHPRTComputePipeline.h" />
+    <ClInclude Include="AHScenePRTCompute.h" />
+    <ClInclude Include="AHScenePRTComputePhase.h" />
+    <ClInclude Include="AHScenePRTComputeSetup.h" />
+    <ClInclude Include="AHSceneRenderPhase.h" />
+    <ClInclude Include="AHScreenSpaceFrustumCuller.h" />
+    <ClInclude Include="AHMaterialCreateCallbackDeferred.h" />
+    <ClInclude Include="Basic.h" />
+    <ClInclude Include="BasicCompDefines.h" />
+    <ClInclude Include="BasicCompEventDefines.h" />
+    <ClInclude Include="ComputeBounds.h" />
+    <ClInclude Include="Defines.h" />
+    <ClInclude Include="LoadSaveFns.h" />
+    <ClInclude Include="AHComponent.h" />
+    <ClInclude Include="AHEntity.h" />
+    <ClInclude Include="AHPointLightComponent.h" />
+    <ClInclude Include="AHRenderComponent.h" />
+    <ClInclude Include="AHSpatialComponent.h" />
+    <ClInclude Include="AppHelpers.h" />
+    <ClInclude Include="PRTCompute.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

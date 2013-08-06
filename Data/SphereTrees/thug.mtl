@@ -1,0 +1,8 @@
+newmtl basefx_material_group1
+Ka 0.700000 0.700000 0.700000
+Kd 0.700000 0.700000 0.700000
+Ks 0.000000 0.000000 0.000000
+Ns 50.000000
+Tr 0.000000
+illum 1
+map_Kd D:\Softimage\XSI_6.01\Application\rsrc\noIcon.pic

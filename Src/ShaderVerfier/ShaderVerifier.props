@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(X_Shader_VerifierBeforeTargets)' == '' and '$(X_Shader_VerifierAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <X_Shader_VerifierBeforeTargets>Midl</X_Shader_VerifierBeforeTargets>
+    <X_Shader_VerifierAfterTargets>CustomBuild</X_Shader_VerifierAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <X_Shader_VerifierDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(X_Shader_VerifierDependsOn)</X_Shader_VerifierDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <X_Shader_Verifier>
+      <CommandLineTemplate>d:\dev\x\bin\shaderverifier.exe [Inputs]</CommandLineTemplate>
+      <Outputs>%(Filename).dummy</Outputs>
+      <ExecutionDescription>Verifying Shaders...</ExecutionDescription>
+      <ShowOnlyRuleProperties>false</ShowOnlyRuleProperties>
+    </X_Shader_Verifier>
+  </ItemDefinitionGroup>
+</Project>

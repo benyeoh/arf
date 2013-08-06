@@ -1,0 +1,23 @@
+
+define BASE_LIGHTING 0
+define CAST_DIR_LIGHT_SHADOW 4
+define CAST_POINT_LIGHT_SHADOW 5
+define CAST_CUBE_POINT_LIGHT_SHADOW 6
+
+desc = TestShadowFX, Object, Parallax Specular, Instancing
+
+begin_group BASE_LIGHTING
+	mat = [mat]\ShadowFX\ParallaxSpecVarShadowInst.bam
+end_group	
+
+begin_group CAST_DIR_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastDirLightVarShadowInst.bam
+end_group
+
+begin_group CAST_POINT_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastPointLightVarShadowInst.bam
+end_group
+
+begin_group CAST_CUBE_POINT_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastCubePointLightVarShadowInst.bam
+end_group

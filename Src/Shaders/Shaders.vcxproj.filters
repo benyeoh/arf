@@ -1,0 +1,346 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="FontFX">
+      <UniqueIdentifier>{218cf3fd-9ecc-40fa-ac89-d28454559039}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DebugFX">
+      <UniqueIdentifier>{bb7f70bf-5c61-4a2c-ab04-6f9fb4c3f609}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BloomFX">
+      <UniqueIdentifier>{05a80a65-bb7a-4c19-9062-0143c11d666c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BaseFXUtils">
+      <UniqueIdentifier>{3be93029-8095-4058-b499-9a819e7c7e14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ShadowFX">
+      <UniqueIdentifier>{90ef325d-799c-4f5e-a82a-a4b93f2104a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BaseFX">
+      <UniqueIdentifier>{621a7d66-c92d-4fcb-9225-83a41eb61e03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DeferredFX">
+      <UniqueIdentifier>{1278ab0b-6f05-4078-bd3a-90895fe7c63b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SHExpLightingFX">
+      <UniqueIdentifier>{bb22a16f-b612-437c-bf23-4cc9b4e68c44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ScreenAmbOcclFX">
+      <UniqueIdentifier>{1288ea7a-7877-4f59-a4af-d386da530006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestRasterizer">
+      <UniqueIdentifier>{8b31686d-9f21-4edd-a911-f4a1f54dbb2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SHPRTCompute">
+      <UniqueIdentifier>{95d8e974-7416-417a-9146-f9fc616a34d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestSHPRTFX">
+      <UniqueIdentifier>{0781892d-2725-485d-b12a-4a60e02b021b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestBaseFX">
+      <UniqueIdentifier>{4b291268-6122-4803-a44b-edd1fdb3540e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestShadowFX">
+      <UniqueIdentifier>{c494280b-8060-4f03-b676-44372c89b7b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestDeferredFX">
+      <UniqueIdentifier>{85ad55c6-baf0-46c1-99e1-c9c3eb5ac7d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestAppHelpers">
+      <UniqueIdentifier>{3b3d8c30-0e54-4056-8249-a5392a9f3b0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AppHelpers">
+      <UniqueIdentifier>{0d66e0ff-f766-4ded-81f9-bac0c82219c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TestScreenAmbOccl">
+      <UniqueIdentifier>{fc10bb4d-c190-42a3-8c38-4a23a5302392}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FontFX\AllFontFX.fxh">
+      <Filter>FontFX</Filter>
+    </None>
+    <None Include="FontFX\ParamSemanticDefs.fxh">
+      <Filter>FontFX</Filter>
+    </None>
+    <None Include="FontFX\ScreenSpaceFont.fxh">
+      <Filter>FontFX</Filter>
+    </None>
+    <None Include="FontFX\VarParams.fxh">
+      <Filter>FontFX</Filter>
+    </None>
+    <None Include="FontFX\VarTextures.fxh">
+      <Filter>FontFX</Filter>
+    </None>
+    <None Include="DebugFX\AllDebugFX.fxh">
+      <Filter>DebugFX</Filter>
+    </None>
+    <None Include="DebugFX\DebugBasic.fxh">
+      <Filter>DebugFX</Filter>
+    </None>
+    <None Include="DebugFX\DebugBasicPoint.fxh">
+      <Filter>DebugFX</Filter>
+    </None>
+    <None Include="DebugFX\DebugTexturedQuad.fxh">
+      <Filter>DebugFX</Filter>
+    </None>
+    <None Include="DebugFX\ParamSemanticDefs.fxh">
+      <Filter>DebugFX</Filter>
+    </None>
+    <None Include="DebugFX\ShaderDefs.fxh">
+      <Filter>DebugFX</Filter>
+    </None>
+    <None Include="DebugFX\VarParams.fxh">
+      <Filter>DebugFX</Filter>
+    </None>
+    <None Include="TestRasterizer\CubeDepth.fxh">
+      <Filter>TestRasterizer</Filter>
+    </None>
+    <None Include="TestRasterizer\CubeTextured.fxh">
+      <Filter>TestRasterizer</Filter>
+    </None>
+    <None Include="TestRasterizer\ScreenTexturedQuad.fxh">
+      <Filter>TestRasterizer</Filter>
+    </None>
+    <None Include="TestRasterizer\ScreenTriangle.fxh">
+      <Filter>TestRasterizer</Filter>
+    </None>
+    <None Include="robocopyNoErrorCode.bat" />
+    <None Include="SHPRTCompute\ParamSemanticDefs.fxh">
+      <Filter>SHPRTCompute</Filter>
+    </None>
+    <None Include="SHPRTCompute\VarTextures.fxh">
+      <Filter>SHPRTCompute</Filter>
+    </None>
+    <None Include="SHPRTCompute\AllSHPRTCompute.fxh">
+      <Filter>SHPRTCompute</Filter>
+    </None>
+    <None Include="SHPRTCompute\VarParams.fxh">
+      <Filter>SHPRTCompute</Filter>
+    </None>
+    <None Include="SHPRTCompute\AccumulateOccl.fxh">
+      <Filter>SHPRTCompute</Filter>
+    </None>
+    <None Include="TestSHPRTFX\TestSHPRTFXRadianceBRDF.mgp">
+      <Filter>TestSHPRTFX</Filter>
+    </None>
+    <None Include="BaseFXUtils\ParamSemanticDefs.fxh">
+      <Filter>BaseFXUtils</Filter>
+    </None>
+    <None Include="TestScreenAmbOccl\ParamSemanticDefs.fxh">
+      <Filter>TestScreenAmbOccl</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <X_Shader_Verifier Include="FontFX\ScreenSpaceFont.fx">
+      <Filter>FontFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="DebugFX\DebugBasic.fx">
+      <Filter>DebugFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="DebugFX\DebugBasicPoint.fx">
+      <Filter>DebugFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="DebugFX\DebugTexturedQuad.fx">
+      <Filter>DebugFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="DebugFX\WireFrameSetup.fx">
+      <Filter>DebugFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BloomFX\AdditivePipeSetup.fx">
+      <Filter>BloomFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BloomFX\Blend.fx">
+      <Filter>BloomFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BloomFX\BrightPass.fx">
+      <Filter>BloomFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BloomFX\StarBlur.fx">
+      <Filter>BloomFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFXUtils\2DPipeSetup.fx">
+      <Filter>BaseFXUtils</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFXUtils\ColorChannelEnable.fx">
+      <Filter>BaseFXUtils</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFXUtils\ColorFill.fx">
+      <Filter>BaseFXUtils</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFXUtils\CopyToDepth.fx">
+      <Filter>BaseFXUtils</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFXUtils\CopyToTarget.fx">
+      <Filter>BaseFXUtils</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFXUtils\GaussianBlur1D.fx">
+      <Filter>BaseFXUtils</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFX\AlphaTestedPipeSetup.fx">
+      <Filter>BaseFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFX\OpaqueAdditivePipeSetup.fx">
+      <Filter>BaseFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFX\OpaquePipeSetup.fx">
+      <Filter>BaseFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFX\TranslucentPipeSetup.fx">
+      <Filter>BaseFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFX\WireFrameSetup.fx">
+      <Filter>BaseFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="DeferredFX\CopyAccum.fx">
+      <Filter>DeferredFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="SHExpLightingFX\OcclAccumPipeSetup.fx">
+      <Filter>SHExpLightingFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\BlurAODepth.fx">
+      <Filter>ScreenAmbOcclFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\BlurAONormalDepth.fx">
+      <Filter>ScreenAmbOcclFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\SSAOFilter.fx">
+      <Filter>ScreenAmbOcclFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\SSAOFilterDepth.fx">
+      <Filter>ScreenAmbOcclFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\SSAOFilterWS.fx">
+      <Filter>ScreenAmbOcclFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ScreenAmbOcclFX\Upsample.fx">
+      <Filter>ScreenAmbOcclFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestBaseFX\TestBaseFXLaFortuneMod.mgp">
+      <Filter>TestBaseFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestBaseFX\TestBaseFXParallaxSpec.mgp">
+      <Filter>TestBaseFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestRasterizer\CubeDepth.fx">
+      <Filter>TestRasterizer</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestRasterizer\CubeTextured.fx">
+      <Filter>TestRasterizer</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestRasterizer\ScreenTexturedQuad.fx">
+      <Filter>TestRasterizer</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestRasterizer\ScreenTriangle.fx">
+      <Filter>TestRasterizer</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ObjectParallaxSpec.mgp" />
+    <X_Shader_Verifier Include="ObjectParallaxSpecInst.mgp" />
+    <X_Shader_Verifier Include="SHExpCollapseLighting.mgp" />
+    <X_Shader_Verifier Include="SHExpOcclusionAccum.mgp" />
+    <X_Shader_Verifier Include="SHExpStencilVolume.mgp" />
+    <X_Shader_Verifier Include="ObjectAccum.mgp" />
+    <X_Shader_Verifier Include="ObjectAmbientSH.mgp" />
+    <X_Shader_Verifier Include="TestSHPRTFX\TestSHPRTFXDiffuse.mgp">
+      <Filter>TestSHPRTFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ObjectSelfIllumInst.mgp" />
+    <X_Shader_Verifier Include="ObjectSelfIllum.mgp" />
+    <X_Shader_Verifier Include="TestShadowFX\TestShadowFXObjectParallaxSpec.mgp">
+      <Filter>TestShadowFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestShadowFX\TestShadowFXObjectParallaxSpecInst.mgp">
+      <Filter>TestShadowFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestShadowFX\TestShadowFXObjectSelfIllum.mgp">
+      <Filter>TestShadowFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestShadowFX\TestShadowFXObjectSelfIllumInst.mgp">
+      <Filter>TestShadowFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="SHPRTCompute\InitializeOcclRed.fx">
+      <Filter>SHPRTCompute</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="SHPRTCompute\InitializeOcclGreen.fx">
+      <Filter>SHPRTCompute</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="SHPRTCompute\InitializeOcclBlue.fx">
+      <Filter>SHPRTCompute</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="SHPRTCompute\AccumulateOccl.fx">
+      <Filter>SHPRTCompute</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestSHPRTFX\TestSHPRTFXSimpleSkyDome.mgp">
+      <Filter>TestSHPRTFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestSHPRTFX\TestSHPRTFXParaboloidSimpleSkydome.mgp">
+      <Filter>TestSHPRTFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="SHPRTCompute\ParaboloidOcclusion.mgp">
+      <Filter>SHPRTCompute</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestSHPRTFX\TestSHPRTFXParaboloidRadianceBRDF.mgp">
+      <Filter>TestSHPRTFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="ShadowFX\SMDebug.fx">
+      <Filter>ShadowFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXObjectAccum.mgp">
+      <Filter>TestDeferredFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXPointLight.mgp">
+      <Filter>TestDeferredFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="DeferredFX\DeferredPipelineSetup.fx">
+      <Filter>DeferredFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXDirLight.mgp">
+      <Filter>TestDeferredFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFXUtils\PoissonDiskBlur.fx">
+      <Filter>BaseFXUtils</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="AppHelpers\DirLight.mgp">
+      <Filter>AppHelpers</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="AppHelpers\PointLight.mgp">
+      <Filter>AppHelpers</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="BaseFXUtils\PoissonDiskCubeBlur.fx">
+      <Filter>BaseFXUtils</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestAppHelpers\TestAppHelpersAccumSelfIllumInst.mgp">
+      <Filter>TestAppHelpers</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestAppHelpers\TestAppHelpersAccumSelfIllum.mgp">
+      <Filter>TestAppHelpers</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="AppHelpers\ObjectAccumRadianceSH.mgp">
+      <Filter>AppHelpers</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="AppHelpers\PRTComputeDirLight.mgp">
+      <Filter>AppHelpers</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="AppHelpers\PRTComputePointLight.mgp">
+      <Filter>AppHelpers</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="AppHelpers\SimpleSkydome.mgp">
+      <Filter>AppHelpers</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="AppHelpers\ObjectAccumRadiancePhongSH.mgp">
+      <Filter>AppHelpers</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestScreenAmbOccl\TestScreenAmbOcclAccumBase.mgp">
+      <Filter>TestScreenAmbOccl</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestScreenAmbOccl\AOPass.fx">
+      <Filter>TestScreenAmbOccl</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestScreenAmbOccl\DownsampleZPass.fx">
+      <Filter>TestScreenAmbOccl</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestScreenAmbOccl\BilateralBlurPass.fx">
+      <Filter>TestScreenAmbOccl</Filter>
+    </X_Shader_Verifier>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,13 @@
+
+define BASE_LIGHTING 0
+define ACCUM 12
+
+desc = TestScreenAmbOcclAccum, Object, Accum, Self-Illum
+
+begin_group BASE_LIGHTING
+	mat = [mat]\BaseFX\SelfIlluminated.bam
+end_group	
+
+begin_group ACCUM
+	mat = [mat]\DeferredFX\Accum.bam
+end_group

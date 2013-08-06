@@ -1,0 +1,13 @@
+
+define BASE_LIGHTING 0
+define SHPRTCOMPUTE_MAT_OCCLUSION 8
+
+desc = Simple SkyDome
+
+begin_group BASE_LIGHTING
+	mat = [mat]\AppHelpers\Basic\SimpleSkyDome.bam
+end_group
+
+begin_group SHPRTCOMPUTE_MAT_OCCLUSION
+	mat = [mat]\AppHelpers\PRTCompute\ParaboloidSimpleSkyDome.bam
+end_group

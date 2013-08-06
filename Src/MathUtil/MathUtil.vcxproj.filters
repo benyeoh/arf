@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="gmtl">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{536de5aa-124a-48b8-a39a-972d6daef218}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{705a23ac-f580-4ee7-a976-fed6fcae4678}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="gmtl\AABox.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\AABoxOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Util\Assert.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\AxisAngle.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\AxisAngleOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Comparitors.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Config.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Containment.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Coord.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\CoordOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Defines.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Numerics\Eigen.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\EulerAngle.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\EulerAngleOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Fit\GaussPointsFit.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Generate.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\gmtl.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Helpers.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Intersection.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\LineSeg.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\LineSegOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Math.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Matrix.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\MatrixOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Util\Meta.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\OOBox.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\External\OpenSGConvert.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Output.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Plane.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\PlaneOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Point.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Quat.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\QuatOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Ray.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\RayOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Sphere.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\SphereOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Util\StaticAssert.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Tri.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\TriOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Vec.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\VecBase.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\VecExprMeta.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\VecOps.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\VecOpsMeta.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Version.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="gmtl\Xforms.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+    <ClInclude Include="BatchTransformVec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BatchTransformVecW1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Bounds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FastMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FastMatInv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Interpolation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MatMatMult.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MonteCarloIntegrate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SphericalHarmonics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformVec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformVecW1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VecOp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MathUtil.h">
+      <Filter>gmtl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="FastMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Interpolation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MonteCarloIntegrate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SphericalHarmonics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MathUtil.cpp" />
+  </ItemGroup>
+</Project>
