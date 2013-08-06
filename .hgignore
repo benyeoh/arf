@@ -22,6 +22,7 @@ syntax: glob
 *.htm
 *.dep
 *.rar
+*.sdf
 
 re:^Profiling/
 re:^__Junk/
@@ -29,3 +30,4 @@ re:^Src/ipch/
 re:^Src/lib/
 re:^Src/*/Release/*
 re:^Src/*/Debug/*
+
