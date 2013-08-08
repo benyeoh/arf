@@ -164,6 +164,18 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	while(RunApp())
 	{
 		// Main message loop:
+		if(PeekMessage(&msg, 0, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		if(PeekMessage(&msg, 0, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
 		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			//if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
