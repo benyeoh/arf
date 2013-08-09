@@ -378,11 +378,6 @@ boolean	CSDBOctantOrderLooseOctTree::UpdateMove(SDBDataHandle handle, const AABo
 	
 	AppHandle& appHandle = m_AppHandles[(size_t)handle];
 
-	gmtl::VecA3f diff;
-	VecVecSub(&diff, &(pNewBounds->max), &(pNewBounds->min));
-	float size = diff[0] > diff[1] ? diff[0] : diff[1];
-	size = diff[2] > size ? diff[2] : size;
-
 	if(appHandle.gridInOctantHash != (uint)__INVALID)
 	{
 		gmtl::VecA3f center;
@@ -396,6 +391,11 @@ boolean	CSDBOctantOrderLooseOctTree::UpdateMove(SDBDataHandle handle, const AABo
 		uint octantHash			= GetOctantHash(octantPos);
 		if(octantHash == appHandle.octantPosHash)
 		{
+            gmtl::VecA3f diff;
+            VecVecSub(&diff, &(pNewBounds->max), &(pNewBounds->min));
+            float size = diff[0] > diff[1] ? diff[0] : diff[1];
+            size = diff[2] > size ? diff[2] : size;
+
 			// Compute ordering within octant
 			uint octantOrdering		= GetOctantOrdering(gridPosInOctant);
 			uint levelOffset		= FindLevelOffsetFromSize(size);
@@ -412,6 +412,11 @@ boolean	CSDBOctantOrderLooseOctTree::UpdateMove(SDBDataHandle handle, const AABo
 	}
 	else
 	{
+        gmtl::VecA3f diff;
+        VecVecSub(&diff, &(pNewBounds->max), &(pNewBounds->min));
+        float size = diff[0] > diff[1] ? diff[0] : diff[1];
+        size = diff[2] > size ? diff[2] : size;
+
 		// Check size
 		// If it is greater than the max grid size than it will remain the too large list
 		if(size > m_MaxGridSizeForData)
