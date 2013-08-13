@@ -75,6 +75,10 @@
     <X_Shader_Verifier Include="AppHelpers\PRTComputePointLight.mgp" />
     <X_Shader_Verifier Include="AppHelpers\SimpleSkydome.mgp" />
     <X_Shader_Verifier Include="BaseFXUtils\PoissonDiskCubeBlur.fx" />
+    <None Include="TestDepthRasterizer\CubeDepth.fxh" />
+    <None Include="TestDepthRasterizer\CubeTextured.fxh" />
+    <None Include="TestDepthRasterizer\ScreenTexturedQuad.fxh" />
+    <None Include="TestDepthRasterizer\ScreenTriangle.fxh" />
     <None Include="TestScreenAmbOccl\ParamSemanticDefs.fxh" />
     <None Include="TestSHPRTFX\TestSHPRTFXRadianceBRDF.mgp" />
     <X_Shader_Verifier Include="AppHelpers\DirLight.mgp" />
@@ -95,6 +99,10 @@
     <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXDirLight.mgp" />
     <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXObjectAccum.mgp" />
     <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXPointLight.mgp" />
+    <X_Shader_Verifier Include="TestDepthRasterizer\CubeDepth.fx" />
+    <X_Shader_Verifier Include="TestDepthRasterizer\CubeTextured.fx" />
+    <X_Shader_Verifier Include="TestDepthRasterizer\ScreenTexturedQuad.fx" />
+    <X_Shader_Verifier Include="TestDepthRasterizer\ScreenTriangle.fx" />
     <X_Shader_Verifier Include="TestScreenAmbOccl\AOPass.fx" />
     <X_Shader_Verifier Include="TestScreenAmbOccl\BilateralBlurPass.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>

@@ -38,54 +38,22 @@
 	\
 	curY += OUT_TILE_SIZE_2X_F; \
 
+
 #define __TEC_DO \
 { \
-	__m128 insideTest = _mm_and_ps( _mm_cmpgt_ps(e1Reject, zero), _mm_cmpgt_ps(e2Reject, zero) ); \
-	insideTest = _mm_and_ps( insideTest, _mm_cmpgt_ps(e3Reject, zero) ); \
+    __m128 insideTest = _mm_or_ps( _mm_or_ps( e1Reject, e2Reject ), e3Reject ); \
+    insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &zero) )); \
 	int notRejectInsideMask = _mm_movemask_ps(insideTest); \
 	\
 	__m128 e1Accept = _mm_add_ps(e1Reject, pRaster->e1AcceptLayerOffset[layer]); \
 	__m128 e2Accept = _mm_add_ps(e2Reject, pRaster->e2AcceptLayerOffset[layer]); \
-	insideTest = _mm_and_ps( _mm_cmpgt_ps(e1Accept, zero), _mm_cmpgt_ps(e2Accept, zero) ); \
-	\
 	__m128 e3Accept = _mm_add_ps(e3Reject, pRaster->e3AcceptLayerOffset[layer]); \
-	insideTest = _mm_and_ps( insideTest, _mm_cmpgt_ps(e3Accept, zero) ); \
+    insideTest = _mm_or_ps( _mm_or_ps( e1Accept, e2Accept ), e3Accept ); \
+    insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &zero) )); \
 	int acceptInsideMask = _mm_movemask_ps(insideTest); \
 	\
 	notRejectInsideMask -= acceptInsideMask; \
 	\
-	/*if(acceptInsideMask & 0x1) \
-	{ \
-		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[0]; \
-		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[0]; \
-		\
-		fullFn(drawX, drawY, pUser); \
-	} \
-	\
-	if(acceptInsideMask & 0x2) \
-	{ \
-		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[1]; \
-		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[1]; \
-		\
-		fullFn(drawX, drawY, pUser); \
-	} \
-	\
-	if(acceptInsideMask & 0x4) \
-	{ \
-		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[2]; \
-		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[2]; \
-		\
-		fullFn(drawX, drawY, pUser); \
-	} \
-	\
-	if(acceptInsideMask & 0x8) \
-	{ \
-		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[3]; \
-		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[3]; \
-		\
-		fullFn(drawX, drawY, pUser); \
-	} \
-	*/\
 	ulong acceptBitIndex; \
 	while(_BitScanForward(&acceptBitIndex, (ulong) acceptInsideMask)) \
 	{ \
@@ -108,40 +76,114 @@
 		notRejectInsideMask = (notRejectInsideMask + 0xF) & notRejectInsideMask; \
 	} \
 	\
-	/*\
-	if(notRejectInsideMask & 0x1) \
-	{ \
-		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[0]; \
-		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[0]; \
-		\
-		partialFn(drawX, drawY, pUser); \
-	} \
-	\
-	if(notRejectInsideMask & 0x2) \
-	{ \
-		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[1]; \
-		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[1]; \
-		\
-		partialFn(drawX, drawY, pUser); \
-	} \
-	\
-	if(notRejectInsideMask & 0x4) \
-	{ \
-		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[2]; \
-		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[2]; \
-		\
-		partialFn(drawX, drawY, pUser); \
-	} \
-	\
-	if(notRejectInsideMask & 0x8) \
-	{ \
-		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[3]; \
-		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[3]; \
-		\
-		partialFn(drawX, drawY, pUser); \
-	} \
-	*/\
 }
+
+
+
+//#define __TEC_DO \
+//{ \
+//	__m128 insideTest = _mm_and_ps( _mm_cmpgt_ps(e1Reject, zero), _mm_cmpgt_ps(e2Reject, zero) ); \
+//	insideTest = _mm_and_ps( insideTest, _mm_cmpgt_ps(e3Reject, zero) ); \
+//	int notRejectInsideMask = _mm_movemask_ps(insideTest); \
+//	\
+//	__m128 e1Accept = _mm_add_ps(e1Reject, pRaster->e1AcceptLayerOffset[layer]); \
+//	__m128 e2Accept = _mm_add_ps(e2Reject, pRaster->e2AcceptLayerOffset[layer]); \
+//	insideTest = _mm_and_ps( _mm_cmpgt_ps(e1Accept, zero), _mm_cmpgt_ps(e2Accept, zero) ); \
+//	\
+//	__m128 e3Accept = _mm_add_ps(e3Reject, pRaster->e3AcceptLayerOffset[layer]); \
+//	insideTest = _mm_and_ps( insideTest, _mm_cmpgt_ps(e3Accept, zero) ); \
+//	int acceptInsideMask = _mm_movemask_ps(insideTest); \
+//	\
+//	notRejectInsideMask -= acceptInsideMask; \
+//	\
+//	/*if(acceptInsideMask & 0x1) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[0]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[0]; \
+//		\
+//		fullFn(drawX, drawY, pUser); \
+//	} \
+//	\
+//	if(acceptInsideMask & 0x2) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[1]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[1]; \
+//		\
+//		fullFn(drawX, drawY, pUser); \
+//	} \
+//	\
+//	if(acceptInsideMask & 0x4) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[2]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[2]; \
+//		\
+//		fullFn(drawX, drawY, pUser); \
+//	} \
+//	\
+//	if(acceptInsideMask & 0x8) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[3]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[3]; \
+//		\
+//		fullFn(drawX, drawY, pUser); \
+//	} \
+//	*/\
+//	ulong acceptBitIndex; \
+//	while(_BitScanForward(&acceptBitIndex, (ulong) acceptInsideMask)) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[acceptBitIndex]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[acceptBitIndex]; \
+//		\
+//		fullFn(drawX, drawY, pUser); \
+//		\
+//		acceptInsideMask = (acceptInsideMask + 0xF) & acceptInsideMask; \
+//	} \
+//	\
+//	ulong notRejectBitIndex; \
+//	while(_BitScanForward(&notRejectBitIndex, (ulong) notRejectInsideMask)) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[notRejectBitIndex]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[notRejectBitIndex]; \
+//		\
+//		partialFn(drawX, drawY, pUser); \
+//		\
+//		notRejectInsideMask = (notRejectInsideMask + 0xF) & notRejectInsideMask; \
+//	} \
+//	\
+//	/*\
+//	if(notRejectInsideMask & 0x1) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[0]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[0]; \
+//		\
+//		partialFn(drawX, drawY, pUser); \
+//	} \
+//	\
+//	if(notRejectInsideMask & 0x2) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[1]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[1]; \
+//		\
+//		partialFn(drawX, drawY, pUser); \
+//	} \
+//	\
+//	if(notRejectInsideMask & 0x4) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[2]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[2]; \
+//		\
+//		partialFn(drawX, drawY, pUser); \
+//	} \
+//	\
+//	if(notRejectInsideMask & 0x8) \
+//	{ \
+//		float drawX = curX + QUAD_IN_TILE_OFFSETS_X[3]; \
+//		float drawY = curY + QUAD_IN_TILE_OFFSETS_Y[3]; \
+//		\
+//		partialFn(drawX, drawY, pUser); \
+//	} \
+//	*/\
+//}
 
 
 #define __TEC_PREP \
@@ -167,7 +209,7 @@
 typedef void (*CustomAcceptFn)(float pixelBlockX, float pixelBlockY, void* pContext);
 
 template<uint numInterpolants, uint numLayers, uint outTileSize, uint layer, CustomAcceptFn partialFn, CustomAcceptFn fullFn>
-_RASTERIZER_SSE_INLINE void TilesEdgeCheckWithBB(const void* pRasterInfo, float startX, float startY, uint bufferWidth, uint bufferHeight, void* pUser)
+ void TilesEdgeCheckWithBB(const void* pRasterInfo, float startX, float startY, uint bufferWidth, uint bufferHeight, void* pUser)
 {
 	const RasterInfo<numInterpolants, numLayers>* __restrict pRaster = ((RasterInfo<numInterpolants, numLayers>*) pRasterInfo);
 

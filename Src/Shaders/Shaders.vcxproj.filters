@@ -55,6 +55,9 @@
     <Filter Include="TestScreenAmbOccl">
       <UniqueIdentifier>{fc10bb4d-c190-42a3-8c38-4a23a5302392}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TestDepthRasterizer">
+      <UniqueIdentifier>{fe9b2df5-e5b1-4e48-b733-e43244cd3599}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="FontFX\AllFontFX.fxh">
@@ -129,6 +132,18 @@
     </None>
     <None Include="TestScreenAmbOccl\ParamSemanticDefs.fxh">
       <Filter>TestScreenAmbOccl</Filter>
+    </None>
+    <None Include="TestDepthRasterizer\CubeDepth.fxh">
+      <Filter>TestDepthRasterizer</Filter>
+    </None>
+    <None Include="TestDepthRasterizer\CubeTextured.fxh">
+      <Filter>TestDepthRasterizer</Filter>
+    </None>
+    <None Include="TestDepthRasterizer\ScreenTexturedQuad.fxh">
+      <Filter>TestDepthRasterizer</Filter>
+    </None>
+    <None Include="TestDepthRasterizer\ScreenTriangle.fxh">
+      <Filter>TestDepthRasterizer</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -341,6 +356,18 @@
     </X_Shader_Verifier>
     <X_Shader_Verifier Include="TestScreenAmbOccl\BilateralBlurPass.fx">
       <Filter>TestScreenAmbOccl</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestDepthRasterizer\CubeDepth.fx">
+      <Filter>TestDepthRasterizer</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestDepthRasterizer\CubeTextured.fx">
+      <Filter>TestDepthRasterizer</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestDepthRasterizer\ScreenTexturedQuad.fx">
+      <Filter>TestDepthRasterizer</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestDepthRasterizer\ScreenTriangle.fx">
+      <Filter>TestDepthRasterizer</Filter>
     </X_Shader_Verifier>
   </ItemGroup>
 </Project>
