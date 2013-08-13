@@ -200,12 +200,20 @@ _NAMESPACE_BEGIN
 		finalInter[1] = _mm_mul_ps(inter[1], w); \
 	}
 
+//#define __TRAS_EC_PIXEL \
+//	{ \
+//		__m128 insideTest = _mm_and_ps( _mm_cmpgt_ps(e1Reject, zero), _mm_cmpgt_ps(e2Reject, zero) ); \
+//		insideTest = _mm_and_ps( insideTest, _mm_cmpgt_ps(e3Reject, zero) ); \
+//		\
+//		pixelShaderFn(pixelBlockX, pixelBlockY, insideTest, depth, finalInter, pContext); \
+//	} \
+
 #define __TRAS_EC_PIXEL \
 	{ \
-		__m128 insideTest = _mm_and_ps( _mm_cmpgt_ps(e1Reject, zero), _mm_cmpgt_ps(e2Reject, zero) ); \
-		insideTest = _mm_and_ps( insideTest, _mm_cmpgt_ps(e3Reject, zero) ); \
-		\
-		pixelShaderFn(pixelBlockX, pixelBlockY, insideTest, depth, finalInter, pContext); \
+		__m128 insideTest = _mm_or_ps( _mm_or_ps( e1Reject, e2Reject ), e3Reject ); \
+        insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &zero) )); \
+        \
+        pixelShaderFn(pixelBlockX, pixelBlockY, insideTest, depth, finalInter, pContext); \
 	} \
 
 #define __TRAS_FULL_MASK_PIXEL \
