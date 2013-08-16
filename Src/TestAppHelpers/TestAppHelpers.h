@@ -52,8 +52,8 @@ const static uint NUM_POINT_LIGHTS = 0;
 const static uint NUM_THREADS = 3;
 const static uint NUM_PRTCOMPUTE_PHASE_THREADS = 1;
 const static uint NUM_PRTCOMPUTE_PROCESS_THREADS = 1;
-const static uint NUM_ENTITIES = 1;
-const static float AREA_ROOT = 1.0f;
+const static uint NUM_ENTITIES = 200000;
+const static float AREA_ROOT = 7000.0f;
 
 enum
 {

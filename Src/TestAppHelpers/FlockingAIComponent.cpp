@@ -18,75 +18,83 @@ void FlockingAIComponent::AddBehavior(FlockingBehavior* pBehavior)
 
 void FlockingAIComponent::UpdateGather(float dt)
 {
-	AHSpatialComponent* pSpatial = _CAST_COMP_SPATIAL(GetEntity());
+    if(m_IsEnableOneFrame)
+    {
+	    AHSpatialComponent* pSpatial = _CAST_COMP_SPATIAL(GetEntity());
 
-	AHComponent* pComp[512];
-	uint numComp = 0;
-	if(m_pSceneContainer)
-	{
-		Sphere querySphere;
-		pSpatial->GetWorldPos( _CAST_VECA3(querySphere.center) );
-		querySphere.center[3] = m_SearchRadius;
+	    AHComponent* pComp[512];
+	    uint numComp = 0;
+	    if(m_pSceneContainer)
+	    {
+		    Sphere querySphere;
+		    pSpatial->GetWorldPos( _CAST_VECA3(querySphere.center) );
+		    querySphere.center[3] = m_SearchRadius;
 
-		gmtl::VecA3f span;
-		span.set(querySphere.center[3], querySphere.center[3], querySphere.center[3]);
+		    gmtl::VecA3f span;
+		    span.set(querySphere.center[3], querySphere.center[3], querySphere.center[3]);
 
-		AABox queryBox;
-		VecVecSub(&queryBox.min, &(_CAST_VECA3(querySphere.center)), &span);
-		VecVecAdd(&queryBox.max, &(_CAST_VECA3(querySphere.center)), &span);
-		numComp = m_pSceneContainer->QuerySphere((void**) pComp, 512, queryBox, querySphere, SDB_FILTER_FLOCKING_COMP);
-	}
+		    AABox queryBox;
+		    VecVecSub(&queryBox.min, &(_CAST_VECA3(querySphere.center)), &span);
+		    VecVecAdd(&queryBox.max, &(_CAST_VECA3(querySphere.center)), &span);
+		    numComp = m_pSceneContainer->QuerySphere((void**) pComp, 512, queryBox, querySphere, SDB_FILTER_FLOCKING_COMP);
+	    }
 
-	gmtl::VecA3f tempDir(0.0f, 0.0f, 0.0f);
-	_LOOPi(m_NumBehaviors)
-	{				
-		gmtl::VecA3f newDir(0.0f, 0.0f, 0.0f);
-		m_FlockingBehaviors[i]->Update(dt, this, pComp, numComp, newDir);
-		newDir[0] = m_FlockingBehaviors[i]->GetStrength() * newDir[0] * m_Axes[0];
-		newDir[1] = m_FlockingBehaviors[i]->GetStrength() * newDir[1] * m_Axes[1];
-		newDir[2] = m_FlockingBehaviors[i]->GetStrength() * newDir[2] * m_Axes[2];
+	    gmtl::VecA3f tempDir(0.0f, 0.0f, 0.0f);
+	    _LOOPi(m_NumBehaviors)
+	    {				
+		    gmtl::VecA3f newDir(0.0f, 0.0f, 0.0f);
+		    m_FlockingBehaviors[i]->Update(dt, this, pComp, numComp, newDir);
+		    newDir[0] = m_FlockingBehaviors[i]->GetStrength() * newDir[0] * m_Axes[0];
+		    newDir[1] = m_FlockingBehaviors[i]->GetStrength() * newDir[1] * m_Axes[1];
+		    newDir[2] = m_FlockingBehaviors[i]->GetStrength() * newDir[2] * m_Axes[2];
 
-		VecVecAdd(&tempDir, &tempDir, &newDir);
-		//m_DirGather += newDir;	
-	}
+		    VecVecAdd(&tempDir, &tempDir, &newDir);
+		    //m_DirGather += newDir;	
+	    }
 
-	if(gmtl::Math::abs(tempDir[0]) > gmtl::GMTL_EPSILON ||
-		gmtl::Math::abs(tempDir[1]) > gmtl::GMTL_EPSILON ||
-		gmtl::Math::abs(tempDir[2]) > gmtl::GMTL_EPSILON)
-		NormalizeVec(tempDir);
-	else
-		tempDir = m_Dir;
+	    if(gmtl::Math::abs(tempDir[0]) > gmtl::GMTL_EPSILON ||
+		    gmtl::Math::abs(tempDir[1]) > gmtl::GMTL_EPSILON ||
+		    gmtl::Math::abs(tempDir[2]) > gmtl::GMTL_EPSILON)
+		    NormalizeVec(tempDir);
+	    else
+		    tempDir = m_Dir;
 
-	// Steer to the new direction
-	float steering = m_SteeringSpeed * dt;
-	if(steering > 1.0f)
-		steering = 1.0f;
+	    // Steer to the new direction
+	    float steering = m_SteeringSpeed * dt;
+	    if(steering > 1.0f)
+		    steering = 1.0f;
 
-	VecVecSlerp(&tempDir, &m_Dir, &tempDir, steering);
-	NormalizeVec(tempDir);
+	    VecVecSlerp(&tempDir, &m_Dir, &tempDir, steering);
+	    NormalizeVec(tempDir);
 
-	m_DirGather = tempDir;
+	    m_DirGather = tempDir;
+    }
 }
 
 void FlockingAIComponent::UpdateStore(float dt)
 {
-	m_Dir = m_DirGather;
+    if(m_IsEnableOneFrame)
+    {
+	    m_Dir = m_DirGather;
 
-	AHSpatialComponent* pSpatial = _CAST_COMP_SPATIAL(GetEntity());
+	    AHSpatialComponent* pSpatial = _CAST_COMP_SPATIAL(GetEntity());
 
-	const gmtl::MatrixA44f& worldMat = pSpatial->GetWorldMatrix();
-	gmtl::VecA3f pos(worldMat[0][3], worldMat[1][3], worldMat[2][3]);
-	float speed = m_Speed * dt;
+	    const gmtl::MatrixA44f& worldMat = pSpatial->GetWorldMatrix();
+	    gmtl::VecA3f pos(worldMat[0][3], worldMat[1][3], worldMat[2][3]);
+	    float speed = m_Speed * dt;
 
-	gmtl::VecA3f displacement;
-	VecScalarMult(&displacement, &m_Dir, speed);
-	VecVecAdd(&pos, &pos, &displacement);
+	    gmtl::VecA3f displacement;
+	    VecScalarMult(&displacement, &m_Dir, speed);
+	    VecVecAdd(&pos, &pos, &displacement);
 
-	gmtl::VecA3f up(0.0f, 1.0f, 0.0f);
-	if(gmtl::Math::abs(m_Dir[1]) > 0.989f)
-		up.set(1.0f, 0.0f, 0.0f);
+	    gmtl::VecA3f up(0.0f, 1.0f, 0.0f);
+	    if(gmtl::Math::abs(m_Dir[1]) > 0.989f)
+		    up.set(1.0f, 0.0f, 0.0f);
 
-	pSpatial->SetWorldPosAndFacing(pos, m_Dir, up);
+	    pSpatial->SetWorldPosAndFacing(pos, m_Dir, up);
+    }
+
+    m_IsEnableOneFrame = FALSE;
 }
 
 void FlockingAIComponent::UpdateTemp()
@@ -147,8 +155,27 @@ void FlockingAIComponent::AddToTempUpdate()
 	}
 	else
 	{
-		// No entity manager so manually update
-		Update(UPDATE_PHASE_TEMP_COMP);
+        // Check move
+        if(m_SceneHandle.IsValid())
+        {
+            if(m_pSceneContainer->UpdateMove(m_SceneHandle, &m_WorldAABoxGather))
+            {
+                // No entity manager so manually update
+                Update(UPDATE_PHASE_TEMP_COMP);
+            }
+            else
+            {
+                // This is probably in store phase, so it's safe to update
+                m_WorldOOBox = m_WorldOOBoxGather;
+                m_WorldAABox = m_WorldAABoxGather;
+            }
+        }
+        else
+        {
+            // No entity manager so manually update
+            Update(UPDATE_PHASE_TEMP_COMP);
+        }
+
 	}
 }
 

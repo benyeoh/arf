@@ -63,6 +63,7 @@ private:
 	ISDBSceneContainer* m_pSceneContainer;
     SDBDataHandle   m_SceneHandle;
 	float			m_SearchRadius;
+    boolean         m_IsEnableOneFrame;
 
 public:
 	FlockingAIComponent(float* pTimeDT, ISDBSceneContainer* pScene)
@@ -74,6 +75,7 @@ public:
 		, m_pSceneContainer(NULL)
 		, m_IsAddedToUpdate(FALSE)
 		, m_SearchRadius(25.0f)
+        , m_IsEnableOneFrame(FALSE)
 	{
 		m_LocalAABox.min[0] = -0.01f;
 		m_LocalAABox.min[1] = -0.01f;
@@ -113,7 +115,8 @@ private:
 public:
 	void SetScene(ISDBSceneContainer* pScene);
 	const gmtl::VecA3f& GetDir() { return m_Dir; }
-	
+
+    void EnableOneFrame()  { m_IsEnableOneFrame = TRUE; }
 	void SetSearchRadius(float rad) { m_SearchRadius = rad; }
 	void SetSpeed(float speed) {  m_Speed = speed; }
 	void SetSteering(float steering) { m_SteeringSpeed = steering; }

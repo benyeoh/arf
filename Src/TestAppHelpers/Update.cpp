@@ -181,7 +181,32 @@ void ProcessInput()
 
 	//g_pShadowDirLight->Update(g_CascadeFrustum, g_DirLight.dir, _CAST_VEC3(g_EyePos) - g_DirLight.dir * 100.0f, _CAST_MAT44(g_View));
 
-	// Move point light
+    // Disable all AI
+#ifndef _USE_PRT_VERSION
+    AABox box;
+    box.min[0] = g_EyePos[0] - FAR_PLANE;
+    box.min[1] = g_EyePos[1] - FAR_PLANE;
+    box.min[2] = g_EyePos[2] - FAR_PLANE;
+
+    box.max[0] = g_EyePos[0] + FAR_PLANE;
+    box.max[1] = g_EyePos[1] + FAR_PLANE;
+    box.max[2] = g_EyePos[2] + FAR_PLANE;
+
+    Sphere enableSphere;
+    enableSphere.center[0] = g_EyePos[0];
+    enableSphere.center[1] = g_EyePos[1];
+    enableSphere.center[2] = g_EyePos[2];
+    enableSphere.center[3] = FAR_PLANE;
+
+    AHComponent* pAI[64000];
+    uint numEntities = g_pSceneEntityFlockContainer->QuerySphere((void**) pAI, 64000, box, enableSphere, SDB_FILTER_FLOCKING_COMP);
+    _LOOPi(numEntities)
+    {
+        FlockingAIComponent* pFlock = (FlockingAIComponent*) pAI[i];
+        pFlock->EnableOneFrame();
+    }
+
+#endif
 	double renderStart = g_pPlatform->GetTimer().GetTime();
 	g_pEntityMgr->Update( UPDATE_PHASE_GROUP_1 );
 	g_UpdateTimes[g_TimeCounter] = g_pPlatform->GetTimer().GetTime() - renderStart;
