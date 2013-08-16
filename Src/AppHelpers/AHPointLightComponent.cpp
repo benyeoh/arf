@@ -259,8 +259,26 @@ void AHPointLightComponent::AddToTempUpdate()
 	}
 	else
 	{
-		// No entity manager so manually update
-		Update(UPDATE_PHASE_TEMP_COMP);
+        // Check move
+        if(m_SceneHandle.IsValid())
+        {
+            if(m_pSceneContainer->UpdateMove(m_SceneHandle, &m_WorldAABoxGather))
+            {
+                // No entity manager so manually update
+                Update(UPDATE_PHASE_TEMP_COMP);
+            }
+            else
+            {
+                // This is probably in store phase, so it's safe to update
+                m_WorldOOBoxBV = m_WorldOOBoxGather;
+                m_WorldAABoxBV = m_WorldAABoxGather;
+            }
+        }
+        else
+        {
+            // No entity manager so manually update
+            Update(UPDATE_PHASE_TEMP_COMP);
+        }
 	}
 }
 

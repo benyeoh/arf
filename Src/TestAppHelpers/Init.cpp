@@ -268,12 +268,12 @@ void InitSceneDB()
     case USE_SPARSE_LOOSE_OCTREE:
         g_pSceneContainer = g_pSceneDB->GetResourceMgr().CreateSparseLooseOctTree(6, 8.0f, 512);
         g_pSceneLightFlockContainer = g_pSceneDB->GetResourceMgr().CreateSparseLooseOctTree(6, 8.0f, 512);
-        g_pSceneEntityFlockContainer = g_pSceneDB->GetResourceMgr().CreateSparseLooseOctTree(3, 8.0f, 512);
+        g_pSceneEntityFlockContainer = g_pSceneDB->GetResourceMgr().CreateSparseLooseOctTree(6, 8.0f, 512);
         break;
     case USE_OCTANT_ORDER_LOOSE_OCTREE:
 		g_pSceneContainer = g_pSceneDB->GetResourceMgr().CreateOctantOrderLooseOctTree(6, 8.0f);
         g_pSceneLightFlockContainer = g_pSceneDB->GetResourceMgr().CreateOctantOrderLooseOctTree(6, 8.0f);
-        g_pSceneEntityFlockContainer = g_pSceneDB->GetResourceMgr().CreateOctantOrderLooseOctTree(3, 8.0f);
+        g_pSceneEntityFlockContainer = g_pSceneDB->GetResourceMgr().CreateOctantOrderLooseOctTree(6, 8.0f);
         break;
     }
 }
@@ -380,40 +380,45 @@ CircularMovementAIComponent* CreateCircularMovementAI(const gmtl::VecA3f& pos)
     return pAI;
 }
 
+AHEntity* CreateEntity(BFXUMeshList* pMeshList, const gmtl::VecA3f& pos, const gmtl::VecA3f& dir, boolean isUseFlocking=FALSE)
+{
+    AHEntity* pEntity = _NEW AHEntity();
+
+    AABox meshBounds;
+    ComputeBounds(*pMeshList, meshBounds);
+
+    AHSpatialComponent* pSpatial = _NEW AHSpatialComponent();
+    pSpatial->SetLocalAABox(meshBounds);
+    pSpatial->SetWorldPos(pos);
+    pSpatial->SetWorldFacing(dir, gmtl::VecA3f(0.0f, 1.0f, 0.0f));
+
+    pEntity->AddComponent(pSpatial);
+
+    AHRenderComponent* pRender = _NEW AHRenderComponent();
+    pRender->SetMeshList(pMeshList);
+    pRender->SetLocalAABox(meshBounds);
+    pRender->SetScene(g_pSceneContainer);
+
+    pEntity->AddComponent(pRender);
+#ifndef _USE_PRT_VERSION
+    if(isUseFlocking)
+    {
+        //pEntity->AddComponent( CreateCircularMovementAI(pos) );
+        pEntity->AddComponent( CreateFlockingAIEntities() );
+    }
+#endif
+    g_pEntityMgr->AddEntity(pEntity);
+
+    return pEntity;
+}
+
 AHEntity* CreateEntity(const wchar* pPath, const gmtl::VecA3f& pos, const gmtl::VecA3f& dir, boolean isUseFlocking=FALSE)
 {
 	IByteBufferPtr pBuffer = g_AppCallback.GetFileData(pPath);
 	BFXUMeshList* pMeshList = _NEW BFXUMeshList;
 	LoadBFXUMeshList(g_pRenderer, g_pBaseFX, pBuffer, 0, *pMeshList);
 
-	AHEntity* pEntity = _NEW AHEntity();
-
-	AABox meshBounds;
-	ComputeBounds(*pMeshList, meshBounds);
-
-	AHSpatialComponent* pSpatial = _NEW AHSpatialComponent();
-	pSpatial->SetLocalAABox(meshBounds);
-	pSpatial->SetWorldPos(pos);
-	pSpatial->SetWorldFacing(dir, gmtl::VecA3f(0.0f, 1.0f, 0.0f));
-
-	pEntity->AddComponent(pSpatial);
-
-	AHRenderComponent* pRender = _NEW AHRenderComponent();
-	pRender->SetMeshList(pMeshList);
-	pRender->SetLocalAABox(meshBounds);
-	pRender->SetScene(g_pSceneContainer);
-
-	pEntity->AddComponent(pRender);
-#ifndef _USE_PRT_VERSION
-	if(isUseFlocking)
-	{
-        //pEntity->AddComponent( CreateCircularMovementAI(pos) );
-        pEntity->AddComponent( CreateFlockingAIEntities() );
-    }
-#endif
-	g_pEntityMgr->AddEntity(pEntity);
-
-	return pEntity;
+	return CreateEntity(pMeshList, pos, dir, isUseFlocking);
 }
 
 AHEntity* CreateLightEntity(const gmtl::VecA3f& pos, const gmtl::Vec3f& color)
@@ -493,15 +498,27 @@ void InitAppHelpers()
 #else
 
     const static float GRID_SIZE = 75.0f;
-    float numFloorsRoot = 0;//(2 * AREA_ROOT / GRID_SIZE) + 1;
+    float numFloorsRoot = (2 * AREA_ROOT / GRID_SIZE) + 1;
 	float curX = -GRID_SIZE * (numFloorsRoot / 2);
 	float curY = -GRID_SIZE * (numFloorsRoot / 2);
+
+    BFXUMeshList* pCachedMeshList = NULL;
 
 	_LOOPi(numFloorsRoot)
 	{
 		_LOOPj(numFloorsRoot)
 		{
-			CreateEntity(_W("[msh]\\TestAppHelpers\\floor.mls"), gmtl::VecA3f(curX, 0.0f, curY), gmtl::VecA3f(0.0f, 0.0f, 1.0f));
+            if(!pCachedMeshList)
+            {
+			    AHEntity* pEntity = CreateEntity(_W("[msh]\\TestAppHelpers\\floor.mls"), gmtl::VecA3f(curX, 0.0f, curY), gmtl::VecA3f(0.0f, 0.0f, 1.0f));
+                AHRenderComponent* pComp = (AHRenderComponent*) pEntity->GetComponent(COMP_RENDER);
+                pCachedMeshList = pComp->GetMeshList();
+            }
+            else
+            {
+                CreateEntity(pCachedMeshList, gmtl::VecA3f(curX, 0.0f, curY), gmtl::VecA3f(0.0f, 0.0f, 1.0f));                
+            }
+
 			curX += GRID_SIZE;
 		}
 
@@ -570,6 +587,8 @@ void InitAppHelpers()
 	CreateEntity(_W("[msh]\\TestAppHelpers\\king_kong_radiance.mls"), gmtl::VecA3f(10.0f, 0.0f, 16.8f), gmtl::VecA3f(0.0f, 0.0f, 1.0f));
 
 #else
+    pCachedMeshList = NULL;
+
 	if(NUM_ENTITIES > 0)
 	{
 		//pBuffer = g_AppCallback.GetFileData(_W("[msh]\\TestAppHelpers\\bandit.mls"));
@@ -595,8 +614,17 @@ void InitAppHelpers()
 			//pos[0] = FastCeiling(xMod * 0.5f) * ((xMod % 2) * 2.0f - 1.0f) * 5.0f;
 			//pos[1] = 0.0f;
 			//pos[2] = FastCeiling(zMod * 0.5f) * ((zMod % 2) * 2.0f - 1.0f) * 5.0f;
-			
-			CreateEntity(_W("[msh]\\TestAppHelpers\\bandit_inst.mls"), pos, gmtl::VecA3f(0.0f, 0.0f, 1.0f), FALSE);
+
+            if(!pCachedMeshList)
+            {
+                AHEntity* pEntity = CreateEntity(_W("[msh]\\TestAppHelpers\\bandit_inst.mls"), pos, gmtl::VecA3f(0.0f, 0.0f, 1.0f), TRUE);
+                AHRenderComponent* pComp = (AHRenderComponent*) pEntity->GetComponent(COMP_RENDER);
+                pCachedMeshList = pComp->GetMeshList();
+            }
+            else
+            {
+                CreateEntity(pCachedMeshList, pos, gmtl::VecA3f(0.0f, 0.0f, 1.0f), TRUE);
+            }		
 		}
 	}
 
@@ -775,10 +803,10 @@ void InitAppHelpers()
 
 	pDirLight->SetShadowDirLight(pShadowDL, 1.5f, 800.0f, FALSE);
 	pDirLight->SetDeferredDirLight(pLightGroup, pRender);
-	//pDirLight->SetScene(g_pSceneContainer);
+	pDirLight->SetScene(g_pSceneContainer);
 
-	//pEntity->AddComponent(pDirLight);
-	//g_pEntityMgr->AddEntity(pEntity);
+	pEntity->AddComponent(pDirLight);
+	g_pEntityMgr->AddEntity(pEntity);
 
 	g_pEntityMgr->UpdateComponentsTemp();
 
