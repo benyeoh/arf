@@ -168,12 +168,18 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+
+            if(msg.message == WM_QUIT)
+                break;
 		}
 
 		if(PeekMessage(&msg, 0, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+
+            if(msg.message == WM_QUIT)
+                break;
 		}
 
 		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
