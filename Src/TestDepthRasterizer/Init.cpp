@@ -223,8 +223,8 @@ boolean InitRenderer()
 							g_pRenderer->GetBackBufferColor()->GetWidth() / 2, 
 							g_pRenderer->GetBackBufferColor()->GetHeight());
 	
-	g_pRasterizeTex = g_pRenderer->GetRResourceMgr().CreateTexture2D(NULL, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, 1, TEXF_R8, TEXU_DYNAMIC);
-	g_pRasterizeBuffer = _NEW byte[RASTERIZE_BUFFER_W * RASTERIZE_BUFFER_H];
+	g_pRasterizeTex = g_pRenderer->GetRResourceMgr().CreateTexture2D(NULL, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, 1, TEXF_R32F, TEXU_DYNAMIC);
+	g_pRasterizeBuffer = (float*) _ALIGNED_MALLOC(16, RASTERIZE_BUFFER_W * RASTERIZE_BUFFER_H * sizeof(float));
 	g_pRasterizeDepthBuffer = (float*) _ALIGNED_MALLOC(16, RASTERIZE_BUFFER_W * RASTERIZE_BUFFER_H * sizeof(float));
 	g_pFastDepthClearBuffer = (uint*) _ALIGNED_MALLOC(16, FAST_DEPTH_CLEAR_W * FAST_DEPTH_CLEAR_H * sizeof(uint));
 
@@ -461,7 +461,7 @@ boolean Initialize()
 
 	const RDisplayInfo& dispInfo = g_pRenderer->GetDisplayInfo();
 
-	gmtl::setPerspective(g_Proj, gmtl::Math::PI / 3.0f, ((float)dispInfo.backBufferWidth) / dispInfo.backBufferHeight, 0.01f, FAR_PLANE);
+	gmtl::setPerspective(g_Proj, gmtl::Math::PI / 3.0f, ((float)dispInfo.backBufferWidth) / dispInfo.backBufferHeight, NEAR_PLANE, FAR_PLANE);
 	_CAST_VEC3(g_EyePos) = gmtl::Vec3f(0.0f, 0.0f, 2.0f);
 	_CAST_VEC3(g_EyeDir) = gmtl::Vec3f(0.0f, 0.0f, -1.f);
 	gmtl::VecA3f at;
@@ -507,7 +507,7 @@ void Shutdown()
 
 	g_pThreadPool = NULL;
 
-	_DELETE_ARRAY(g_pRasterizeBuffer);
+	_ALIGNED_FREE(g_pRasterizeBuffer);
 	_ALIGNED_FREE(g_pRasterizeDepthBuffer);
 	_ALIGNED_FREE(g_pFastDepthClearBuffer);
 

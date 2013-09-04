@@ -68,7 +68,7 @@ inline void ___Log(LogFn fn, const wchar* sFormat, ...)
 	fn(sTraceString);
 }
 
-#if 0 // defined(_DEBUG)
+#if defined(_DEBUG)
 
 	#define _BREAK_HERE		_asm { int 3 }
 

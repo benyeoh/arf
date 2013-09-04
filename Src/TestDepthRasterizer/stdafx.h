@@ -40,6 +40,11 @@
 #include <BaseFXUtils\BaseFXUtils.h>
 #include <FontFX\FontFX.h>
 #include <Input\Input.h>
-#include <RasterizerSSE\RasterizerSSE.h>
+//#include <RasterizerSSE\RasterizerSSE.h>
+
+#include "TriangleBoundingBoxDepth_SSE.h"
+#include "TriangleSetupDepth_SSE.h"
+#include "RasterInfoDepth_SSE.h"
+#include "TilesRasterizeDepth_SSE.h"
 
 #include "TestDepthRasterizer.h"

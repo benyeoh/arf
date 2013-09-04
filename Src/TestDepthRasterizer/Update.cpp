@@ -23,7 +23,7 @@ SetScreenMode(UINT screenWidth, UINT screenHeight, BOOL fullScreen)
 
 	g_pRenderer->SetDisplayInfo(info);
 
-	gmtl::setPerspective(g_Proj, gmtl::Math::PI / 3.0f, ((float)screenWidth) / screenHeight, 0.01f, FAR_PLANE);
+	gmtl::setPerspective(g_Proj, gmtl::Math::PI / 3.0f, ((float)screenWidth) / screenHeight, NEAR_PLANE, FAR_PLANE);
 }
 
 void ProcessInput()
@@ -69,7 +69,7 @@ void ProcessInput()
 
 				gmtl::AxisAnglef rotAxis;
 				rotAxis.setAxis(_CAST_VEC3(axisOfRotInWorldSpace));
-				rotAxis.setAngle(length * g_TimeDT * 2.0f);
+				rotAxis.setAngle(length * g_TimeDT * 4.0f);
 
 				// Transform eye direction
 				gmtl::MatrixA44f cameraRotMat;
@@ -182,12 +182,12 @@ void ProcessInput()
 	if(g_IsDebugRenderObjects)
 		g_LastTime = amount;
 	
-	_LOOPi(NUM_CUBES)
-	{
-		gmtl::AxisAnglef cubeRotAxis;
-		//gmtl::normalize(axis);
-		cubeRotAxis.setAxis( g_CubeRotAxis[i] );
-		cubeRotAxis.setAngle( g_LastTime );
-		gmtl::setRot(g_CubeWorld[i], cubeRotAxis);
-	}	
+	//_LOOPi(NUM_CUBES)
+	//{
+	//	gmtl::AxisAnglef cubeRotAxis;
+	//	//gmtl::normalize(axis);
+	//	cubeRotAxis.setAxis( g_CubeRotAxis[i] );
+	//	cubeRotAxis.setAngle( g_LastTime );
+	//	gmtl::setRot(g_CubeWorld[i], cubeRotAxis);
+	//}	
 }
