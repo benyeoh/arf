@@ -55,7 +55,7 @@ extern IRVertexBufferGroupPtr	g_pTriangleVBGroup;
 extern IRIndexBufferPtr			g_pTriangleIB;
 extern IREffectPtr				g_pTriangleEffect;
 extern IRTexture2DPtr			g_pRasterizeTex;
-extern byte*					g_pRasterizeBuffer;
+extern float*					g_pRasterizeBuffer;
 extern float*					g_pRasterizeDepthBuffer;
 extern uint*					g_pFastDepthClearBuffer;
 extern IRVertexBufferGroupPtr	g_pQuadVBGroup;
@@ -119,6 +119,7 @@ const static uint FAST_DEPTH_CLEAR_H = RASTERIZE_BUFFER_H / 2;
 //const static float CUBE_SIZE = 1.0f;
 const static float FAR_PLANE = 14.0f;
 const static float FAR_PLANE_RCP = 1.0f / FAR_PLANE;
+const static float NEAR_PLANE = 0.01f;
 const static uint CUBE_VERTEX_STRIDE	= 5;
 const static uint CUBE_TEXUV_OFFSET		= 3;
 

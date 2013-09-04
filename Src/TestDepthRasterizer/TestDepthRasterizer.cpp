@@ -84,7 +84,7 @@ IRVertexBufferGroupPtr	g_pTriangleVBGroup;
 IRIndexBufferPtr		g_pTriangleIB;
 IREffectPtr				g_pTriangleEffect;
 IRTexture2DPtr			g_pRasterizeTex;
-byte*					g_pRasterizeBuffer;
+float*					g_pRasterizeBuffer;
 float*					g_pRasterizeDepthBuffer;	// 16 byte aligned
 uint*					g_pFastDepthClearBuffer;	// 16 byte aligned
 IRVertexBufferGroupPtr	g_pQuadVBGroup;
@@ -142,17 +142,36 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	while(RunApp())
 	{
 		// Main message loop:
-		if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			//if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
+        // Main message loop:
+        if(PeekMessage(&msg, 0, WM_MOUSEFIRST, WM_MOUSELAST, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
 
-			if(msg.message == WM_QUIT)
-				break;
-		}
+            if(msg.message == WM_QUIT)
+                break;
+        }
+
+        if(PeekMessage(&msg, 0, WM_KEYFIRST, WM_KEYLAST, PM_REMOVE))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+
+            if(msg.message == WM_QUIT)
+                break;
+        }
+
+        if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+        {
+            //if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+            {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+
+            if(msg.message == WM_QUIT)
+                break;
+        }
 
 	}
 

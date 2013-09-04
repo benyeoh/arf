@@ -193,6 +193,10 @@ void LinearDepthOutPixelShader(int pixelBlockX, int pixelBlockY, __m128 coverage
 	__m128 depthInBuffer;
 	depthInBuffer = _mm_load_ps( g_pRasterizeDepthBuffer + depthAddressOffset );
 
+    //__m128 depthMin = _mm_min_ps( depthVals, depthInBuffer );                       // Check depth test
+    //__m128 depthStore = _mm_xor_ps( depthInBuffer, _mm_and_ps( coverage, _mm_xor_ps(depthMin, depthInBuffer) ) ); // Mask with edge function
+    //_mm_store_ps(g_pRasterizeDepthBuffer + depthAddressOffset, depthStore);
+
 	//depthInBuffer = _mm_loadl_pi(depthInBuffer, (__m64*)(g_pRasterizeDepthBuffer + pixelBlockY * RASTERIZE_BUFFER_W + pixelBlockX));
 	//depthInBuffer = _mm_loadh_pi(depthInBuffer, (__m64*)(g_pRasterizeDepthBuffer + (pixelBlockY + 1) * RASTERIZE_BUFFER_W + pixelBlockX));
 
@@ -651,9 +655,9 @@ void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 {
 	int numPerJob = CUBE_BATCH / 4;
 	_DEBUG_COMPILE_ASSERT((CUBE_BATCH % 4) == 0);
-	double swStart = g_pPlatform->GetTimer().GetTime();
-
-	g_pThreadPool->SetAlwaysActive(TRUE);
+	
+    double swStart = g_pPlatform->GetTimer().GetTime();
+    g_pThreadPool->SetAlwaysActive(TRUE);
 
 	_LOOPi(4)
 	{

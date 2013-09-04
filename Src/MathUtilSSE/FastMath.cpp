@@ -20,19 +20,30 @@ _NAMESPACE_BEGIN
 inline int 
 FastFloor(float val)
 {
-	const float ROUND_NEGATIVE_INFINITY = -0.5f;
-	
-	int i;
-	__asm
-	{
-		fld		val
-		fadd	st, st(0)
-		fadd	ROUND_NEGATIVE_INFINITY
-		fistp	i
-		sar		i, 1
-	}
-	
-	return i;
+    __m128 xScalar = _mm_load_ss(&val);
+    __m128 v2x = _mm_add_ss(xScalar, xScalar);
+    v2x = _mm_add_ss(v2x, _mm_set_ss(-0.5f));
+
+    // TODO: Must be in round-to-nearest mode
+    int iv2x = _mm_cvtss_si32(v2x);
+
+    // TODO: Compiler independent arithmetic shift
+    iv2x = (iv2x >> 1);
+    return iv2x;
+
+	//const float ROUND_NEGATIVE_INFINITY = -0.5f;
+	//
+	//int i;
+	//__asm
+	//{
+	//	fld		val
+	//	fadd	st, st(0)
+	//	fadd	ROUND_NEGATIVE_INFINITY
+	//	fistp	i
+	//	sar		i, 1
+	//}
+	//
+	//return i;
 }
 
 inline int 

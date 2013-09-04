@@ -731,9 +731,9 @@ boolean TriangleSetup1Layer(const gmtl::VecA4f& v1, const gmtl::VecA4f& v2, cons
 		rcpDeterminant = _mm_shuffle_ps(rcpDeterminant, rcpDeterminant, _MM_SHUFFLE(0, 0, 0, 0));
 
 		// Finally, this is the inv 3x3 matrix
-		__m128 invMatRow1 = _3322s3223_3213s3312_2312s2213_2312s2213;//_mm_mul_ps(rcpDeterminant, _3322s3223_3213s3312_2312s2213_2312s2213);
-		__m128 invMatRow2 = _3123s3321_3311s3113_2113s2311_2113s2311;//_mm_mul_ps(rcpDeterminant, _3123s3321_3311s3113_2113s2311_2113s2311);
-		__m128 invMatRow3 = _3221s3122_3112s3211_2211s2112_2211s2112;//_mm_mul_ps(rcpDeterminant, _3221s3122_3112s3211_2211s2112_2211s2112);
+		__m128 invMatRow1 = _mm_mul_ps(rcpDeterminant, _3322s3223_3213s3312_2312s2213_2312s2213);
+		__m128 invMatRow2 = _mm_mul_ps(rcpDeterminant, _3123s3321_3311s3113_2113s2311_2113s2311);
+		__m128 invMatRow3 = _mm_mul_ps(rcpDeterminant, _3221s3122_3112s3211_2211s2112_2211s2112);
 
 		//// TEST CODE
 		//gmtl::VecA3f testInvRow1;
