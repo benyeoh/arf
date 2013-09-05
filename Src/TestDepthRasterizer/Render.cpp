@@ -39,7 +39,7 @@ void FastDepthClear()
     {
         _LOOPj(RASTERIZE_BUFFER_W >> 2)
         {
-            _mm_store_ps(pCurDepthBuffer, ONE);
+            _mm_stream_ps(pCurDepthBuffer, ONE);
             pCurDepthBuffer += 4;
         }
     }
@@ -91,7 +91,7 @@ void CubeVertexTransform(const gmtl::MatrixA44f& worldViewProj, const float* pXY
 #define _THE_PIXEL_SHADER &LinearDepthOutPixelShader
 #define NUM_LAYERS 1
 
-const static uint TOP_TILE_SIZE = 4;
+const static uint TOP_TILE_SIZE = 8;
 const static uint MID_TILE_SIZE = 4;
 const static uint NUM_TOP_TILES = _GET_NUM_TILES_DEPTH(RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, TOP_TILE_SIZE, TOP_TILE_SIZE);
 const static uint NUM_MID_TILES_IN_TOP_TILE = _GET_NUM_TILES_DEPTH(TOP_TILE_SIZE, TOP_TILE_SIZE, MID_TILE_SIZE, MID_TILE_SIZE);
@@ -147,11 +147,32 @@ struct RenderJob : public IPRunnable
 
 			if(g_RasterRes[i])
 			{
+                const RasterInfoDepth<1>* __restrict pRaster = (RasterInfoDepth<1>*) (g_Raster + i * RASTER_INFO_SIZE);
+                const float IN_TILE_X_F         = (float) BUFFER_WIDTH - 1.0f;
+                const float IN_TILE_Y_F         = (float) BUFFER_HEIGHT - 1.0f;
 
-#if NUM_LAYERS == 1
-               
-                //TilesEdgeCheckWithBB1LayerDepth<TOP_TILE_SIZE>(g_Raster + i * RASTER_INFO_SIZE, g_pRasterizeDepthBuffer, startX, startY, BUFFER_WIDTH, BUFFER_HEIGHT);
-                TilesRasterizeEdgeCheckWithBBDepth<TOP_TILE_SIZE>(g_Raster + i * RASTER_INFO_SIZE, g_pRasterizeDepthBuffer, startX, startY, BUFFER_WIDTH, BUFFER_HEIGHT);
+                float startXClamped = startX > pRaster->triBBFinal[0] ? startX : pRaster->triBBFinal[0];
+                float startYClamped = startY > pRaster->triBBFinal[1] ? startY : pRaster->triBBFinal[1];
+                float endX = startX + IN_TILE_X_F;
+                float endY = startY + IN_TILE_Y_F;
+                float endXClamped = endX < pRaster->triBBFinal[2] ? endX : pRaster->triBBFinal[2];
+                float endYClamped = endY < pRaster->triBBFinal[3] ? endY : pRaster->triBBFinal[3];
+
+                _DEBUG_COMPILE_ASSERT( ((BUFFER_WIDTH / (TOP_TILE_SIZE * 2)) & 0x1) == 0 );
+                _DEBUG_COMPILE_ASSERT( ((BUFFER_HEIGHT / (TOP_TILE_SIZE * 2)) & 0x1) == 0 );
+                
+                float area = (endXClamped - startXClamped) * (endYClamped - startYClamped);
+                if(area > (IN_TILE_X_F * IN_TILE_Y_F * 0.3f))
+                {
+                    startXClamped = startX > pRaster->triBB[0] ? startX : pRaster->triBB[0];
+                    startYClamped = startY > pRaster->triBB[1] ? startY : pRaster->triBB[1];
+                    endXClamped = endX < pRaster->triBB[2] ? endX : pRaster->triBB[2];
+                    endYClamped = endY < pRaster->triBB[3] ? endY : pRaster->triBB[3];
+
+                    TilesEdgeCheckWithBB1LayerDepth<TOP_TILE_SIZE>(g_Raster + i * RASTER_INFO_SIZE, g_pRasterizeDepthBuffer, startXClamped, startYClamped, endXClamped, endYClamped);
+                }
+                else
+                    TilesRasterizeEdgeCheckWithBBDepth<TOP_TILE_SIZE>(g_Raster + i * RASTER_INFO_SIZE, g_pRasterizeDepthBuffer, startXClamped, startYClamped, endXClamped, endYClamped);
                
                 //TilesEdgeCheckWithBB<NUM_INTER, 1, TOP_TILE_SIZE, 0, &AcceptPartial, &AcceptFull>
 				//	(g_Raster + i * RASTER_INFO_SIZE, startX, startY, BUFFER_WIDTH, BUFFER_HEIGHT, &acceptTopData);
@@ -168,53 +189,7 @@ struct RenderJob : public IPRunnable
 				//	TileRasterizeNoEdgeCheck<NUM_INTER, 1, TOP_TILE_SIZE, _THE_PIXEL_SHADER>
 				//		(g_Raster + i * RASTER_INFO_SIZE, acceptTopData.pFullData[tileIndex << 1], acceptTopData.pFullData[(tileIndex << 1) + 1], NULL);
 				//}
-		
 
-#endif
-
-#if NUM_LAYERS == 2
-				TilesEdgeCheckWithBB<NUM_INTER, 2, TOP_TILE_SIZE, 0, &AcceptPartial, &AcceptFull>
-						(g_Raster + i * RASTER_INFO_SIZE, startX, startY, BUFFER_WIDTH, BUFFER_HEIGHT, &acceptTopData);
-
-				for(int tileIndex=0; tileIndex < acceptTopData.numPartial; tileIndex++)
-				{
-					//TilesEdgeCheck2x2<NUM_INTER, 2, MID_TILE_SIZE, 1, &AcceptPartial, &AcceptFull>
-					TilesEdgeCheck<NUM_INTER, 2, TOP_TILE_SIZE, TOP_TILE_SIZE, MID_TILE_SIZE, 1, &AcceptPartial, &AcceptFull>
-						(g_Raster + i * RASTER_INFO_SIZE, acceptTopData.pPartialData[tileIndex << 1], acceptTopData.pPartialData[(tileIndex << 1) + 1], &acceptMidData);
-				}
-
-				for(int tileIndex=0; tileIndex < acceptMidData.numPartial; tileIndex++)
-				{
-					TileRasterizeEdgeCheck<NUM_INTER, 2, MID_TILE_SIZE, _THE_PIXEL_SHADER>
-						(g_Raster + i * RASTER_INFO_SIZE, acceptMidData.pPartialData[tileIndex << 1], acceptMidData.pPartialData[(tileIndex << 1) + 1], NULL);
-				}
-
-				for(int tileIndex=0; tileIndex < acceptTopData.numFull; tileIndex++)
-				{	
-					TileRasterizeNoEdgeCheck<NUM_INTER, 2, TOP_TILE_SIZE, _THE_PIXEL_SHADER>
-						(g_Raster + i * RASTER_INFO_SIZE, acceptTopData.pFullData[tileIndex << 1], acceptTopData.pFullData[(tileIndex << 1) + 1], NULL);
-				}
-
-				for(int tileIndex=0; tileIndex < acceptMidData.numFull; tileIndex++)
-				{
-					TileRasterizeNoEdgeCheck<NUM_INTER, 2, MID_TILE_SIZE, _THE_PIXEL_SHADER>
-						(g_Raster + i * RASTER_INFO_SIZE, acceptMidData.pFullData[tileIndex << 1], acceptMidData.pFullData[(tileIndex << 1) + 1], NULL);
-				}
-
-#endif
-				//TilesEdgeCheckWithBB<NUM_INTER, 1, TOP_TILE_SIZE, 0, &AcceptPartial, &AcceptFull>(g_Raster + i * RASTER_INFO_SIZE, startX, startY, BUFFER_WIDTH, BUFFER_HEIGHT, &acceptTopData);
-
-				//for(int tileIndex=0; tileIndex < acceptTopData.numPartial; tileIndex++)
-				//{
-				//	TileRasterizeEdgeCheck<NUM_INTER, 1, TOP_TILE_SIZE, _THE_PIXEL_SHADER>
-				//		(g_Raster + i * RASTER_INFO_SIZE, acceptTopData.pPartialData[tileIndex << 1], acceptTopData.pPartialData[(tileIndex << 1) + 1], NULL);
-				//}
-
-				//for(int tileIndex=0; tileIndex < acceptTopData.numFull; tileIndex++)
-				//{	
-				//	TileRasterizeNoEdgeCheck<NUM_INTER, 1, TOP_TILE_SIZE, _THE_PIXEL_SHADER>
-				//		(g_Raster + i * RASTER_INFO_SIZE, acceptTopData.pFullData[tileIndex << 1], acceptTopData.pFullData[(tileIndex << 1) + 1], NULL);
-				//}
 			}
 		}
 
@@ -510,7 +485,7 @@ void RenderQuad()
         {
             //TilesRasterizeEdgeCheckWithBBDepth<TOP_TILE_SIZE>(raster, g_pRasterizeDepthBuffer, 0.5f, 0.5f, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H);
 
-            TilesEdgeCheckWithBB1LayerDepth<TOP_TILE_SIZE>(raster, g_pRasterizeDepthBuffer, 0.5f, 0.5f, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H);
+            //TilesEdgeCheckWithBB1LayerDepth<TOP_TILE_SIZE>(raster, g_pRasterizeDepthBuffer, 0.5f, 0.5f, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H);
         }
     }
 
@@ -520,7 +495,7 @@ void RenderQuad()
         {
            // TilesRasterizeEdgeCheckWithBBDepth<TOP_TILE_SIZE>(raster, g_pRasterizeDepthBuffer, 0.5f, 0.5f, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H);
 
-            TilesEdgeCheckWithBB1LayerDepth<TOP_TILE_SIZE>(raster, g_pRasterizeDepthBuffer, 0.5f, 0.5f, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H);
+            //TilesEdgeCheckWithBB1LayerDepth<TOP_TILE_SIZE>(raster, g_pRasterizeDepthBuffer, 0.5f, 0.5f, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H);
         }
     }
 

@@ -329,7 +329,7 @@ __forceinline void QuadEdgeCheckDepth(const void* pRasterInfo, float* pDepthBuff
 }
 
 template<uint outTileSize>
-__forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, float* pDepthBuffer, float startX, float startY, uint bufferWidth, uint bufferHeight)
+__forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, float* pDepthBuffer, float startX, float startY, float endX, float endY)
 {
 	const RasterInfoDepth<1>* __restrict pRaster = ((RasterInfoDepth<1>*) pRasterInfo);
 
@@ -337,11 +337,8 @@ __forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, f
     const int OUT_TILE_SIZE_2X    = (OUT_TILE_SIZE << 1);
     const float OUT_TILE_SIZE_F     = (float) OUT_TILE_SIZE;
 	const float OUT_TILE_SIZE_2X_F  = OUT_TILE_SIZE_F * 2.0f;
-	const float IN_TILE_X_F         = (float) bufferWidth - 1.0f;
-	const float IN_TILE_Y_F         = (float) bufferHeight - 1.0f;
 
-	_DEBUG_ASSERT( ((bufferWidth / OUT_TILE_SIZE_2X) & 0x1) == 0 );
-	_DEBUG_ASSERT( ((bufferHeight / OUT_TILE_SIZE_2X) & 0x1) == 0 );
+
 	//const uint NUM_OUT_TILE_XY = inTileSize / (OUT_TILE_SIZE << 1);
 	//const uint NUM_OUT_TILE_WIDTH = bufferWidth / (OUT_TILE_SIZE << 1);
 	//const uint NUM_OUT_TILE_HEIGHT = bufferHeight / (OUT_TILE_SIZE << 1);
@@ -352,12 +349,10 @@ __forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, f
     const uint QUAD_X_OFFSET = 2;
 
 	{
-		float startXClamped = startX > pRaster->triBBFinal[0] ? startX : pRaster->triBBFinal[0];
-		float startYClamped = startY > pRaster->triBBFinal[1] ? startY : pRaster->triBBFinal[1];
-		float endX = startX + IN_TILE_X_F;
-		float endY = startY + IN_TILE_Y_F;
-		float endXClamped = endX < pRaster->triBBFinal[2] ? endX : pRaster->triBBFinal[2];
-		float endYClamped = endY < pRaster->triBBFinal[3] ? endY : pRaster->triBBFinal[3];
+		float startXClamped = startX;
+		float startYClamped = startY;
+		float endXClamped = endX;
+		float endYClamped = endY;
 
 		if(startXClamped < endXClamped)
 		{
@@ -525,7 +520,7 @@ __forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, f
 }
 
 template<uint outTileSize>
-void TilesEdgeCheckWithBB1LayerDepth(const void* pRasterInfo, float* pDepthBuffer, float startX, float startY, uint bufferWidth, uint bufferHeight)
+void TilesEdgeCheckWithBB1LayerDepth(const void* pRasterInfo, float* pDepthBuffer, float startX, float startY, float endX, float endY)
 {
 	const RasterInfoDepth<1>* __restrict pRaster = ((RasterInfoDepth<1>*) pRasterInfo);
 
@@ -533,14 +528,6 @@ void TilesEdgeCheckWithBB1LayerDepth(const void* pRasterInfo, float* pDepthBuffe
     const int OUT_TILE_SIZE_2X    = (OUT_TILE_SIZE << 1);
     const float OUT_TILE_SIZE_F     = (float) OUT_TILE_SIZE;
 	const float OUT_TILE_SIZE_2X_F  = OUT_TILE_SIZE_F * 2.0f;
-	const float IN_TILE_X_F         = (float) bufferWidth - 1.0f;
-	const float IN_TILE_Y_F         = (float) bufferHeight - 1.0f;
-
-	_DEBUG_ASSERT( ((bufferWidth / OUT_TILE_SIZE_2X) & 0x1) == 0 );
-	_DEBUG_ASSERT( ((bufferHeight / OUT_TILE_SIZE_2X) & 0x1) == 0 );
-	//const uint NUM_OUT_TILE_XY = inTileSize / (OUT_TILE_SIZE << 1);
-	//const uint NUM_OUT_TILE_WIDTH = bufferWidth / (OUT_TILE_SIZE << 1);
-	//const uint NUM_OUT_TILE_HEIGHT = bufferHeight / (OUT_TILE_SIZE << 1);
 
 	const static _ALIGN(16) float QUAD_IN_TILE_OFFSETS_X[] = {0.0f, OUT_TILE_SIZE_F, 0.0f, OUT_TILE_SIZE_F};
 	const static _ALIGN(16) float QUAD_IN_TILE_OFFSETS_Y[] = {0.0f, 0.0f, OUT_TILE_SIZE_F, OUT_TILE_SIZE_F};
@@ -548,12 +535,10 @@ void TilesEdgeCheckWithBB1LayerDepth(const void* pRasterInfo, float* pDepthBuffe
     const uint QUAD_X_OFFSET = 2;
 
 	{
-		float startXClamped = startX > pRaster->triBB[0] ? startX : pRaster->triBB[0];
-		float startYClamped = startY > pRaster->triBB[1] ? startY : pRaster->triBB[1];
-		float endX = startX + IN_TILE_X_F;
-		float endY = startY + IN_TILE_Y_F;
-		float endXClamped = endX < pRaster->triBB[2] ? endX : pRaster->triBB[2];
-		float endYClamped = endY < pRaster->triBB[3] ? endY : pRaster->triBB[3];
+        float startXClamped = startX;
+        float startYClamped = startY;
+        float endXClamped = endX;
+        float endYClamped = endY;
 
 		if(startXClamped < endXClamped)
 		{
