@@ -162,7 +162,7 @@ struct RenderJob : public IPRunnable
                 _DEBUG_COMPILE_ASSERT( ((BUFFER_HEIGHT / (TOP_TILE_SIZE * 2)) & 0x1) == 0 );
                 
                 float area = (endXClamped - startXClamped) * (endYClamped - startYClamped);
-                if(area > (IN_TILE_X_F * IN_TILE_Y_F * 0.3f))
+                if(area > (IN_TILE_X_F * IN_TILE_Y_F * 0.25f))
                 {
                     startXClamped = startX > pRaster->triBB[0] ? startX : pRaster->triBB[0];
                     startYClamped = startY > pRaster->triBB[1] ? startY : pRaster->triBB[1];
