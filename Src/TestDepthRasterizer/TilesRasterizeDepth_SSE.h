@@ -89,8 +89,9 @@ __forceinline void TilesRasterizeEdgeCheckDepth(const void* pRasterInfo, float* 
         _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
         __m128 insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-        insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-        __m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+        //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+        __m128 depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+        //__m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
         _mm_store_ps(pDepthBuffer, depthStore);
 
         _LOOPj(NUM_PIXEL_TILES_XY - 1)
@@ -108,8 +109,9 @@ __forceinline void TilesRasterizeEdgeCheckDepth(const void* pRasterInfo, float* 
             _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
             insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-            insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-            depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+            //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+            __m128 depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+            //depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
             _mm_store_ps(pDepthBuffer, depthStore);
         }
 
@@ -126,8 +128,9 @@ __forceinline void TilesRasterizeEdgeCheckDepth(const void* pRasterInfo, float* 
         _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
         insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-        insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-        depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+        //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+        depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+        //depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
         _mm_store_ps(pDepthBuffer, depthStore);
 
         _LOOPj(NUM_PIXEL_TILES_XY - 1)
@@ -147,8 +150,9 @@ __forceinline void TilesRasterizeEdgeCheckDepth(const void* pRasterInfo, float* 
             _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
             insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-            insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-            depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+            //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+            __m128 depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+            //depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
             _mm_store_ps(pDepthBuffer, depthStore);
         }
 
@@ -406,8 +410,10 @@ __forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, f
                 _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
                 __m128 insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-                insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-                __m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+                //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+                __m128 depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+
+                //__m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
                 _mm_store_ps(pDepthBuffer, depthStore);
 
 				//while(curX < (endXClamped - OUT_TILE_SIZE_2X_F))
@@ -426,8 +432,10 @@ __forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, f
                     _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
                     __m128 insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-                    insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-                    __m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+                    //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+                    __m128 depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+
+                    // __m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
                     _mm_store_ps(pDepthBuffer, depthStore);
 				}
 
@@ -444,8 +452,10 @@ __forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, f
                 _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
                 insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-                insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-                depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+                //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+                depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+
+                //depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
                 _mm_store_ps(pDepthBuffer, depthStore);
 
 				//while(curX >= (startXClamped + OUT_TILE_SIZE_2X_F))
@@ -464,8 +474,10 @@ __forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, f
                     _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
                     __m128 insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-                    insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-                    __m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+                    //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+                    __m128 depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+
+                    //__m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
                     _mm_store_ps(pDepthBuffer, depthStore);
 				}
 
@@ -487,8 +499,10 @@ __forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, f
                 _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
                 __m128 insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-                insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-                __m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+                //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+                __m128 depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+
+                //__m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
                 _mm_store_ps(pDepthBuffer, depthStore);
 
 				//while(curX < (endXClamped - OUT_TILE_SIZE_2X_F))
@@ -507,8 +521,10 @@ __forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, f
                     _CHECK_DEPTH_EDGE(pDepthBuffer, depthMin, e1, e2, e3);
 
                     __m128 insideTest = _mm_or_ps( _mm_or_ps( e1, e2 ), e3 );
-                    insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
-                    __m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
+                    //insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &_ZERO) ));
+                    __m128 depthStore = _mm_blendv_ps(depthMin, depthPrev, insideTest); // Mask with edge function
+
+                    //__m128 depthStore = _mm_xor_ps( depthPrev, _mm_and_ps( insideTest, _mm_xor_ps(depthMin, depthPrev) ) ); // Mask with edge function
                     _mm_store_ps(pDepthBuffer, depthStore);
 				}
 			}
