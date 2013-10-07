@@ -338,8 +338,8 @@ void ProcessInput()
 	float piInc = gmtl::Math::TWO_PI / NUM_POINT_LIGHTS;
 	_LOOPi(NUM_POINT_LIGHTS)
 	{
-		float x = cos(piInc * i + 0) * 2.0f;
-		float z = sin(piInc * i + 0) * 2.0f;
+		float x = cos(piInc * i + amount) * 2.0f;
+		float z = sin(piInc * i + amount) * 2.0f;
 
 		g_PointLightPos[i]	= gmtl::VecA3f(x, 6.0f, z);
 		g_PointLight[i].pos = _CAST_VEC3(g_PointLightPos[i]);

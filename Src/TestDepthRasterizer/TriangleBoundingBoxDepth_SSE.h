@@ -46,6 +46,10 @@ boolean TriangleBoundingBoxDepth1Layer(void* pRasterInfo, const gmtl::VecA4f& v1
         if( (overFarPlaneRes & 0x7) == 0x7 )
             return FALSE;
 
+        // Basically do edge intersection tests in screenspace from this formula:
+        // Ax + By = -C
+        // Due to FP imprecision, the RCP can be 0 (meaning 2 edges never intersect which is obviously false)
+
         // Edge 1, Edge 2
         __m128 a1b2 = _mm_mul_ss(pRaster->e1aaaa, pRaster->e2bbbb);
         __m128 b1a2 = _mm_mul_ss(pRaster->e1bbbb, pRaster->e2aaaa);
@@ -126,6 +130,8 @@ boolean TriangleBoundingBoxDepth1Layer(void* pRasterInfo, const gmtl::VecA4f& v1
         __m128 bbMin = _mm_unpacklo_ps(minX, minY);
         __m128 bbMax = _mm_unpacklo_ps(maxX, maxY);
         __m128 bb = _mm_movelh_ps(bbMin, bbMax);
+        bb = _mm_max_ps(bb, _mm_set1_ps(-999999999.0f));
+        bb = _mm_min_ps(bb, _mm_set1_ps(999999999.0f));
 
         // Top
         __m128 snapVal = _mm_mul_ps(bb, rcpTopTile);    // Snap to tilesize
@@ -151,6 +157,10 @@ boolean TriangleBoundingBoxDepth1Layer(void* pRasterInfo, const gmtl::VecA4f& v1
 
         _mm_store_ps(pRaster->triBBFinal, snapVal);
 
+#ifdef _DEBUG
+        _DEBUG_ASSERT(pRaster->triBBFinal[1] < pRaster->triBBFinal[3]);
+
+#endif
         //maxXSnap = _mm_mul_ss(maxX, rcpMidTile);
         //maxXSnap = _mm_add_ss(maxXSnap, maxXSnap);
         //maxXSnap = _mm_sub_ss(ceilOffset, maxXSnap);

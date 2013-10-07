@@ -182,12 +182,12 @@ void ProcessInput()
 	if(g_IsDebugRenderObjects)
 		g_LastTime = amount;
 	
-	//_LOOPi(NUM_CUBES)
-	//{
-	//	gmtl::AxisAnglef cubeRotAxis;
-	//	//gmtl::normalize(axis);
-	//	cubeRotAxis.setAxis( g_CubeRotAxis[i] );
-	//	cubeRotAxis.setAngle( g_LastTime );
-	//	gmtl::setRot(g_CubeWorld[i], cubeRotAxis);
-	//}	
+	_LOOPi(NUM_CUBES)
+	{
+		gmtl::AxisAnglef cubeRotAxis;
+		//gmtl::normalize(axis);
+		cubeRotAxis.setAxis( g_CubeRotAxis[i] );
+		cubeRotAxis.setAngle( g_LastTime );
+		gmtl::setRot(g_CubeWorld[i], cubeRotAxis);
+	}	
 }
