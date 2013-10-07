@@ -368,6 +368,10 @@ void UntileDepthBuffer()
             __m128 denom2 = _mm_rcp_ps( _mm_add_ps( _mm_mul_ps(line2, nearMinusFar), farPlane ) );
             line1 = _mm_mul_ps( nearPlane, denom1 );
             line2 = _mm_mul_ps( nearPlane, denom2 );
+            //__m128 denom1 = ( _mm_add_ps( _mm_mul_ps(line1, nearMinusFar), farPlane ) );
+            //__m128 denom2 = ( _mm_add_ps( _mm_mul_ps(line2, nearMinusFar), farPlane ) );
+            //line1 = _mm_div_ps( nearPlane, denom1 );
+            //line2 = _mm_div_ps( nearPlane, denom2 );
 
             _mm_store_ps(g_pRasterizeBuffer + row * RASTERIZE_BUFFER_W + (j << 2), line1);
             _mm_store_ps(g_pRasterizeBuffer + (row+1) * RASTERIZE_BUFFER_W + (j << 2), line2);
@@ -378,7 +382,8 @@ void UntileDepthBuffer()
 void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 {
 	int numPerJob = CUBE_BATCH / 4;
-	_DEBUG_COMPILE_ASSERT((CUBE_BATCH % 4) == 0);
+    _DEBUG_ASSERT((CUBE_BATCH % 4) == 0);
+	//_DEBUG_COMPILE_ASSERT((CUBE_BATCH % 4) == 0);
 	double swStart = g_pPlatform->GetTimer().GetTime();
 
 	g_pThreadPool->SetAlwaysActive(TRUE);
@@ -452,7 +457,23 @@ void RenderSWCubesST()
             {
                 if(TriangleBoundingBoxDepth1Layer<TOP_TILE_SIZE>(raster, postV3, postV2, postV1))
                 {
-                    TilesEdgeCheckWithBB1LayerDepth<TOP_TILE_SIZE>(raster, g_pRasterizeDepthBuffer, 0.5f, 0.5f, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H);
+                    const RasterInfoDepth<1>* __restrict pRaster = (RasterInfoDepth<1>*) (raster);
+                    const float IN_TILE_X_F         = (float) RASTERIZE_BUFFER_W - 1.0f;
+                    const float IN_TILE_Y_F         = (float) RASTERIZE_BUFFER_H - 1.0f;
+
+                    float startXClamped = 0.5f > pRaster->triBBFinal[0] ? 0.5f : pRaster->triBBFinal[0];
+                    float startYClamped = 0.5f > pRaster->triBBFinal[1] ? 0.5f : pRaster->triBBFinal[1];
+                    float endX = 0.5f + IN_TILE_X_F;
+                    float endY = 0.5f + IN_TILE_Y_F;
+                    float endXClamped = endX < pRaster->triBBFinal[2] ? endX : pRaster->triBBFinal[2];
+                    float endYClamped = endY < pRaster->triBBFinal[3] ? endY : pRaster->triBBFinal[3];
+
+                    _DEBUG_COMPILE_ASSERT( ((RASTERIZE_BUFFER_W / (TOP_TILE_SIZE * 2)) & 0x1) == 0 );
+                    _DEBUG_COMPILE_ASSERT( ((RASTERIZE_BUFFER_H / (TOP_TILE_SIZE * 2)) & 0x1) == 0 );
+
+                    TilesRasterizeEdgeCheckWithBBDepth<TOP_TILE_SIZE>(raster, g_pRasterizeDepthBuffer, startXClamped, startYClamped, endXClamped, endYClamped);
+
+                    //TilesEdgeCheckWithBB1LayerDepth<TOP_TILE_SIZE>(raster, g_pRasterizeDepthBuffer, 0.5f, 0.5f, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H);
                 }
             }
         }
@@ -616,7 +637,7 @@ void RenderAll()
             RenderSWCube(&(g_CubeWorldViewProj[i * CUBE_BATCH]));
         }
 
-        //    RenderSWCubesST();
+        //RenderSWCubesST();
         //RenderQuad();
         
 		//gmtl::VecA4f pos1;

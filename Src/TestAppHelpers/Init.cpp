@@ -339,7 +339,7 @@ FlockingAIComponent* CreateFlockingAIEntities()
 	pFlockingAI->AddBehavior(pBoxAvoid);
 
 	SeparationBehavior* pSep = _NEW SeparationBehavior;
-	pSep->SetRadius(5.0f);
+	pSep->SetRadius(8.0f);
 	pSep->SetStrength(2.f);
 	pFlockingAI->AddBehavior(pSep);
 

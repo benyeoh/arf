@@ -481,8 +481,8 @@ boolean Initialize()
 	_LOOPi(NUM_CUBES)
 	{
 		gmtl::identity(_CAST_MAT44(g_CubeWorld[i]));
-		float x = gmtl::Math::rangeRandom(-4.0f, 4.0f);
-		float y = gmtl::Math::rangeRandom(-4.0f, 4.0f);
+		float x = gmtl::Math::rangeRandom(-4.0f, 4.0f) * CUBE_DISTANCE_MULT;
+		float y = gmtl::Math::rangeRandom(-4.0f, 4.0f) * CUBE_DISTANCE_MULT;
 		float z = gmtl::Math::rangeRandom(-10.0f, -6.0f);
 		gmtl::setTrans(_CAST_MAT44(g_CubeWorld[i]), gmtl::Vec3f(x, y, z));
 		g_CubeRotAxis[i] = gmtl::Vec3f(

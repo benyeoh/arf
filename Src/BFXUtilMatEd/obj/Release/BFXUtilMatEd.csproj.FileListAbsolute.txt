@@ -8,3 +8,8 @@ C:\Dev\X\Bin\Minotaur\Plugins\BFXUtilMatEd.pdb
 C:\Dev\X\Src\BFXUtilMatEd\obj\Release\ResolveAssemblyReference.cache
 C:\Dev\X\Src\BFXUtilMatEd\obj\Release\BFXUtilMatEd.dll
 C:\Dev\X\Src\BFXUtilMatEd\obj\Release\BFXUtilMatEd.pdb
+D:\Dev\X\Bin\Minotaur\Plugins\BFXUtilMatEd.dll
+D:\Dev\X\Bin\Minotaur\Plugins\BFXUtilMatEd.pdb
+D:\Dev\X\Src\BFXUtilMatEd\obj\Release\BFXUtilMatEd.csprojResolveAssemblyReference.cache
+D:\Dev\X\Src\BFXUtilMatEd\obj\Release\BFXUtilMatEd.dll
+D:\Dev\X\Src\BFXUtilMatEd\obj\Release\BFXUtilMatEd.pdb

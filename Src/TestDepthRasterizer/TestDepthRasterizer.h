@@ -117,13 +117,14 @@ const static uint FAST_DEPTH_CLEAR_W = (RASTERIZE_BUFFER_W / 2) / 32;
 const static uint FAST_DEPTH_CLEAR_H = RASTERIZE_BUFFER_H / 2;
 
 //const static float CUBE_SIZE = 1.0f;
-const static float FAR_PLANE = 14.0f;
+const static float FAR_PLANE = 20.0f;
 const static float FAR_PLANE_RCP = 1.0f / FAR_PLANE;
-const static float NEAR_PLANE = 0.01f;
+const static float NEAR_PLANE = 0.5f;
 const static uint CUBE_VERTEX_STRIDE	= 5;
 const static uint CUBE_TEXUV_OFFSET		= 3;
 
 const static float CUBE_SIZE = 1.0f;
+const static float CUBE_DISTANCE_MULT = 1.0f;
 
 const static float g_CubeVertices[] = 
 {
