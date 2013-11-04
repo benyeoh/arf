@@ -13,6 +13,25 @@
 
 _NAMESPACE_BEGIN
 
+inline boolean IsBlockCompressed(eRTexFormat format)
+{
+	return IsBlockCompressed(TexFormatToD3D11(format));
+}
+
+inline boolean IsBlockCompressed(DXGI_FORMAT format)
+{
+	switch(format)
+	{
+	case DXGI_FORMAT_BC1_UNORM:
+	case DXGI_FORMAT_BC2_UNORM:
+	case DXGI_FORMAT_BC2_UNORM:
+	case DXGI_FORMAT_BC3_UNORM:
+	case DXGI_FORMAT_BC3_UNORM:	return TRUE;
+	}
+
+	return FALSE;
+}
+
 inline eRCubeFace CubeFaceFromD3D11(D3D11_TEXTURECUBE_FACE face)
 {
 	switch(face)

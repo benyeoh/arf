@@ -41,28 +41,28 @@ protected:
 	_PURE( uint DoGetMipMapLevels() const )
 		
 public:
-	uint GetBitDepth() const 
+	uint GetSizePerElem() const 
 	{
 		switch(m_Format)
 		{
-			case TEXF_R8: return 8;
+			case TEXF_R8: return 1;
 
 			case TEXF_A8R8G8B8:
 			case TEXF_R32F:		
 			case TEXF_G16R16F:
 			case TEXF_G16R16:
-			case TEXF_X8R8G8B8: return 32;
+			case TEXF_X8R8G8B8: return 4;
 
-			// Compressed textures effectively per pixel
-			case TEXF_DXT1:	return 4;		
+			// Compressed textures effectively per block rather than per pixel
+			case TEXF_DXT1:	return 8;		
 			case TEXF_DXT2:
 			case TEXF_DXT3:
 			case TEXF_DXT4:
-			case TEXF_DXT5:	return 8;
+			case TEXF_DXT5:	return 16;
 			
-			case TEXF_A32B32G32R32F:	return 128;
-			case TEXF_G32R32F:			return 64;
-			case TEXF_A16B16G16R16F:	return 64;
+			case TEXF_A32B32G32R32F:	return 16;
+			case TEXF_G32R32F:			return 8;
+			case TEXF_A16B16G16R16F:	return 8;
 
 		}
 		

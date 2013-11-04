@@ -33,7 +33,41 @@ _DECLARE_SMARTPTR(ID3D11ShaderResourceView)
 _DECLARE_SMARTPTR(ID3D11UnorderedAccessView)
 _DECLARE_SMARTPTR(ID3D11Buffer)
 
+class CRRendererD3D11;
+
+struct ScratchPad
+{
+	void*	pMem;
+	uint	size;
+
+	ScratchPad()
+		: pMem(NULL)
+		, size(0)
+	{}
+
+	~ScratchPad()
+	{
+		Realloc(0);
+	}
+
+	void Realloc(uint newSize)
+	{
+		if(pMem)
+			_FREE(pMem);
+
+		if(newSize > 0)
+			pMem = _MALLOC(newSize);
+
+		size = newSize;
+	}
+};
+
 _NAMESPACE_END
 
-#include "CRRendererD3D11.h"
+#include "CRTextureRTD3D11.h"
 #include "CRTexture2DD3D11.h"
+#include "CRVertexBufferD3D11.h"
+#include "CRIndexBufferD3D11.h"
+#include "CRTextureCubeD3D11.h"
+#include "CRResourceMgrD3D11.h"
+#include "CRRendererD3D11.h"

@@ -1,11 +1,11 @@
 //==============================================================================
 //
-//		CRTexture2DD3D11.cpp
+//		CRTextureCubeD3D11.cpp
 //
 //			A description here
 //
-//		Author:		Ben Yeoh
-//		Date:		Sunday, April 09, 2006
+//		Author: 	Ben Yeoh
+//		Date:		Monday, 14 October, 2013
 //
 //==============================================================================
 
@@ -14,7 +14,7 @@
 
 _NAMESPACE_BEGIN
 
-byte* CRTexture2DD3D11::MapDirectResource(uint level, uint& pitch)
+byte* CRTextureCubeD3D11::MapDirectResource(uint level, eRCubeFace face, uint& pitch)
 {
 	byte* pBuf;
 
@@ -23,7 +23,8 @@ byte* CRTexture2DD3D11::MapDirectResource(uint level, uint& pitch)
 	ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
 
 	D3D11_SUBRESOURCE_DATA subRes;
-	HRESULT hr = pContext->Map(m_pD3DTexture, level, D3D11_MAP_WRITE_DISCARD, 0, &subRes);
+	UINT subResIndex = D3D11CalcSubresource(level, (UINT) CubeFaceToD3D11(face), m_Desc.MipLevels);
+	HRESULT hr = pContext->Map(m_pD3DTexture, subResIndex, D3D11_MAP_WRITE_DISCARD, 0, &subRes);
 	_DEBUG_ASSERT(hr == S_OK);
 	pBuf = subRes.pSysMem;
 	pitch = subRes.SysMemPitch;
@@ -31,16 +32,18 @@ byte* CRTexture2DD3D11::MapDirectResource(uint level, uint& pitch)
 	return pBuf;
 }
 
-void CRTexture2DD3D11::UnmapDirectResource(uint level)
+void CRTextureCubeD3D11::UnmapDirectResource(uint level, eRCubeFace face)
 {
 	// Directly access GPU resource with Map
 	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
 	ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
+	UINT subResIndex = D3D11CalcSubresource(level, (UINT) CubeFaceToD3D11(face), m_Desc.MipLevels);
 
-	pContext->Unmap(m_pD3DTexture, level);
+	HRESULT hr = pContext->Unmap(m_pD3DTexture, subResIndex);
+	_DEBUG_ASSERT(SUCCEEDED(hr));
 }
 
-byte* CRTexture2DD3D11::MapProxyResource(uint level, uint& outPitch)
+byte* CRTextureCubeD3D11::MapProxyResource(uint level, uint& outPitch)
 {
 	byte* pBuf;
 
@@ -67,7 +70,7 @@ byte* CRTexture2DD3D11::MapProxyResource(uint level, uint& outPitch)
 	return pBuf;
 }
 
-void CRTexture2DD3D11::UnmapProxyResource(uint level)
+void CRTextureCubeD3D11::UnmapProxyResource(uint level, eRCubeFace face)
 {
 	_DEBUG_ASSERT(m_pLockPad);
 	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
@@ -104,14 +107,15 @@ void CRTexture2DD3D11::UnmapProxyResource(uint level)
 
 	// Offset src data to match dest box
 	byte* pSrcData = ((byte*)m_pLockPad->pMem) + alignBox.left * GetSizePerElem() + alignBox.top * pitch;
+	UINT subResIndex = D3D11CalcSubresource(level, (UINT) CubeFaceToD3D11(face), m_Desc.MipLevels);
 
-	pContext->UpdateSubresource(m_pD3DTexture, level, &updateBox, pSrcData, pitch, 0);
+	pContext->UpdateSubresource(m_pD3DTexture, subResIndex, &updateBox, pSrcData, pitch, 0);
 	pRenderer->DisposeScratchPad(m_pLockPad);
 	m_pLockPad = NULL;		
 }
 
 
-byte* CRTexture2DD3D11::DoLockImmediate(uint level, uint& pitch)
+byte* CRTextureCubeD3D11::DoLockImmediate(uint level, uint& pitch)
 {
 	byte* pBuf;
 
@@ -129,25 +133,25 @@ byte* CRTexture2DD3D11::DoLockImmediate(uint level, uint& pitch)
 
 		pBuf = MapProxyResource(level, pitch);
 	}
-	
+
 	return pBuf;		
 }
 
-boolean CRTexture2DD3D11::DoUnlockImmediate(uint level)
+boolean CRTextureCubeD3D11::DoUnlockImmediate(uint level, eRCubeFace face)
 {
 	if(m_Desc.BindFlags & D3D11_USAGE_DYNAMIC)
 	{
-		UnmapDirectResource(level);
+		UnmapDirectResource(level, face);
 	}
 	else
 	{
-		UnmapProxyResource(level);
+		UnmapProxyResource(level, face);
 	}
 
 	return TRUE;
 }
 
-boolean CRTexture2DD3D11::DoUnlock(uint level)
+boolean CRTextureCubeD3D11::DoUnlock(uint level, eRCubeFace face)
 {
 	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
 	ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
@@ -167,7 +171,7 @@ boolean CRTexture2DD3D11::DoUnlock(uint level)
 
 				// Lock render resource
 				uint pitch;
-				byte* pBuf = MapDirectResource(level, pitch);
+				byte* pBuf = MapDirectResource(level, face, pitch);
 
 				_DEBUG_ASSERT(m_OffscreenData.pSysMem);
 				_DEBUG_ASSERT(m_OffscreenData.SysMemPitch == pitch);
@@ -183,13 +187,14 @@ boolean CRTexture2DD3D11::DoUnlock(uint level)
 				}
 
 				memcpy(pBuf, m_OffscreenData.pSysMem, numRows * pitch);
-				
+
 				// Unlock
-				UnmapDirectResource(level);
+				UnmapDirectResource(level, face);
 
 				// WARNING: Do we need an immediate context?
 				// Apparently, only MAP_DISCARD is allowed for deferred contexts
-				pContext->Unmap(m_pOffscreen, level);
+				UINT subResIndex = D3D11CalcSubresource(level, (UINT) CubeFaceToD3D11(face), m_Desc.MipLevels);
+				pContext->Unmap(m_pOffscreen, subResIndex);
 
 				m_OffscreenData.pSysMem = NULL;
 				m_OffscreenData.SysMemPitch = 0;
@@ -199,7 +204,8 @@ boolean CRTexture2DD3D11::DoUnlock(uint level)
 			{
 				// WARNING: Do we need an immediate context?
 				// Apparently, only MAP_DISCARD is allowed for deferred contexts
-				pContext->Unmap(m_pOffscreen, level);
+				UINT subResIndex = D3D11CalcSubresource(level, (UINT) CubeFaceToD3D11(face), m_Desc.MipLevels);
+				pContext->Unmap(m_pOffscreen, subResIndex);
 
 				m_OffscreenData.pSysMem = NULL;
 				m_OffscreenData.SysMemPitch = 0;
@@ -234,7 +240,7 @@ boolean CRTexture2DD3D11::DoUnlock(uint level)
 				//_DEBUG_ASSERT(m_OffscreenData.SysMemPitch == pitch);
 
 				//byte* pSrcData = ((byte*)m_OffscreenData.pSysMem) + alignBox.left * GetSizePerElem() + alignBox.top * m_OffscreenData.SysMemPitch;
-				HRESULT hr = pContext->CopySubresourceRegion(m_pOffscreen, level, m_WriteOffset[0], m_WriteOffset[1], 0, m_pOffscreen, level, &updateBox);
+				HRESULT hr = pContext->CopySubresourceRegion(m_pOffscreen, subResIndex, m_WriteOffset[0], m_WriteOffset[1], 0, m_pOffscreen, subResIndex, &updateBox);
 				_DEBUG_ASSERT(SUCCEEDED(hr));
 				//pContext->UpdateSubresource(m_pD3DTexture, level, &updateBox, pSrcData, m_OffscreenData.SysMemPitch, 0);
 			}
@@ -247,18 +253,18 @@ boolean CRTexture2DD3D11::DoUnlock(uint level)
 		// Which means the buffer is either not dynamic or we are writing the whole buffer
 		if(m_Desc & D3D11_USAGE_DYNAMIC)
 		{
-			UnmapDirectResource(level);
+			UnmapDirectResource(level, face);
 		}
 		else
 		{
-			UnmapProxyResource(level);
+			UnmapProxyResource(level, face);
 		}
 	}
-	
+
 	return TRUE;
 }
 
-byte* CRTexture2DD3D11::DoLock(uint level, uint& pitch, const gmtl::Vec4i* pToWrite)
+byte* CRTextureCubeD3D11::DoLock(uint level, eRCubeFace face, uint& pitch, const gmtl::Vec4i* pToWrite)
 {		
 	byte* pBuf = NULL;
 
@@ -325,19 +331,19 @@ byte* CRTexture2DD3D11::DoLock(uint level, uint& pitch, const gmtl::Vec4i* pToWr
 	return pBuf;			
 }
 
-uint CRTexture2DD3D11::DoGetMipMapLevels() const
+uint CRTextureCubeD3D11::DoGetMipMapLevels() const
 {
 	return (uint) m_Desc.MipLevels;
 }
 
-uint CRTexture2DD3D11::DoGetWidth(uint level) const
+uint CRTextureCubeD3D11::DoGetWidth(uint level) const
 {
 	uint width = m_Desc.Width >> level;
 	width = width > 0 ? width : 1;
 	return width;
 }
 
-uint CRTexture2DD3D11::DoGetHeight(uint level) const
+uint CRTextureCubeD3D11::DoGetHeight(uint level) const
 {
 	uint height = m_Desc.Height >> level;
 	height = height > 0 ? height : 1;
@@ -375,7 +381,7 @@ uint CRTexture2DD3D11::DoGetHeight(uint level) const
 //	}
 //}
 
-void CRTexture2DD3D11::SetD3DTexture(ID3D11Texture2D* pTex, ID3D11Texture2D* pOffScreen)
+void CRTextureCubeD3D11::SetD3DTexture(ID3D11Texture2D* pTex, ID3D11Texture2D* pOffScreen)
 {
 	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
 	ID3D11Device* pDevice = pRenderer->GetDevice();
@@ -388,42 +394,47 @@ void CRTexture2DD3D11::SetD3DTexture(ID3D11Texture2D* pTex, ID3D11Texture2D* pOf
 
 	ID3D11ShaderResourceView* pSRV;
 	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
 
 	DXGI_FORMAT srvFormat = m_Desc.Format;
 	if(TexFormatFromD3D11Typeless(m_Desc.Format) != TEXF_END)
 		srvFormat = TexFormatToD3D11( TexFormatFromD3D11Typeless(m_Desc.Format) );
 
 	srvDesc.Format = srvFormat;
-	srvDesc.Texture2D.MipLevels = m_Desc.MipLevels;
-	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.TextureCube.MipLevels = m_Desc.MipLevels;
+	srvDesc.TextureCube.MostDetailedMip = 0;
 
 	HRESULT hr = pDevice->CreateShaderResourceView(m_pD3DTexture, &srvDesc, &pSRV);
 	_DEBUG_ASSERT(SUCCEEDED(hr));
 	m_pSRV = pSRV;
 	pSRV->Release();
-
-	if(m_Desc.BindFlags & D3D11_BIND_RENDER_TARGET)
-	{
-		_LOOPi(m_Desc.MipLevels)
-		{
-			D3D11_RENDER_TARGET_VIEW_DESC rtDesc;
-			rtDesc.Format = srvFormat;
-			rtDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-			rtDesc.Texture2D.MipSlice = i;
-
-			CRTextureRTD3D11* pRT = pRenderer->GetResourceMgrD3D()->CreateRenderTargetFromResource(m_pD3DTexture, &rtDesc, GetWidth(i), GetHeight(i));
-			m_pRT.push_back(pRT);
-		}
-	}
 }
 
-CRTextureRT* CRTexture2DD3D11::DoGetTextureRT(uint level)
+CRTextureRT* CRTextureCubeD3D11::DoGetTextureRT(uint mipLevel, eRCubeFace face)
 {
-	if(m_pRT.size() > 0)
-		return m_pRT[level];
+	uint entryHash = (mipLevel << 3) | ((uint) face);
+	CRTextureRTD3D11Ptr* ppRT = m_CubeFaceRTTable.Get(entryHash);
+	CRTexture2DD3D11* pRT;
+	if(!ppRT)
+	{
+		CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
 
-	return NULL;
+		D3D11_RENDER_TARGET_VIEW_DESC rtDesc;
+		rtDesc.Format = srvFormat;
+		rtDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+		rtDesc.Texture2D.MipSlice = mipLevel;
+
+		CRTextureRTD3D11Ptr pRTTemp = pRenderer->GetResourceMgrD3D()->CreateRenderTargetFromResource(m_pD3DTexture, &rtDesc, GetWidth(mipLevel), GetHeight(mipLevel));
+		_DEBUG_ASSERT(pRTTemp);
+		m_CubeFaceRTTable.Add(entryHash, pRTTemp);
+		pRT = (CRTexture2DD3D11*) pRTTemp;
+	}
+	else
+	{
+		pRT = (CRTexture2DD3D11*) *ppRT;
+	}
+
+	return pRT;
 }
 
 

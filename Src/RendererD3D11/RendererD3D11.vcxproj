@@ -82,9 +82,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CRIndexBufferD3D11.h" />
     <ClInclude Include="CRRendererD3D11.h" />
     <ClInclude Include="CRResourceMgrD3D11.h" />
     <ClInclude Include="CRTexture2DD3D11.h" />
+    <ClInclude Include="CRTextureCubeD3D11.h" />
     <ClInclude Include="CRTextureRTD3D11.h" />
     <ClInclude Include="CRVertexBufferD3D11.h" />
     <ClInclude Include="D3D11HelperFns.h" />
@@ -92,9 +94,11 @@
     <ClInclude Include="RendererD3D11Framework.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CRIndexBufferD3D11.cpp" />
     <ClCompile Include="CRRendererD3D11.cpp" />
     <ClCompile Include="CRResourceMgrD3D11.cpp" />
     <ClCompile Include="CRTexture2DD3D11.cpp" />
+    <ClCompile Include="CRTextureCubeD3D11.cpp" />
     <ClCompile Include="CRTextureRTD3D11.cpp" />
     <ClCompile Include="CRVertexBufferD3D11.cpp" />
     <ClCompile Include="Main.cpp" />
