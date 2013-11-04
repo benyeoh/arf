@@ -37,7 +37,7 @@ public:
 		m_OffscreenData.SysMemPitch = 0;
 	}
 
-	virtual ~CRTexture2DD3D()
+	virtual ~CRTexture2DD3D11()
 	{
 		_DEBUG_ASSERT(m_pLockPad == NULL);
 		_DEBUG_ASSERT(m_OffscreenData.pSysMem == NULL);
@@ -64,11 +64,13 @@ protected:
 
 public:
 	ID3D11Texture2D* GetD3DTexture() { return m_pD3DTexture; }
-	ID3D11Texture2D* GetD3DOffscreen() { return m_pOffScreen; }
+	ID3D11Texture2D* GetD3DOffscreen() { return m_pOffscreen; }
 	ID3D11ShaderResourceView* GetSRV() { return m_pSRV; }
 
 	void SetD3DTexture(ID3D11Texture2D* pTex, ID3D11Texture2D* pOffScreen);
 	//void SetD3DTextureRT(IDirect3DTexture9* pTex);
 };
+
+_DECLARE_SMARTPTR(CRTexture2DD3D11)
 
 _NAMESPACE_END

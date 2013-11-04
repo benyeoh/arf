@@ -15,81 +15,79 @@ _NAMESPACE_BEGIN
 
 byte* CRVertexBufferD3D11::DoLock(uint startVertexToWrite, uint numVerticesToWrite)
 {
-	byte* pBuf = NULL;
-
 	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
+	ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
 
-	if(pToWrite)
+	if(numVerticesToWrite == 0)
 	{
-		ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
-
-		// We need an offscreen buffer if app needs to read data
-		// or app is only updating a portion
-		if( ((*pToWrite)[2] <= 0) || ((*pToWrite)[3] <= 0) || (m_Desc.Usage & D3D11_USAGE_DEFAULT) )
+		// Read required, so prepare buffer for readback
+		if(!m_pOffScreen)
 		{
-			if(!m_pOffscreen)
-			{
-				// TODO: Create a staging resource if we do not have
-
-				// Read back from GPU and wait... Super slow... Avoid
-				pContext->CopyResource(m_pOffscreen, m_pD3DTexture);
-			}
+			ID3D11Buffer* pOffscreen = pRenderer->GetResourceMgrD3D()->CreateOffscreenVB(m_Desc);
+			m_pOffScreen = pOffscreen;
+			pOffscreen->Release();
 		}
 
-		m_WriteOffset = *pToWrite;
+		HRESULT hr = pContext->UpdateSubresource(m_pOffScreen, 0, NULL, m_pD3DVB, 0, 0);
+		_DEBUG_ASSERT(SUCCEEDED(hr));
+	}
+
+	byte* pToReturn;
+	if(m_pOffScreen)
+	{
+		D3D11_MAPPED_SUBRESOURCE mapRes;
+		HRESULT hr = pContext->Map(m_pOffScreen, 0, D3D11_MAP_READ_WRITE, 0, &mapRes);
+		_DEBUG_ASSERT(SUCCEEDED(hr));
+		pToReturn = ((byte*) mapRes.pData) + startVertexToWrite * m_VertexSize;
+		m_pLockData = pToReturn;
 	}
 	else
 	{
-		m_WriteOffset[0] = m_WriteOffset[1] = 0;
-		m_WriteOffset[2] = m_Desc.Width >> level;
-		m_WriteOffset[3] = m_Desc.Height >> level;
-		m_WriteOffset[2] = m_WriteOffset[2] <= 0 ? 1 : m_WriteOffset[2];
-		m_WriteOffset[3] = m_WriteOffset[3] <= 0 ? 1 : m_WriteOffset[3];
+		ScratchPad* pPad = pRenderer->GetScratchPad(numVerticesToWrite * m_VertexSize);
+		m_pScratchPad = pPad;
+		pToReturn = (byte*) pPad->pMem;
 	}
 
-	if(m_pOffscreen)
-	{
-		// Must write to offscreen buffer first if it already exists
-		// It will exist if the buffer is dynamic and we are not writing the whole buffer
-		// Otherwise it will exist if we attempt to do a read
-
-		// WARNING: Do we need an immediate context?
-		ID3D11DeviceContext* pImmedContext = pRenderer->GetImmediateContext();
-
-		HRESULT hr = pImmedContext->Map(m_pOffscreen, level, D3D11_MAP_READ_WRITE, 0, &m_OffscreenData);
-		_DEBUG_ASSERT(hr == S_OK);
-		pBuf = m_OffscreenData.pSysMem;
-		pitch = m_OffscreenData.SysMemPitch;
-	}
-	else
-	{
-		// Skip offscreen buffer
-		if(m_Desc.Usage & D3D11_USAGE_DEFAULT)
-		{
-			// Make sure that we are writing the whole buffer
-			_DEBUG_ASSERT(!pToWrite);
-			pBuf = MapDirectResource(level, pitch);
-		}
-		else
-		{
-			pBuf = MapProxyResource(level, pitch);
-		}
-	}
-
-	return pBuf;	
+	return pToReturn;	
 }
 
 boolean CRVertexBufferD3D11::DoUnlock()
 {
+	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
+	ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
 
+	// Use resource/subresource
+	D3D11_BOX startCopy;
+	startCopy.left = m_TempStartVertex * m_VertexSize;
+	startCopy.right = (m_TempStartVertex + m_TempNumVertices) * m_VertexSize;
+	startCopy.top = 0;
+	startCopy.bottom = 1;
+	startCopy.front = 0;
+	startCopy.back = 1;
+
+	if(m_pOffScreen)
+	{	
+		pContext->UpdateSubresource(m_pD3DVB, 0, &startCopy, m_pLockData, 0, 0);
+		
+		m_pLockData = NULL;
+
+		pContext->Unmap(m_pOffScreen, 0);
+	}
+	else
+	{
+		pContext->UpdateSubresource(m_pD3DVB, 0, &startCopy, m_pScratchPad->pMem, 0, 0);		
+		pRenderer->DisposeScratchPad(m_pScratchPad);
+		m_pScratchPad = NULL;
+	}
 }
 
 byte* CRVertexBufferD3D11::DoLockImmediate(uint startVertexToWrite, uint numVerticesToWrite)
 {
-	D3D11_MAP lockFlags;
+	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
+
 	if(m_Desc.Usage & D3D11_USAGE_DYNAMIC)
 	{
-		uint tempEndVertex = startVertexToWrite + numVerticesToWrite;
+		D3D11_MAP lockFlags;
 		uint endVertex = m_StartVertex + m_NumVertices;
 
 		if((startVertexToWrite >= endVertex))
@@ -100,35 +98,70 @@ byte* CRVertexBufferD3D11::DoLockImmediate(uint startVertexToWrite, uint numVert
 		{
 			lockFlags = D3D11_MAP_WRITE_DISCARD;
 		}
+
+		_DEBUG_ASSERT(((numVerticesToWrite + startVertexToWrite) * m_VertexSize) <= (m_Size * m_VertexSize));
+
+		ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
+
+		D3D11_MAPPED_SUBRESOURCE mappedData;
+		HRESULT hr = pContext->Map(m_pD3DVB, 0, lockFlags, 0, &mappedData);
+		_DEBUG_ASSERT(SUCCEEDED(hr));
+
+		return (byte*) mappedData.pData + startVertexToWrite * m_NumVertices;
 	}
 	else
-		lockFlags = = D3D11_MAP_WRITE;
+	{
+		// Use resource/subresource
+		m_pScratchPad = pRenderer->GetScratchPad(numVerticesToWrite * m_VertexSize);
+		return (byte*) m_pScratchPad->pMem;
+	}
 
-	_DEBUG_ASSERT(((numVerticesToWrite + startVertexToWrite) * m_VertexSize) <= (m_Size * m_VertexSize));
-
-	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
-	ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
-
-	D3D11_SUBRESOURCE_DATA mappedData;
-	HRESULT hr = pContext->Map(m_pD3DVB, 0, lockFlags, 0, &mappedData);
-	_DEBUG_ASSERT(SUCCEEDED(hr));
-	
-	return (byte*) mappedData.pSysMem;
+	return NULL;
 }
 
 boolean CRVertexBufferD3D11::DoUnlockImmediate()
 {
+	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
+	ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
 
+	if(m_Desc.Usage & D3D11_USAGE_DYNAMIC)
+	{
+		HRESULT hr = pContext->Unmap(m_pD3DVB, 0);
+		_DEBUG_ASSERT(SUCCEEDED(hr));
+	}
+	else
+	{
+		// Use resource/subresource
+		D3D11_BOX startCopy;
+		startCopy.left = m_TempStartVertex * m_VertexSize;
+		startCopy.right = (m_TempStartVertex + m_TempNumVertices) * m_VertexSize;
+		startCopy.top = 0;
+		startCopy.bottom = 1;
+		startCopy.front = 0;
+		startCopy.back = 1;
+
+		HRESULT hr = pContext->UpdateSubresource(m_pD3DVB, 0, &startCopy, m_pScratchPad->pMem, 0, 0);
+		_DEBUG_ASSERT(SUCCEEDED(hr));
+		
+		pRenderer->DisposeScratchPad(m_pScratchPad);
+		m_pScratchPad = NULL;
+	}
+
+	return TRUE;
 }
 
-void CRVertexBufferD3D11::SetD3DVB(IDirect3DVertexBuffer9* pD3DVB, IByteBuffer* pOffScreen)
+void CRVertexBufferD3D11::SetD3DVB(ID3D11Buffer* pD3DVB)
 {
-
+	m_pD3DVB = pD3DVB;
+	m_pD3DVB->GetDesc(&m_Desc);
 }
 
-void CRVertexBufferD3D11::SetD3DSharedVB(CRVertexBufferD3D* pParent)
+void CRVertexBufferD3D11::SetD3DSharedVB(CRVertexBufferD3D11* pParent)
 {
-
+	m_pParent = pParent;
+	m_pD3DVB = pParent->GetD3DVB();
+	m_pOffScreen = pParent->GetOffscreenVB();
+	m_pD3DVB->GetDesc(&m_Desc);
 }
 
 

@@ -217,7 +217,7 @@ namespace ARFManaged
 		{
 			_PURE( eRTexUsage GetUsage() )
 			_PURE( eRTexFormat GetFormat() )
-			_PURE( uint GetBitDepth() )
+			_PURE( uint GetSizePerElem() )
 			_PURE( uint GetMipMapLevels() )
 			_PURE( void SetFileName(String^ hString) )
 			_PURE( String^ GetFileName() )
@@ -237,7 +237,7 @@ namespace ARFManaged
 			virtual void OnResetDevice()	{ GetImpl()->OnResetDevice(); }
 			virtual eRTexUsage GetUsage()	{ return (eRTexUsage) GetImpl()->GetUsage(); }
 			virtual eRTexFormat GetFormat()	{ return (eRTexFormat) GetImpl()->GetFormat(); }
-			virtual uint GetBitDepth()		{ return GetImpl()->GetBitDepth(); }
+			virtual uint GetSizePerElem()		{ return GetImpl()->GetSizePerElem(); }
 			virtual uint GetMipMapLevels()	{ return GetImpl()->GetMipMapLevels(); }
 			virtual void SetFileName(String^ hString)
 			{
@@ -278,7 +278,7 @@ namespace ARFManaged
 			virtual void OnResetDevice()	{ GetImpl()->OnResetDevice(); }
 			virtual eRTexUsage GetUsage()	{ return (eRTexUsage) GetImpl()->GetUsage(); }
 			virtual eRTexFormat GetFormat()	{ return (eRTexFormat) GetImpl()->GetFormat(); }
-			virtual uint GetBitDepth()		{ return GetImpl()->GetBitDepth(); }
+			virtual uint GetSizePerElem()		{ return GetImpl()->GetSizePerElem(); }
 			virtual uint GetMipMapLevels()	{ return GetImpl()->GetMipMapLevels(); }
 			virtual void SetFileName(String^ hString)
 			{

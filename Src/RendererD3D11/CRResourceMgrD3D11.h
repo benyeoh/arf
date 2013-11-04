@@ -29,33 +29,30 @@ public:
 
 protected:
 
-	IDirect3DVolumeTexture9* CreateD3DVolumeTexture(uint width, 
-		uint height,
-		uint depth,
-		uint mipMapLevel, 
-		D3DFORMAT format,
-		DWORD usage,
-		D3DPOOL pool);
+	//IDirect3DVolumeTexture9* CreateD3DVolumeTexture(uint width, 
+	//	uint height,
+	//	uint depth,
+	//	uint mipMapLevel, 
+	//	D3DFORMAT format,
+	//	DWORD usage,
+	//	D3DPOOL pool);
 
-	IDirect3DTexture9* CreateD3DTexture(uint width, 
-		uint height, 
-		uint mipMapLevel, 
-		D3DFORMAT format,
-		DWORD usage,
-		D3DPOOL pool);
+	ID3D11Texture2D* CreateD3DTexture(uint width, uint height, uint mipMapLevel, uint arraySize,
+								      DXGI_FORMAT format, D3D11_USAGE usage, D3D11_BIND_FLAG bindFlag, D3D11_RESOURCE_MISC_FLAG miscFlags);
 
-	IDirect3DCubeTexture9* CreateD3DCubeTexture(uint size, 
-		uint mipMapLevel, 
-		D3DFORMAT format,
-		DWORD usage,
-		D3DPOOL pool);
+	//IDirect3DCubeTexture9* CreateD3DCubeTexture(uint size, 
+	//	uint mipMapLevel, 
+	//	D3DFORMAT format,
+	//	DWORD usage,
+	//	D3DPOOL pool);
 
-	IDirect3DTexture9* CreateD3DTextureFromData(byte* pData, uint length, D3DXIMAGE_INFO* pInfo, D3DPOOL pool);
-	IDirect3DVolumeTexture9* CreateD3DVolumeTextureFromData(byte* pData, uint length, D3DXIMAGE_INFO* pInfo, D3DPOOL pool);
-	IDirect3DCubeTexture9* CreateD3DCubeTextureFromData(byte* pData, uint length, D3DXIMAGE_INFO* pInfo, D3DPOOL pool);
-	IDirect3DVertexBuffer9* CreateD3DVertexBuffer(uint bufferLen, DWORD usage, D3DPOOL pool);
-	IDirect3DIndexBuffer9* CreateD3DIndexBuffer(uint bufferLen, DWORD usage, D3DPOOL pool);
-	ID3DXEffect* CreateD3DEffectFromData(byte* pData, uint length);
+	//IDirect3DTexture9* CreateD3DTextureFromData(byte* pData, uint length, D3DXIMAGE_INFO* pInfo, D3DPOOL pool);
+	//IDirect3DVolumeTexture9* CreateD3DVolumeTextureFromData(byte* pData, uint length, D3DXIMAGE_INFO* pInfo, D3DPOOL pool);
+	//IDirect3DCubeTexture9* CreateD3DCubeTextureFromData(byte* pData, uint length, D3DXIMAGE_INFO* pInfo, D3DPOOL pool);
+
+	ID3D11Buffer* CreateD3DVertexBuffer(uint bufferLen, D3D11_USAGE usage);
+	ID3D11Buffer* CreateD3DIndexBuffer(uint bufferLen, D3D11_USAGE usage);
+	//ID3DXEffect* CreateD3DEffectFromData(byte* pData, uint length);
 
 protected:
 	IRRenderGroup* DoCreateRenderGroup(RenderOpSort sortFn, uint maxRenderOps); 
@@ -109,6 +106,9 @@ protected:
 	void DoOnLostDevice() {}
 
 public:
+	ID3D11Texture2D* CreateOffscreenTexture2D(D3D11_TEXTURE2D_DESC& desc);
+	ID3D11Buffer* CreateOffscreenIB(const D3D11_BUFFER_DESC& desc);
+	ID3D11Buffer* CreateOffscreenVB(const D3D11_BUFFER_DESC& desc);
 	CRTextureRTD3D11* CreateRenderTargetFromResource(ID3D11Resource* pRes, D3D11_RENDER_TARGET_VIEW_DESC* pDesc, uint width, uint height);
 };
 

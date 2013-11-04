@@ -285,7 +285,7 @@ struct IRTexture : public IRResource
 {
 	_PURE( eRTexUsage GetUsage() const )
 	_PURE( eRTexFormat GetFormat() const )
-	_PURE( uint GetBitDepth() const )
+	_PURE( uint GetSizePerElem() const )
 	_PURE( uint GetMipMapLevels() const )
 	_PURE( void SetFileName(const wchar* pName) )
 	_PURE( const wchar* GetFileName() const )

@@ -154,6 +154,7 @@ void CRRendererD3D11::DoRenderPrimitive(RRenderOp* pRenderOp)
 
 ScratchPad* CRRendererD3D11::GetScratchPad(uint minSize)
 {
+	// TODO: This needs to be context'ed instead of atomic
 	ScratchPad* pPad = m_ScratchPadPool.Get();
 	if(pPad->size < minSize)
 		pPad->Realloc(minSize);

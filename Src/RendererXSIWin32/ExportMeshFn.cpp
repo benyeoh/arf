@@ -355,14 +355,22 @@ WeldSimilarVertices(IByteBuffer* pVBData, uint vertexSize, IRIndexBuffer* pIB)
 	pVBData->SetDataLength(numVertices * vertexSize);
 	
 	// Remap indices
+	// Lock for read
+	ushort* pReadIndices = pIB->Lock(0, 0);
+	ushort* pIndicesTemp = _NEW ushort[pIB->GetNumIndices()];
+	memcpy(pIndicesTemp, pReadIndices, sizeof(ushort) * pIB->GetNumIndices());
+	pIB->Unlock(FALSE);
+
+	// Lock for write now
 	ushort* pIndices = pIB->Lock(0, pIB->GetNumIndices());
 	_LOOPi(pIB->GetNumIndices())
 	{
-		pIndices[i] = (ushort) origToCurrent[pIndices[i]];
+		pIndices[i] = (ushort) origToCurrent[pReadIndices[i]];
 	}
 	
 	pIB->Unlock(TRUE);
-	
+
+	_DELETE_ARRAY(pReadIndices);
 	_DELETE_ARRAY(origToCurrent);
 	_DELETE_ARRAY(currentToOrig);
 	_DELETE_ARRAY(currentIsRemapped);

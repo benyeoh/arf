@@ -13,35 +13,6 @@
 
 _NAMESPACE_BEGIN
 
-struct ScratchPad
-{
-	void*	pMem;
-	uint	size;
-
-	ScratchPad()
-		: pMem(NULL)
-		, size(0)
-	{
-
-	}
-
-	~ScratchPad()
-	{
-		Realloc(0);
-	}
-
-	void Realloc(uint newSize)
-	{
-		if(pMem)
-			_FREE(pMem);
-
-		if(newSize > 0)
-			pMem = _MALLOC(newSize);
-
-		size = newSize;
-	}
-};
-
 class CRRendererD3D11 : public CRRenderer
 {
 private:
