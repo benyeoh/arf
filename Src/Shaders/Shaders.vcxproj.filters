@@ -58,6 +58,9 @@
     <Filter Include="TestDepthRasterizer">
       <UniqueIdentifier>{fe9b2df5-e5b1-4e48-b733-e43244cd3599}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TestBakedSM">
+      <UniqueIdentifier>{13f5a208-7c07-4fd5-bb3c-3941d0de952f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="FontFX\AllFontFX.fxh">
@@ -231,9 +234,6 @@
     <X_Shader_Verifier Include="ScreenAmbOcclFX\Upsample.fx">
       <Filter>ScreenAmbOcclFX</Filter>
     </X_Shader_Verifier>
-    <X_Shader_Verifier Include="TestBaseFX\TestBaseFXLaFortuneMod.mgp">
-      <Filter>TestBaseFX</Filter>
-    </X_Shader_Verifier>
     <X_Shader_Verifier Include="TestBaseFX\TestBaseFXParallaxSpec.mgp">
       <Filter>TestBaseFX</Filter>
     </X_Shader_Verifier>
@@ -368,6 +368,21 @@
     </X_Shader_Verifier>
     <X_Shader_Verifier Include="TestDepthRasterizer\ScreenTriangle.fx">
       <Filter>TestDepthRasterizer</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMAccumSelfIllum.mgp">
+      <Filter>TestBakedSM</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMAccumSelfIllumInst.mgp">
+      <Filter>TestBakedSM</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestBaseFX\TestBaseFXLaFortuneMod.mgp">
+      <Filter>TestBaseFX</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMParaboloidDepth.mgp">
+      <Filter>TestBakedSM</Filter>
+    </X_Shader_Verifier>
+    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMSH.mgp">
+      <Filter>TestBakedSM</Filter>
     </X_Shader_Verifier>
   </ItemGroup>
 </Project>

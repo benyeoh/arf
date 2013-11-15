@@ -564,6 +564,9 @@ ComputeTangentAndBinormals(IRVertexBuffer* pVB,
 						   uint tangentIndex,
 						   uint binormalIndex)
 {
+    // TODO: Will do a redundant copy since locking to read or write is now exclusive
+    _DEBUG_ASSERT(FALSE);
+
 	byte* pVertexData = pVB->Lock(pVB->GetStartVertex(), pVB->GetNumVertices());
 	pVertexData += (pVB->GetStartVertex() * pVB->GetVertexSize());
 	const RVertexDesc* pDesc = pVB->GetDescription();

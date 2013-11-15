@@ -96,6 +96,10 @@
     <X_Shader_Verifier Include="SHPRTCompute\ParaboloidOcclusion.mgp" />
     <X_Shader_Verifier Include="TestAppHelpers\TestAppHelpersAccumSelfIllum.mgp" />
     <X_Shader_Verifier Include="TestAppHelpers\TestAppHelpersAccumSelfIllumInst.mgp" />
+    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMAccumSelfIllum.mgp" />
+    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMAccumSelfIllumInst.mgp" />
+    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMParaboloidDepth.mgp" />
+    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMSH.mgp" />
     <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXDirLight.mgp" />
     <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXObjectAccum.mgp" />
     <X_Shader_Verifier Include="TestDeferredFX\TestDeferredFXPointLight.mgp" />

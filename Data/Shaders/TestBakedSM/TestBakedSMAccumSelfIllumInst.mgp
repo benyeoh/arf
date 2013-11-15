@@ -1,0 +1,23 @@
+
+define ACCUM 12
+define CAST_DIR_LIGHT_SHADOW 4
+define CAST_POINT_LIGHT_SHADOW 5
+define CAST_CUBE_POINT_LIGHT_SHADOW 6
+
+desc = TestBakedSM, Object, Accum Self-Illum, Instanced
+
+begin_group CAST_DIR_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastDirLightVarShadowInst.bam
+end_group
+
+begin_group CAST_POINT_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastPointLightVarShadowInst.bam
+end_group
+
+begin_group ACCUM
+	mat = [mat]\TestAppHelpers\AccumSelfIllumInst.bam
+end_group
+
+begin_group CAST_CUBE_POINT_LIGHT_SHADOW
+	mat = [mat]\ShadowFX\CastCubePointLightVarShadowInst.bam
+end_group
