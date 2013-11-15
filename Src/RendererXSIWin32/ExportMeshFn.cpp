@@ -598,23 +598,25 @@ ExtractVertices(XSI::X3DObject& obj, const RVertexDesc* pDesc, RVertexDesc* pMod
 	
 	wsprintf(buffer, _W("Num Vertices - After Weld: %d"), numVertices);
 	app.LogMessage(buffer);
-
-	CRCDataKey id;
-	id.Set(pVertexData->GetData(), pVertexData->GetDataLength());
-	
-	//wstring key = obj.GetName().GetWideString();
-	//key += _W("_vb_default_1");
-	IRVertexBuffer* pVB = g_pRenderer->GetRResourceMgr().CreateVertexBuffer(&id, pModDesc, numVertices, BUF_DEFAULT);
-//	pVB->SetData(pVertexData);
-	byte* pVBData = pVB->Lock(0, numVertices);
-	memcpy(pVBData, pVertexData->GetData(), pVertexData->GetDataLength());
-	pVB->Unlock();
 	
 	if(generateTangents || generateBinormals)
 	{
-		ComputeTangentAndBinormals(pVB, pIB);
+        ushort* pReadOnlyIndices = pIB->Lock(0, 0);
+		ComputeTangentAndBinormals(pVertexData->GetData(), numVertices, pReadOnlyIndices, pIB->GetNumIndices(), pModDesc);
+        pIB->Unlock(FALSE);
 	}
-	
+
+    CRCDataKey id;
+    id.Set(pVertexData->GetData(), pVertexData->GetDataLength());
+
+    //wstring key = obj.GetName().GetWideString();
+    //key += _W("_vb_default_1");
+    IRVertexBuffer* pVB = g_pRenderer->GetRResourceMgr().CreateVertexBuffer(&id, pModDesc, numVertices, BUF_DEFAULT);
+    //	pVB->SetData(pVertexData);
+    byte* pVBData = pVB->Lock(0, numVertices);
+    memcpy(pVBData, pVertexData->GetData(), pVertexData->GetDataLength());
+    pVB->Unlock();
+
 	return pVB;
 }
 

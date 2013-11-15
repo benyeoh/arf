@@ -63,7 +63,7 @@ public:
 			case TEXF_A32B32G32R32F:	return 16;
 			case TEXF_G32R32F:			return 8;
 			case TEXF_A16B16G16R16F:	return 8;
-
+            case TEXF_A16B16G16R16:	    return 8;
 		}
 		
 		return 0;
