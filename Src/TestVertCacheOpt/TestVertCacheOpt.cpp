@@ -130,31 +130,60 @@ int _tmain(int argc, _TCHAR* argv[])
 	g_pBaseFX->Initialize(*g_pRenderer, *g_pMatGen, s_AppCallback);
 	
 	// Get the application path	
-	wchar filePath[256];
-	GetModuleFileName(NULL, filePath, 256);
-	wstring path = filePath;
-	std::transform(path.begin(), path.end(), path.begin(), towlower);
-
-	int index = (int) path.find(_W("\\bin\\"));
-	if(index != wstring::npos)
 	{
-		path = path.substr(0, index);
+		wchar filePath[256];
+		GetModuleFileName(NULL, filePath, 256);
+		wstring path = filePath;
+		std::transform(path.begin(), path.end(), path.begin(), towlower);
+
+		int index = (int) path.find(_W("\\bin\\"));
+		if(index != wstring::npos)
+		{
+			path = path.substr(0, index);
+		}
+	
+		g_pFileSystem->Open(path.c_str());
 	}
-	
-	g_pFileSystem->Open(path.c_str());
-	
-	IFFilePtr pObjFile = g_pFileSystem->GetFile(_W("[msh]\\bandit.mls"));
-	pObjFile->Open(FO_READ_ONLY);
-	IByteBufferPtr pObjBuffer = _NEW CByteBuffer(256);
-	AppendData(pObjBuffer, pObjFile);
-	pObjFile->Close();
-	pObjFile = NULL;
+
+	//IFFilePtr pObjFile = g_pFileSystem->GetFile(_W("[msh]\\TestVertCacheOpt\\armor-merchant-parallax.mls"));
+	//pObjFile->Open(FO_READ_ONLY);
+	//IByteBufferPtr pObjBuffer = _NEW CByteBuffer(256);
+	//AppendData(pObjBuffer, pObjFile);
+	//pObjFile->Close();
+	//pObjFile = NULL;
 	
 	{
 		BFXUMeshList meshList;
-		LoadBFXUMeshList(g_pRenderer, g_pBaseFX, pObjBuffer, 0, meshList);
-		pObjBuffer = NULL;
-		
+		//LoadBFXUMeshList(g_pRenderer, g_pBaseFX, pObjBuffer, 0, meshList);
+		//pObjBuffer = NULL;
+
+		IByteBufferPtr pVBGroupBuffer = _NEW CByteBuffer();
+		IFFilePtr pVBGroupFile = g_pFileSystem->GetFile(_W("[msh]\\TestVertCacheOpt\\armor-merchant.vbgroup"));
+		pVBGroupFile->Open(FO_READ_ONLY);
+		AppendData(pVBGroupBuffer, pVBGroupFile);
+		pVBGroupFile->Close();
+		pVBGroupFile = NULL;
+
+		IRVertexBufferGroup* pVBGroup;
+		LoadVBGroup(g_pRenderer, pVBGroupBuffer, 0, &pVBGroup);
+		pVBGroupBuffer = NULL;
+
+		IByteBufferPtr pIBBuffer = _NEW CByteBuffer();
+		IFFilePtr pIBFile = g_pFileSystem->GetFile(_W("[msh]\\TestVertCacheOpt\\armor-merchant.ib"));
+		pIBFile->Open(FO_READ_ONLY);
+		AppendData(pIBBuffer, pIBFile);
+		pIBFile->Close();
+		pIBFile = NULL;
+
+		IRIndexBuffer* pIB;
+		LoadIB(g_pRenderer, pIBBuffer, 0, &pIB);
+		pIBBuffer = NULL;
+
+		BFXMesh mesh;
+		mesh.pVBGroup = pVBGroup;
+		mesh.pIB = pIB;
+		meshList.meshes.push_back(mesh);
+
 		uint numMeshes = (uint) meshList.meshes.size();
 		_LOOPi(numMeshes)
 		{
@@ -206,7 +235,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		
 		meshList.meshes.clear();
 	}
-	
+
 	g_pBaseFX = NULL;
 	g_pMatGen = NULL;
 	g_pRenderer	= NULL;
