@@ -109,7 +109,7 @@ RUPostTransVertCacheOpt::InitializeVertices()
 	
 	_LOOPi(m_NumVertices)
 	{
-		m_pVertices[i].score		= GetVertexScore(m_pVertices+i);
+		m_pVertices[i].score = GetVertexScore(m_pVertices+i);
 	}
 }
 

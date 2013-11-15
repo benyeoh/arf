@@ -57,8 +57,12 @@ CRIndexBufferD3D::DoLock(uint startIndexToWrite, uint numIndicesToWrite)
 {		
 	DWORD flags = 0;
 	if(numIndicesToWrite == 0)
+	{
 		flags |= D3DLOCK_READONLY;
-		
+		if(startIndexToWrite != 0)
+			numIndicesToWrite = GetNumIndices();
+	}
+
 	HRESULT	hr = m_pOffScreen->Lock(startIndexToWrite * sizeof(ushort),
 									numIndicesToWrite * sizeof(ushort),
 									&m_pLockData,
