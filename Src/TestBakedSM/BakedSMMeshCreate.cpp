@@ -107,6 +107,7 @@ BFXMesh CreatePlanePosY(IRRenderer* pRenderer, float sizeX, float sizeZ, uint nu
             curU += stepU;
         }
 
+		curU = 0.0f;
         curX = -sizeX * 0.5f;
         curZ += stepZ;
         curV += stepV;
@@ -222,7 +223,8 @@ BFXMesh CreatePlaneNegY(IRRenderer* pRenderer, float sizeX, float sizeZ, uint nu
             curU += stepU;
         }
 
-        curX = origX;
+		curU = 0.0f;
+		curX = origX;
         curZ += stepZ;
         curV += stepV;
     }
@@ -337,7 +339,8 @@ BFXMesh CreatePlanePosZ(IRRenderer* pRenderer, float sizeX, float sizeZ, uint nu
             curU += stepU;
         }
 
-        curX = origX;
+		curU = 0.0f;
+		curX = origX;
         curZ += stepZ;
         curV += stepV;
     }
@@ -452,7 +455,8 @@ BFXMesh CreatePlaneNegZ(IRRenderer* pRenderer, float sizeX, float sizeZ, uint nu
             curU += stepU;
         }
 
-        curX = origX;
+		curU = 0.0f;
+		curX = origX;
         curZ += stepZ;
         curV += stepV;
     }
@@ -567,7 +571,8 @@ BFXMesh CreatePlanePosX(IRRenderer* pRenderer, float sizeX, float sizeZ, uint nu
             curU += stepU;
         }
 
-        curX = origX;
+		curU = 0.0f;
+		curX = origX;
         curZ += stepZ;
         curV += stepV;
     }
@@ -682,7 +687,8 @@ BFXMesh CreatePlaneNegX(IRRenderer* pRenderer, float sizeX, float sizeZ, uint nu
             curU += stepU;
         }
 
-        curX = origX;
+		curU = 0.0f;
+		curX = origX;
         curZ += stepZ;
         curV += stepV;
     }

@@ -494,6 +494,50 @@ void InitBakedSM()
     g_Meshes[0].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
     gmtl::identity(_CAST_MAT44(g_MeshesWorld[0]));
 
+	const static uint TEX_SIZE_X = 128;
+	const static uint TEX_SIZE_Y = 128;
+	BakedSMLocationEntry* pLocEntries = (BakedSMLocationEntry*) _ALIGNED_MALLOC(16, TEX_SIZE_X * TEX_SIZE_Y * 2 * sizeof(BakedSMLocationEntry));
+	uint posOffset = GetVertexOffset(g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_POSITION, 0);
+	uint texOffset = GetVertexOffset(g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_TEXCOORDF2, 0);
+	uint normOffset = GetVertexOffset(g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_NORMAL, 0);
+	byte* pVBReadData = g_Meshes[0].pVBGroup->GetVertexBuffer(0)->Lock(0, 0);
+	uint stride = g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetVertexSize();
+	ushort* pIBReadData = g_Meshes[0].pIB->Lock(0, 0);
+	uint numEntries = g_pBakedSMCompute->ComputeUVLocEntries(pLocEntries, g_MeshesWorld[0], 
+										   pVBReadData + posOffset, stride, 
+										   pVBReadData + normOffset, stride, 
+										   pVBReadData + texOffset, stride, 
+										   pIBReadData, 
+										   1,//g_Meshes[0].pIB->GetNumIndices() / 3, 
+										   TEX_SIZE_X, TEX_SIZE_Y);
+	g_Meshes[0].pVBGroup->GetVertexBuffer(0)->Unlock(FALSE);
+	g_Meshes[0].pIB->Unlock(FALSE);
+
+	
+	{
+		IRTexture2DPtr pTest = g_pRenderer->GetRResourceMgr().CreateTexture2D(NULL, TEX_SIZE_X, TEX_SIZE_Y, 1, TEXF_A8R8G8B8, TEXU_DEFAULT_STAGING);	
+		uint pitch;
+		byte* pRaw = pTest->Lock(0, pitch, NULL);
+		memset(pRaw, 0, TEX_SIZE_Y * pitch);
+		_LOOPi(numEntries)
+		{
+			_DEBUG_ASSERT(pLocEntries[i].texX <= TEX_SIZE_X);
+			_DEBUG_ASSERT(pLocEntries[i].texY <= TEX_SIZE_Y);
+
+			uint* pToWrite = (uint*)(pRaw + pLocEntries[i].texY * pitch + pLocEntries[i].texX * sizeof(uint));
+			*pToWrite = (0xFF000000) | (((uint) (pLocEntries[i].normal[0] * 255.0f)) << 16) | (((uint) (pLocEntries[i].normal[1] * 255.0f)) << 8) | (((uint) (pLocEntries[i].normal[2] * 255.0f)));
+		}
+
+		pTest->Unlock(0);
+		IByteBufferPtr pToSave = _NEW CByteBuffer();
+		g_pRenderer->GetRResourceMgr().SaveTexture2D(pTest, pToSave);
+		IFFilePtr pToSaveFile = g_pFileSystem->GetFile(_W("[dat]\\Textures\\TestBakedSM\\test.dds"));
+		pToSaveFile->Write(pToSave->GetData(), pToSave->GetDataLength());
+		pToSaveFile->Close();
+	}
+
+	_ALIGNED_FREE(pLocEntries);
+
     // Make cube
     g_Meshes[1] = CreatePlanePosY(g_pRenderer, CUBE_SIZE, CUBE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
     pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);

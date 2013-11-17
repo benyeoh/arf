@@ -39,12 +39,20 @@
 	curY += OUT_TILE_SIZE_2X_F; \
 
 
+//\
+//	__m128 insideTest = _mm_and_ps( _mm_cmpge_ps(e1Reject, zero), _mm_cmpge_ps(e2Reject, zero) ); \
+//	insideTest = _mm_and_ps( insideTest, _mm_cmpge_ps(e3Reject, zero) ); \
+
+
+
 #define __TEC_DO \
 { \
-    __m128 insideTest = _mm_or_ps( _mm_or_ps( e1Reject, e2Reject ), e3Reject ); \
-    insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &zero) )); \
-	int notRejectInsideMask = _mm_movemask_ps(insideTest); \
 	\
+	__m128 insideTest = _mm_or_ps( _mm_or_ps( e1Reject, e2Reject ), e3Reject ); \
+	insideTest = *((__m128*) &_mm_cmpgt_epi32( *((__m128i*)&insideTest), *((__m128i*) &zero) )); \
+ \
+	int notRejectInsideMask = _mm_movemask_ps(insideTest); \
+ \
 	__m128 e1Accept = _mm_add_ps(e1Reject, pRaster->e1AcceptLayerOffset[layer]); \
 	__m128 e2Accept = _mm_add_ps(e2Reject, pRaster->e2AcceptLayerOffset[layer]); \
 	__m128 e3Accept = _mm_add_ps(e3Reject, pRaster->e3AcceptLayerOffset[layer]); \
