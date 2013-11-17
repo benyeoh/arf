@@ -182,12 +182,12 @@ uint BakedSMCompute::DoComputeUVLocEntries(BakedSMLocationEntry* pLocEntries, co
     _ALIGN(16) byte raster[RASTER_INFO_SIZE];
     //_TRACE(_W("Rastersize: %d\n"), _GET_RASTER_INFO_SIZE(0));
 
-    _DEBUG_ASSERT(numTopTiles < 2048);
+    _DEBUG_ASSERT(numTopTiles < 128);
 
-    byte topTileFull[ _GET_TILE_BUFFER_SIZE( 2048 ) ];
-    byte topTilePartial[ _GET_TILE_BUFFER_SIZE( 2048 ) ];
-    byte midTileFull[ _GET_TILE_BUFFER_SIZE( 2048 * (TOP_TILE_SIZE / MID_TILE_SIZE) * (TOP_TILE_SIZE / MID_TILE_SIZE) ) ];
-    byte midTilePartial[ _GET_TILE_BUFFER_SIZE( 2048 * (TOP_TILE_SIZE / MID_TILE_SIZE) * (TOP_TILE_SIZE / MID_TILE_SIZE) ) ];
+    byte topTileFull[ _GET_TILE_BUFFER_SIZE( 128 ) ];
+    byte topTilePartial[ _GET_TILE_BUFFER_SIZE( 128 ) ];
+    byte midTileFull[ _GET_TILE_BUFFER_SIZE( 128 * (TOP_TILE_SIZE / MID_TILE_SIZE) * (TOP_TILE_SIZE / MID_TILE_SIZE) ) ];
+    byte midTilePartial[ _GET_TILE_BUFFER_SIZE( 128 * (TOP_TILE_SIZE / MID_TILE_SIZE) * (TOP_TILE_SIZE / MID_TILE_SIZE) ) ];
 
     AcceptData acceptTopData;
     acceptTopData.pFullData = (float*) topTileFull;
@@ -339,7 +339,23 @@ uint BakedSMCompute::ComputeUVLocEntries(BakedSMLocationEntry* pLocEntries, cons
 		interData3[4] = worldNormalInter[2][1];
 		interData3[5] = worldNormalInter[2][2];
 
-		numEntries += DoComputeUVLocEntries(&(pLocEntries[numEntries]), pos1, pos2, pos3, interData1, interData2, interData3, texWidth, texHeight);
+		gmtl::VecA4f diff21;
+		gmtl::VecA4f diff32;
+		VecVecSub(&diff21, &pos2, &pos1);
+		VecVecSub(&diff32, &pos3, &pos2);
+
+		gmtl::VecA3f cross;
+		VecCrossNormalize(&cross, &_CAST_VECA3(diff21), &_CAST_VECA3(diff32));
+		if(cross[2] < 0.0f)
+		{
+			numEntries += DoComputeUVLocEntries(&(pLocEntries[numEntries]), pos3, pos2, pos1, interData3, interData2, interData1, texWidth, texHeight);
+		}
+		else
+		{
+			numEntries += DoComputeUVLocEntries(&(pLocEntries[numEntries]), pos1, pos2, pos3, interData1, interData2, interData3, texWidth, texHeight);
+		}
+
+		//_DEBUG_ASSERT(numEntries <= texWidth * texHeight);
 	}
 
 	return numEntries;

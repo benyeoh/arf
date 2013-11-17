@@ -69,9 +69,11 @@ boolean TriangleSetupDepth1Layer(const gmtl::VecA4f& v1, const gmtl::VecA4f& v2,
     determinant = _mm_add_ss(determinant, col1w_2312s2213);
 
     // Only accept front facing triangles for now
-    float det;
-    _mm_store_ss(&det, determinant);
-    if(det > 0)
+	__m128 detRes = _mm_cmpgt_ss(determinant, _mm_setzero_ps());
+	int detMask = _mm_movemask_ps(detRes);
+	//float det;
+	//_mm_store_ss(&det, determinant);
+	if(detMask > 0)
     {
         // Compute the edge functions
         // Make parameters relative to viewport space
