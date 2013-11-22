@@ -48,67 +48,60 @@ void BakedSMRenderCallback::ResetMaterials()
 
 }
 
-void BakedSMRenderCallback::Compute()
+void BakedSMRenderCallback::ComputeOneMesh(uint index, uint lightMapSize)
 {
-    IRTexture2D* pVisSphereTable = g_pBakedSMCompute->CreateExpDepthSphereSHTable();
+    BakedSMLocationEntry* pLocEntries = (BakedSMLocationEntry*) _ALIGNED_MALLOC(16, lightMapSize * lightMapSize * 2 * sizeof(BakedSMLocationEntry));
+    uint posOffset = GetVertexOffset(g_Meshes[index].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_POSITION, 0);
+    uint texOffset = GetVertexOffset(g_Meshes[index].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_TEXCOORDF2, 0);
+    uint normOffset = GetVertexOffset(g_Meshes[index].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_NORMAL, 0);
+    byte* pVBReadData = g_Meshes[index].pVBGroup->GetVertexBuffer(0)->Lock(0, 0);
+    uint stride = g_Meshes[index].pVBGroup->GetVertexBuffer(0)->GetVertexSize();
+    ushort* pIBReadData = g_Meshes[index].pIB->Lock(0, 0);
+    uint numEntries = g_pBakedSMCompute->ComputeUVLocEntries(pLocEntries, g_MeshesWorld[index], 
+        pVBReadData + posOffset, stride, 
+        pVBReadData + normOffset, stride, 
+        pVBReadData + texOffset, stride, 
+        pIBReadData, 
+        g_Meshes[index].pIB->GetNumIndices() / 3, 
+        lightMapSize, lightMapSize, 
+        0.03f);
+    g_Meshes[index].pVBGroup->GetVertexBuffer(0)->Unlock(FALSE);
+    g_Meshes[index].pIB->Unlock(FALSE);
 
-    const static uint TEX_SIZE_X = 128;
-    const static uint TEX_SIZE_Y = 128;
 
-    BakedSMLocationEntry* pLocEntries = (BakedSMLocationEntry*) _ALIGNED_MALLOC(16, TEX_SIZE_X * TEX_SIZE_Y * 2 * sizeof(BakedSMLocationEntry));
-    uint posOffset = GetVertexOffset(g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_POSITION, 0);
-    uint texOffset = GetVertexOffset(g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_TEXCOORDF2, 0);
-    uint normOffset = GetVertexOffset(g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_NORMAL, 0);
-    byte* pVBReadData = g_Meshes[0].pVBGroup->GetVertexBuffer(0)->Lock(0, 0);
-    uint stride = g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetVertexSize();
-    ushort* pIBReadData = g_Meshes[0].pIB->Lock(0, 0);
-    uint numEntries = g_pBakedSMCompute->ComputeUVLocEntries(pLocEntries, g_MeshesWorld[0], 
-                                                            pVBReadData + posOffset, stride, 
-                                                            pVBReadData + normOffset, stride, 
-                                                            pVBReadData + texOffset, stride, 
-                                                            pIBReadData, 
-                                                            g_Meshes[0].pIB->GetNumIndices() / 3, 
-                                                            TEX_SIZE_X, TEX_SIZE_Y, 
-                                                            0.03f);
-    g_Meshes[0].pVBGroup->GetVertexBuffer(0)->Unlock(FALSE);
-    g_Meshes[0].pIB->Unlock(FALSE);
-
-    float timeToCompute = 0.0f;
-
-    BakedSMSHEntry* pSHEntries = (BakedSMSHEntry*) _ALIGNED_MALLOC(16, TEX_SIZE_X * TEX_SIZE_Y * 2 * sizeof(BakedSMSHEntry));
+    BakedSMSHEntry* pSHEntries = (BakedSMSHEntry*) _ALIGNED_MALLOC(16, lightMapSize * lightMapSize * 2 * sizeof(BakedSMSHEntry));
     g_pPlatform->GetTimer().BeginSample(); 
     g_pBakedSMCompute->ComputeShadowMapSH(pLocEntries, pSHEntries, numEntries, *this, g_pThreadPool);
     g_pPlatform->GetTimer().EndSample(); 
-    timeToCompute += (float) g_pPlatform->GetTimer().GetTimeElapsed();
-
+   
     IRTexture2D* pBakedSMTex[4];
-    uint numBakedSMTex = g_pBakedSMCompute->CreateBakedSMSH16Bit(pLocEntries, pSHEntries, numEntries, TEX_SIZE_X, TEX_SIZE_Y, pBakedSMTex);
+    uint numBakedSMTex = g_pBakedSMCompute->CreateBakedSMSH16Bit(pLocEntries, pSHEntries, numEntries, lightMapSize, lightMapSize, pBakedSMTex);
     _DEBUG_ASSERT(numBakedSMTex == 4);
 
     // Create a new material with the baked SM
     REffectParam effectParams[32];
     uint semantics[32];
 
-    _LOOPi(g_Meshes[0].pMatGroup->GetNumOfParams())
+    _LOOPi(g_Meshes[index].pMatGroup->GetNumOfParams())
     {
-        g_Meshes[0].pMatGroup->GetParam(i, effectParams[i]);
-        semantics[i] = g_Meshes[0].pMatGroup->GetSemantic(i);
+        g_Meshes[index].pMatGroup->GetParam(i, effectParams[i]);
+        semantics[i] = g_Meshes[index].pMatGroup->GetSemantic(i);
     }
 
     _LOOPi(numBakedSMTex)
     {
-        semantics[g_Meshes[0].pMatGroup->GetNumOfParams() + i] = BAKEDSMCOMPUTE_BAKED_SM_TEX1 + i;
-        effectParams[g_Meshes[0].pMatGroup->GetNumOfParams() + i].SetTexture2D(pBakedSMTex[i]);
+        semantics[g_Meshes[index].pMatGroup->GetNumOfParams() + i] = BAKEDSMCOMPUTE_BAKED_SM_TEX1 + i;
+        effectParams[g_Meshes[index].pMatGroup->GetNumOfParams() + i].SetTexture2D(pBakedSMTex[i]);
     }
 
-    semantics[g_Meshes[0].pMatGroup->GetNumOfParams() + numBakedSMTex] = BAKEDSMCOMPUTE_BAKED_SM_VIS_SPHERE_TABLE_TEX;
-    effectParams[g_Meshes[0].pMatGroup->GetNumOfParams() + numBakedSMTex].SetTexture2D(pVisSphereTable);
+    semantics[g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex] = BAKEDSMCOMPUTE_BAKED_SM_VIS_SPHERE_TABLE_TEX;
+    effectParams[g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex].SetTexture2D(m_pVisSphere);
 
-    semantics[g_Meshes[0].pMatGroup->GetNumOfParams() + numBakedSMTex + 1] = BAKEDSMCOMPUTE_BAKED_SM_EXP;
-    effectParams[g_Meshes[0].pMatGroup->GetNumOfParams() + numBakedSMTex + 1].SetFloat(exp(BAKED_SM_EXP_K_VAL));
+    semantics[g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex + 1] = BAKEDSMCOMPUTE_BAKED_SM_EXP;
+    effectParams[g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex + 1].SetFloat(exp(BAKED_SM_EXP_K_VAL));
 
-    g_Meshes[0].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, g_Meshes[0].pMatGroup->GetTemplate(), 
-                                                                            effectParams, semantics, g_Meshes[0].pMatGroup->GetNumOfParams() + numBakedSMTex + 2);
+    g_Meshes[index].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, g_Meshes[index].pMatGroup->GetTemplate(), 
+        effectParams, semantics, g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex + 2);
 
     _ALIGNED_FREE(pSHEntries);
 
@@ -150,6 +143,20 @@ void BakedSMRenderCallback::Compute()
     //}
 
     _ALIGNED_FREE(pLocEntries);
+}
+
+void BakedSMRenderCallback::Compute()
+{
+    m_pVisSphere = g_pBakedSMCompute->CreateExpDepthSphereSHTable();
+
+    float timeToCompute = 0.0f;
+    ComputeOneMesh(0, 128);
+    _LOOPi(0)
+    {
+        _TRACE(_W("Computing mesh: %d\n"), i+3);
+        ComputeOneMesh(i+3, 128);
+    }
+    timeToCompute += (float) g_pPlatform->GetTimer().GetTimeElapsed();
 
     _TRACE(_W("Time to compute SH: %f\n"), timeToCompute);
 

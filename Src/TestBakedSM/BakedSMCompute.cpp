@@ -471,7 +471,7 @@ void BakedSMCompute::CompressSMTexDataToSH(float* pParaTexData, BakedSMSHEntry* 
         pDataEntryDest->sh[i] = depth.sh[i] / exp(BAKED_SM_EXP_K_VAL);//log(depth.sh[i]) / BAKED_SM_EXP_K_VAL;
     }
 }
-
+#pragma optimize("", off)
 void BakedSMCompute::ComputeShadowMapSH(const BakedSMLocationEntry* pLocEntries, BakedSMSHEntry* pDataEntries, uint numEntries, IBakedSMComputeRenderCallback& occlCallback, IPThreadPool* pThreadPool)
 {
     // TODO: Should let the app allocate mem
@@ -878,7 +878,6 @@ void BakedSMCompute::ComputePushPullTex4ChannelByte(byte* pRWData, uint texWidth
     _ALIGNED_FREE(pPendingXYTemp);
     _ALIGNED_FREE(pFilledMask);
 }
-#pragma optimize("", off)
 
 uint BakedSMCompute::CreateBakedSMSH16Bit(const BakedSMLocationEntry* pLocEntries, BakedSMSHEntry* pDataEntries, uint numEntries, uint texWidth, uint texHeight, IRTexture2D** ppDest)
 { 
