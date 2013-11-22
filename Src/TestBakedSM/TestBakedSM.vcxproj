@@ -82,8 +82,6 @@
     <ClInclude Include="BakedSMParaboloidProjWeights.h" />
     <ClInclude Include="BakedSMParamPool.h" />
     <ClInclude Include="BakedSMRenderCallback.h" />
-    <ClInclude Include="BRDFCallback.h" />
-    <ClInclude Include="BRDFDirs.h" />
     <ClInclude Include="Init.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="stdafx.h" />
@@ -96,7 +94,7 @@
     <ClCompile Include="BakedSMComputePipeline.cpp" />
     <ClCompile Include="BakedSMMeshCreate.cpp" />
     <ClCompile Include="BakedSMParamPool.cpp" />
-    <ClCompile Include="BRDFCallback.cpp" />
+    <ClCompile Include="BakedSMRenderCallback.cpp" />
     <ClCompile Include="Init.cpp" />
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="stdafx.cpp">

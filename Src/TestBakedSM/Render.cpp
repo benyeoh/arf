@@ -51,6 +51,12 @@ void RenderStats()
 	fontPos[1] += 17;
 	g_pVerdanaFontFace->RenderString(ToStringAuto(_W("Update Time: %f ms"), timeUpdate * 1000.0 / NUM_TIMES_AVERAGE), fontPos, 0xFFFF50AA);
 
+    fontPos[1] += 34;
+    g_pVerdanaFontFace->RenderString(ToStringAuto(_W("Test Light Size: %f, Dist: %f"), g_TestLightSize, g_TestLightDist), fontPos, 0xFFFF50AA);
+    fontPos[1] += 17;
+    g_pVerdanaFontFace->RenderString(ToStringAuto(_W("Sphere Size: %f"), g_SphereLight[3]), fontPos, 0xFFFF50AA);
+
+
 	g_pVerdanaFontFace->Flush();
 
 	const CMMetrics& memMetrics = g_pAllocator->GetMetrics();
@@ -98,6 +104,8 @@ void RenderDebugObjects()
 {
 	g_pDebugFX->GetParams().SetViewMatrix(*((const gmtl::Matrix44f*)&g_View));
 	g_pDebugFX->GetParams().SetProjMatrix(*((const gmtl::Matrix44f*)&g_Proj));
+
+    g_pDebugFX->RenderWireSphere(_CAST_VEC3(g_SphereLight), g_SphereLight[3], gmtl::Vec4f(1.0f, 1.0f, 1.0f, 1.0f));
 
 	// Frustum cull
 	gmtl::MatrixA44f viewProj;
@@ -193,6 +201,8 @@ void RenderAll()
         g_pBFXParamPool->SetCameraProperties(_CAST_VEC3(g_EyePos), NEAR_PLANE, FAR_PLANE);
         //g_pBFXParamPool->SetDirLight(&g_DirLight);
         //g_pBFXParamPool->SetHemiLight(&g_HemiLight);
+        g_pBakedSMCompute->GetBakedSMComputeParamPool()->SetTestLightParams(g_TestLightSize, g_TestLightDist);
+        g_pBakedSMCompute->GetBakedSMComputeParamPool()->SetSphereLight(_CAST_VECA3(g_SphereLight), g_SphereLight[3]);
 
         _LOOPi(NUM_MESHES)
         {

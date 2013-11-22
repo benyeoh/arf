@@ -28,6 +28,7 @@ public:
 
 public:
     void Compute();
+    void ResetMaterials();
 
     // During BeginRender, the application should fetch and set up all necessary parameters to correctly render the object
     // IE, loading the correct material for SHPRTCompute, setting up parameters and render containers, rendering the object with any relevant material types etc...

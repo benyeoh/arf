@@ -13,48 +13,87 @@
 
 _NAMESPACE_BEGIN
 
-float	
-ComputeDifferentialAngles(float* pToStore, uint numPixelsPerSide)
+//float	
+//ComputeDifferentialAngles(float* pToStore, uint numPixelsPerSide)
+//{
+//	float halfPixelOffset	= 1.0f / (numPixelsPerSide);
+//	float fullPixelOffset	= halfPixelOffset * 2.0f;
+//
+//	gmtl::VecA3f initLookup;
+//	initLookup[0]	= -1.0f + halfPixelOffset;
+//	initLookup[1]	= -1.0f + halfPixelOffset;
+//	initLookup[2]	= 1.0f;
+//
+//	gmtl::VecA3f lookup = initLookup;
+//
+//	float weightSum = 0.0f;
+//
+//	_LOOPi(numPixelsPerSide)
+//	{
+//		_LOOPj(numPixelsPerSide)
+//		{
+//			float radius;
+//			VecLength(&radius, &lookup);
+//
+//			// Dot product of lookup vector and face normal
+//			float cosTheta = 1.0f / radius;	
+//
+//			// dA = 1 unit pixel weighted by the cosine of the lookup/face normal
+//			// -> dOmega = dA / r^2
+//			// We will normalize this "unit pixel" by the total weights summed later
+//			float dOmega = cosTheta / (radius * radius);
+//
+//			pToStore[i * numPixelsPerSide + j] = dOmega;
+//			weightSum += dOmega;
+//
+//			lookup[0] = lookup[0] + fullPixelOffset;
+//		}
+//
+//		lookup[0] = initLookup[0];
+//		lookup[1] = lookup[1] + fullPixelOffset;
+//	}
+//
+//	return weightSum;
+//}
+
+float GetAreaElement(float x, float y)
 {
-	float halfPixelOffset	= 1.0f / (numPixelsPerSide);
-	float fullPixelOffset	= halfPixelOffset * 2.0f;
-
-	gmtl::VecA3f initLookup;
-	initLookup[0]	= -1.0f + halfPixelOffset;
-	initLookup[1]	= -1.0f + halfPixelOffset;
-	initLookup[2]	= 1.0f;
-
-	gmtl::VecA3f lookup = initLookup;
-
-	float weightSum = 0.0f;
-
-	_LOOPi(numPixelsPerSide)
-	{
-		_LOOPj(numPixelsPerSide)
-		{
-			float radius;
-			VecLength(&radius, &lookup);
-
-			// Dot product of lookup vector and face normal
-			float cosTheta = 1.0f / radius;	
-
-			// dA = 1 unit pixel weighted by the cosine of the lookup/face normal
-			// -> dOmega = dA / r^2
-			// We will normalize this "unit pixel" by the total weights summed later
-			float dOmega = cosTheta / (radius * radius);
-
-			pToStore[i * numPixelsPerSide + j] = dOmega;
-			weightSum += dOmega;
-
-			lookup[0] = lookup[0] + fullPixelOffset;
-		}
-
-		lookup[0] = initLookup[0];
-		lookup[1] = lookup[1] + fullPixelOffset;
-	}
-
-	return weightSum;
+    // Compute area of the region specified by a point (x, y) on the plane projected onto the sphere
+    return atan2(x * y, sqrt(x * x + y * y + 1));
 }
+
+void ComputeDifferentialAngles(float* pToStore, uint numPixelsPerSide)
+{
+    float halfPixelOffset	= 1.0f / (numPixelsPerSide);
+    float fullPixelOffset	= halfPixelOffset * 2.0f;
+
+    float u = -1.0f + halfPixelOffset;
+    float initU = u;
+
+    float v = -1.0f + halfPixelOffset;
+
+    _LOOPi(numPixelsPerSide)
+    {
+        _LOOPj(numPixelsPerSide)
+        {
+            float x0 = u - halfPixelOffset;
+            float y0 = v - halfPixelOffset;
+            float x1 = u + halfPixelOffset;
+            float y1 = v + halfPixelOffset;
+
+            // Compute area of the projected cube map texel onto the sphere
+            // See ATI CubeMapGen
+            float solidAngle = GetAreaElement(x0, y0) - GetAreaElement(x0, y1) - GetAreaElement(x1, y0) + GetAreaElement(x1, y1);           
+            pToStore[i * numPixelsPerSide + j] = solidAngle;// / (4.0f * LM_PI);
+
+            u += fullPixelOffset;
+        }
+
+        u = initU;
+        v += fullPixelOffset;
+    }
+}
+
 
 void	ComputeMonteCarloCubeSamplingOneFace(const gmtl::VecA3f& initLookup,
 											 const gmtl::VecA3f& diffU,
@@ -112,7 +151,8 @@ ComputeMonteCarloCubeSampling(float* pDest,
 
 	// Compute differential solid angles
 	float* pDiffAngles = (float*) _MALLOC( sizeof(float) * numPixelsPerSide * numPixelsPerSide );
-	float weightPerFace = ComputeDifferentialAngles(pDiffAngles, numPixelsPerSide);
+	//float weightPerFace = ComputeDifferentialAngles(pDiffAngles, numPixelsPerSide);
+    ComputeDifferentialAngles(pDiffAngles, numPixelsPerSide);
 
 	// +X
 	gmtl::VecA3f initLookup;
@@ -203,12 +243,12 @@ ComputeMonteCarloCubeSampling(float* pDest,
 	ComputeMonteCarloCubeSamplingOneFace(initLookup, diffU, diffV,
 		pDiffAngles, numPixelsPerSide, pDest, addCubeDataFn, pUserInfo);
 
-	// Weight constants
-	float weight = (4.0f * gmtl::Math::PI) / (weightPerFace * 6);
-	_LOOPi(numChannels)
-	{
-		pDest[i] *= weight;
-	}
+	//// Weight constants
+	//float weight = (4.0f * gmtl::Math::PI) / (weightPerFace * 6);
+	//_LOOPi(numChannels)
+	//{
+	//	pDest[i] *= weight;
+	//}
 
 	_FREE(pDiffAngles);
 }

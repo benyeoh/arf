@@ -1,8 +1,13 @@
 
 define BASE_LIGHTING 0
+define BAKEDSMCOMPUTE_MAT_OCCLUSION 32
 
 desc = TestBakedSM, Object, Testing SH
 
 begin_group BASE_LIGHTING
 	mat = [mat]\TestBakedSM\TestBakedSMSH.bam
+end_group
+
+begin_group BAKEDSMCOMPUTE_MAT_OCCLUSION
+	mat = [mat]\TestBakedSM\ParaboloidDepth.bam
 end_group
