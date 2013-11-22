@@ -48,7 +48,7 @@ void BakedSMRenderCallback::ResetMaterials()
 
 }
 
-void BakedSMRenderCallback::ComputeOneMesh(uint index, uint lightMapSize)
+void BakedSMRenderCallback::ComputeOneMesh(uint index, uint lightMapSize, IRTexture2D* pVisSphereTex)
 {
     BakedSMLocationEntry* pLocEntries = (BakedSMLocationEntry*) _ALIGNED_MALLOC(16, lightMapSize * lightMapSize * 2 * sizeof(BakedSMLocationEntry));
     uint posOffset = GetVertexOffset(g_Meshes[index].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_POSITION, 0);
@@ -95,7 +95,7 @@ void BakedSMRenderCallback::ComputeOneMesh(uint index, uint lightMapSize)
     }
 
     semantics[g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex] = BAKEDSMCOMPUTE_BAKED_SM_VIS_SPHERE_TABLE_TEX;
-    effectParams[g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex].SetTexture2D(m_pVisSphere);
+    effectParams[g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex].SetTexture2D(pVisSphereTex);
 
     semantics[g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex + 1] = BAKEDSMCOMPUTE_BAKED_SM_EXP;
     effectParams[g_Meshes[index].pMatGroup->GetNumOfParams() + numBakedSMTex + 1].SetFloat(exp(BAKED_SM_EXP_K_VAL));
@@ -147,14 +147,14 @@ void BakedSMRenderCallback::ComputeOneMesh(uint index, uint lightMapSize)
 
 void BakedSMRenderCallback::Compute()
 {
-    m_pVisSphere = g_pBakedSMCompute->CreateExpDepthSphereSHTable();
+    IRTexture2DPtr pVisSphereTex = g_pBakedSMCompute->CreateExpDepthSphereSHTable();
 
     float timeToCompute = 0.0f;
-    ComputeOneMesh(0, 128);
-    _LOOPi(0)
+    ComputeOneMesh(0, 128, pVisSphereTex);
+    _LOOPi(6)
     {
-        _TRACE(_W("Computing mesh: %d\n"), i+3);
-        ComputeOneMesh(i+3, 128);
+        _TRACE(_W("Computing mesh: %d\n"), i+1);
+        ComputeOneMesh(i+1, 128, pVisSphereTex);
     }
     timeToCompute += (float) g_pPlatform->GetTimer().GetTimeElapsed();
 
@@ -175,7 +175,7 @@ void BakedSMRenderCallback::Render(const gmtl::VecA3f& loc, const gmtl::MatrixA4
     renderContainer.SetRenderCallback(g_pBFXPipeline, _GET_LIB_INDEX_FROM_MAT_TYPE(BFX_MATERIAL_TYPE_OFFSET));
 
     g_pBFXParamPool->SetZDistanceFromCamera(1.0f);
-    g_pBFXParamPool->SetCameraProperties(_CAST_VEC3(loc), NEAR_PLANE, FAR_PLANE);
+    g_pBFXParamPool->SetCameraProperties(_CAST_VEC3(loc), 0.001f, 100.0f);
 
     g_pBFXPipeline->ClearRenderTargets();
     g_pBFXPipeline->AddRenderTarget(pRT->GetTextureRT(0));

@@ -573,15 +573,15 @@ void InitBakedSM()
     IBFXMaterialGroupTemplatePtr pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
     g_Meshes[0].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
     gmtl::identity(_CAST_MAT44(g_MeshesWorld[0]));
-    gmtl::AxisAnglef rotY;
-    rotY.set(1.57f, gmtl::Vec3f(0.0f, 0.0f, 1.0f));
-    gmtl::MatrixA44f rotMat;
-    gmtl::identity(_CAST_MAT44(rotMat));
-    gmtl::setRot(_CAST_MAT44(rotMat), rotY);
-    MatMatMult(&g_MeshesWorld[0], &rotMat, &g_MeshesWorld[0]);
+    //gmtl::AxisAnglef rotY;
+    //rotY.set(1.57f, gmtl::Vec3f(0.0f, 0.0f, 1.0f));
+    //gmtl::MatrixA44f rotMat;
+    //gmtl::identity(_CAST_MAT44(rotMat));
+    //gmtl::setRot(_CAST_MAT44(rotMat), rotY);
+    //MatMatMult(&g_MeshesWorld[0], &rotMat, &g_MeshesWorld[0]);
 
-    CreateCube(1, 4.0f, gmtl::Vec3f(1.0f, 1.0f, 0.0f), 0.0f);
-    CreateCube(7, 1.0f, gmtl::Vec3f(-7.5f, 0.5f, 0.0f), 0.3f);
+    CreateCube(1, 4.0f, gmtl::Vec3f(1.0f, 1.7f, 0.0f), 0.0f);
+    CreateCube(7, 3.0f, gmtl::Vec3f(-2.5f, 1.5f, 0.0f), 0.3f);
     CreateCube(13, 1.0f, gmtl::Vec3f(-3.0f, 1.7f, 4.0f), 1.2f);
     CreateCube(19, 1.3f, gmtl::Vec3f(-1.0f, 1.1f, 8.0f), 2.3f);
 

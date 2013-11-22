@@ -14,9 +14,6 @@
 class BakedSMRenderCallback : public IBakedSMComputeRenderCallback
 {
 private:
-    IBFXMaterialGroupTemplatePtr m_pParaboloidOcclTemplate;
-    //BFXUMeshListPtr m_pSwappedMeshLists[NUM_MESHES];
-    IRTexture2DPtr m_pVisSphere; 
 
 public:
     BakedSMRenderCallback()
@@ -28,7 +25,7 @@ public:
     }
 
 private:
-    void ComputeOneMesh(uint index, uint lightMapSize);
+    void ComputeOneMesh(uint index, uint lightMapSize, IRTexture2D* pVisSphereTex);
 
 public:
     void Compute();
