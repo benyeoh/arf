@@ -3,6 +3,18 @@
 #include "stdafx.h"
 #include "BakedSMParaboloidProjWeights.h"
 
+// TODO: Have to determine these values empirically
+const static float BIAS_DATA[BAKED_SM_NUM_SH_BANDS * BAKED_SM_NUM_SH_BANDS]   = { 0.0f, 
+                                                                                -2.0f, -2.0f, -2.0f, 
+                                                                                -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 
+                                                                                -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, - 1.0f };
+
+const static float SCALE_DATA[BAKED_SM_NUM_SH_BANDS * BAKED_SM_NUM_SH_BANDS]  = { 2.0f, 
+                                                                                4.0f, 4.0f, 4.0f, 
+                                                                                2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 
+                                                                                2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f };
+
+
 union FP32
 {
     uint u;
@@ -160,7 +172,9 @@ inline void AddToEntryShader(int pixelBlockX, int pixelBlockY, __m128 coverage, 
 void BakedSMCompute::Initialize(IRRenderer* pRenderer, IAppCallback* pCallback)
 {
     m_pRenderer = pRenderer;
-    pCallback = pCallback;
+    m_pAppCallback = pCallback;
+
+    m_Pipeline.Initialize(pRenderer, pCallback);
 }
 
 BakedSMComputeParamPool* BakedSMCompute::GetBakedSMComputeParamPool()
@@ -246,7 +260,8 @@ uint BakedSMCompute::DoComputeUVLocEntries(BakedSMLocationEntry* pLocEntries, co
 
 uint BakedSMCompute::ComputeUVLocEntries(BakedSMLocationEntry* pLocEntries, const gmtl::MatrixA44f& worldTrans, 
 										void* pPos, uint posStride, void* pNormal, uint normalStride,
-										void* pUV, uint uvStride, ushort* pIndices, uint numTri, uint texWidth, uint texHeight)
+										void* pUV, uint uvStride, ushort* pIndices, uint numTri, uint texWidth, uint texHeight,
+                                        float posBias)
 {
 	uint numEntries = 0;
 
@@ -358,6 +373,17 @@ uint BakedSMCompute::ComputeUVLocEntries(BakedSMLocationEntry* pLocEntries, cons
 		//_DEBUG_ASSERT(numEntries <= texWidth * texHeight);
 	}
 
+    _LOOPi(numEntries)
+    {
+        // Add bias to make sure rays get occluded by intersecting geometry
+        gmtl::VecA3f posBiasVec = pLocEntries[i].normal;
+        posBiasVec[0] *= posBias;
+        posBiasVec[1] *= posBias;
+        posBiasVec[2] *= posBias;
+
+        pLocEntries[i].pos = pLocEntries[i].pos + posBiasVec;
+    }
+
 	return numEntries;
 } 
 
@@ -412,6 +438,9 @@ void BakedSMCompute::CompressSMTexDataToSH(float* pParaTexData, BakedSMSHEntry* 
             dir[1] = -(v * v + u * u - 1.0f) / (v * v + u * u + 1.0f);
             dir[2] = (2.0f * v) / (v * v + u * u + 1.0f);
 
+            float nDotL = dir[1] < 0.0f ? 0.0f : dir[1];
+            nDotL = nDotL > 1.0f ? 1.0f : nDotL;
+
             // Then transform the dir with respect to the world space
             NormalizeVec(dir);
             TransformVec(&invParaViewRot, &dir, &dir);
@@ -425,7 +454,7 @@ void BakedSMCompute::CompressSMTexDataToSH(float* pParaTexData, BakedSMSHEntry* 
             // SUM( N, Sh(nInHemi) * (4PI/2N * Occl(nInHemi)) )
 
             float depthVal = pParaTexData[index];
-            float expDepth = depthVal; //exp(BAKED_SM_EXP_K_VAL * depthVal);
+            float expDepth = exp(BAKED_SM_EXP_K_VAL * depthVal) * nDotL; //exp(BAKED_SM_EXP_K_VAL * depthVal);
             expDepth *= PARABOLOID_PROJ_INTEGRAL_WEIGHTS[index];
 
             _LOOPk(BAKED_SM_NUM_SH_BANDS * BAKED_SM_NUM_SH_BANDS)
@@ -438,8 +467,8 @@ void BakedSMCompute::CompressSMTexDataToSH(float* pParaTexData, BakedSMSHEntry* 
 
     _LOOPi(BAKED_SM_NUM_SH_BANDS * BAKED_SM_NUM_SH_BANDS)
     {
-        // Rescale to linear space
-        pDataEntryDest->sh[i] = depth.sh[i];//log(depth.sh[i]) / BAKED_SM_EXP_K_VAL;
+        // Renormalize results
+        pDataEntryDest->sh[i] = depth.sh[i] / exp(BAKED_SM_EXP_K_VAL);//log(depth.sh[i]) / BAKED_SM_EXP_K_VAL;
     }
 }
 
@@ -470,7 +499,7 @@ void BakedSMCompute::ComputeShadowMapSH(const BakedSMLocationEntry* pLocEntries,
             BFXRenderContainer renderContainer;
             BFXParamContainer paramContainer;
             //renderContainer.SetRenderCallback((IBFXRenderCallback*) &m_Pipeline, SHPRTCOMPUTE_LIB_ID);
-            paramContainer.SetParamCallback((IBFXParamCallback*) &m_ParamPool, SHPRTCOMPUTE_LIB_ID);
+            paramContainer.SetParamCallback((IBFXParamCallback*) &m_ParamPool, BAKEDSMCOMPUTE_LIB_ID);
 
             // Derive and set the paraboloid view matrix for the current location
             gmtl::MatrixA44f paraView;
@@ -618,8 +647,11 @@ void BakedSMCompute::ComputeShadowMapSH(const BakedSMLocationEntry* pLocEntries,
     }
 }
 
-void BakedSMCompute::ComputePushPullTex4Channel(float* pRWData, uint texWidth, uint texHeight, const BakedSMLocationEntry* pLocEntriesInitial, uint numInitial)
+void BakedSMCompute::ComputePushPullTex4ChannelFloat(float* pRWData, uint texWidth, uint texHeight, const BakedSMLocationEntry* pLocEntriesInitial, uint numInitial)
 {
+    float* pAddedDataTemp = (float*) _ALIGNED_MALLOC(16, texWidth * texHeight * 4 * sizeof(float));
+    ushort* pAddedXY = (ushort*) _ALIGNED_MALLOC(16, texWidth * texHeight * sizeof(ushort) * 2);
+
     ushort* pPendingXY      = (ushort*) _ALIGNED_MALLOC(16, texWidth * texHeight * sizeof(ushort) * 2);
     ushort* pPendingXYTemp  = (ushort*) _ALIGNED_MALLOC(16, texWidth * texHeight * sizeof(ushort) * 2);
     byte* pFilledMask   = (byte*) _ALIGNED_MALLOC(16, texWidth * texHeight);
@@ -639,13 +671,13 @@ void BakedSMCompute::ComputePushPullTex4Channel(float* pRWData, uint texWidth, u
         {
             if(pFilledMask[i * texWidth + j] == 0)
             {
-                pPendingXY[i * texWidth + j] = j;
-                pPendingXY[i * texWidth + j + 1] = i;
+                pPendingXY[numLeft * 2] = j;
+                pPendingXY[numLeft * 2 + 1] = i;
                 numLeft++;
             }
         }
     }
-    
+
     // Start push-pull
     const static int NUM_OFFSETS = 8;
     const static int XY_OFFSETS[NUM_OFFSETS*2] = 
@@ -662,6 +694,8 @@ void BakedSMCompute::ComputePushPullTex4Channel(float* pRWData, uint texWidth, u
 
     while(numLeft > 0)
     {
+        uint numAdded = 0;
+
         uint curNumLeft = numLeft;
         numLeft = 0;
         _LOOPi(curNumLeft)
@@ -673,29 +707,28 @@ void BakedSMCompute::ComputePushPullTex4Channel(float* pRWData, uint texWidth, u
             // Pull an offset if one is found
             _LOOPj(NUM_OFFSETS)
             {
-                int curX = x + XY_OFFSETS[j];
-                int curY = y + XY_OFFSETS[j+1];        
-                if(curX >= 0 && curY >= 0 &&
-                   curX < (int) texWidth && curY < (int) texHeight)
+                int curX = x + XY_OFFSETS[j*2];
+                int curY = y + XY_OFFSETS[j*2+1];        
+                if(curX >= 0 && curY >= 0 && curX < (int) texWidth && curY < (int) texHeight)
                 {
                     if(pFilledMask[curY * texWidth + curX] != 0)
                     {
-                        pRWData[(y * texWidth + x) * 4]     = pRWData[(curY * texWidth + curX) * 4];
-                        pRWData[(y * texWidth + x) * 4 + 1] = pRWData[(curY * texWidth + curX) * 4 + 1];
-                        pRWData[(y * texWidth + x) * 4 + 2] = pRWData[(curY * texWidth + curX) * 4 + 2];
-                        pRWData[(y * texWidth + x) * 4 + 3] = pRWData[(curY * texWidth + curX) * 4 + 3];
+                        pAddedXY[numAdded * 2] = x;
+                        pAddedXY[numAdded * 2 + 1] = y;
+
+                        pAddedDataTemp[numAdded * 4]     = pRWData[(curY * texWidth + curX) * 4];
+                        pAddedDataTemp[numAdded * 4 + 1] = pRWData[(curY * texWidth + curX) * 4 + 1];
+                        pAddedDataTemp[numAdded * 4 + 2] = pRWData[(curY * texWidth + curX) * 4 + 2];
+                        pAddedDataTemp[numAdded * 4 + 3] = pRWData[(curY * texWidth + curX) * 4 + 3];
+
+                        numAdded++;
                         isFound = TRUE;
                         break;
                     }
                 }               
             }
 
-            if(isFound)
-            {
-                // Make sure the mask is set to filled
-                pFilledMask[y * texWidth + x] = 0xFF;
-            }
-            else
+            if(!isFound)
             {
                 // Re-add this point to the queue to process
                 pPendingXYTemp[numLeft*2] = x;
@@ -704,29 +737,151 @@ void BakedSMCompute::ComputePushPullTex4Channel(float* pRWData, uint texWidth, u
             }
         }
 
+        _LOOPi(numAdded)
+        {
+            int x = pAddedXY[i * 2];
+            int y = pAddedXY[i * 2 + 1];
+
+            pRWData[(y * texWidth + x) * 4]     = pAddedDataTemp[i * 4];
+            pRWData[(y * texWidth + x) * 4 + 1] = pAddedDataTemp[i * 4 + 1];
+            pRWData[(y * texWidth + x) * 4 + 2] = pAddedDataTemp[i * 4 + 2];
+            pRWData[(y * texWidth + x) * 4 + 3] = pAddedDataTemp[i * 4 + 3];
+
+            // Make sure the mask is set to filled
+            pFilledMask[y * texWidth + x] = 0xFF;
+        }
+
         ushort* pTemp = pPendingXY;
         pPendingXY = pPendingXYTemp;
         pPendingXYTemp = pTemp;
     }
 
+    _ALIGNED_FREE(pAddedXY);
+    _ALIGNED_FREE(pAddedDataTemp);
     _ALIGNED_FREE(pPendingXY);
     _ALIGNED_FREE(pPendingXYTemp);
     _ALIGNED_FREE(pFilledMask);
 }
 
+void BakedSMCompute::ComputePushPullTex4ChannelByte(byte* pRWData, uint texWidth, uint texHeight, const BakedSMLocationEntry* pLocEntriesInitial, uint numInitial)
+{
+    byte* pAddedDataTemp = (byte*) _ALIGNED_MALLOC(16, texWidth * texHeight * 4);
+    ushort* pAddedXY = (ushort*) _ALIGNED_MALLOC(16, texWidth * texHeight * sizeof(ushort) * 2);
+    
+    ushort* pPendingXY      = (ushort*) _ALIGNED_MALLOC(16, texWidth * texHeight * sizeof(ushort) * 2);
+    ushort* pPendingXYTemp  = (ushort*) _ALIGNED_MALLOC(16, texWidth * texHeight * sizeof(ushort) * 2);
+    byte* pFilledMask   = (byte*) _ALIGNED_MALLOC(16, texWidth * texHeight);
+    memset(pFilledMask, 0, texWidth * texHeight);
+
+    // Set filled mask for initial entries
+    _LOOPi(numInitial)
+    {
+        pFilledMask[pLocEntriesInitial[i].texY * texWidth + pLocEntriesInitial[i].texX] = 0xFF;       
+    }
+
+    // Initialize pendingXY
+    uint numLeft = 0;
+    _LOOPi(texHeight)
+    {
+        _LOOPj(texWidth)
+        {
+            if(pFilledMask[i * texWidth + j] == 0)
+            {
+                pPendingXY[numLeft * 2] = j;
+                pPendingXY[numLeft * 2 + 1] = i;
+                numLeft++;
+            }
+        }
+    }
+
+    // Start push-pull
+    const static int NUM_OFFSETS = 8;
+    const static int XY_OFFSETS[NUM_OFFSETS*2] = 
+    {
+        -1, 0,
+        -1, -1,
+        0, -1,
+        1, -1,
+        1, 0,
+        1, 1,
+        0, 1,
+        -1, 1,
+    };
+
+    while(numLeft > 0)
+    {
+        uint numAdded = 0;
+
+        uint curNumLeft = numLeft;
+        numLeft = 0;
+        _LOOPi(curNumLeft)
+        {
+            boolean isFound = FALSE;
+            int x = pPendingXY[i*2];
+            int y = pPendingXY[i*2+1];
+
+            // Pull an offset if one is found
+            _LOOPj(NUM_OFFSETS)
+            {
+                int curX = x + XY_OFFSETS[j*2];
+                int curY = y + XY_OFFSETS[j*2+1];        
+                if(curX >= 0 && curY >= 0 && curX < (int) texWidth && curY < (int) texHeight)
+                {
+                    if(pFilledMask[curY * texWidth + curX] != 0)
+                    {
+                        pAddedXY[numAdded * 2] = x;
+                        pAddedXY[numAdded * 2 + 1] = y;
+
+                        pAddedDataTemp[numAdded * 4]     = pRWData[(curY * texWidth + curX) * 4];
+                        pAddedDataTemp[numAdded * 4 + 1] = pRWData[(curY * texWidth + curX) * 4 + 1];
+                        pAddedDataTemp[numAdded * 4 + 2] = pRWData[(curY * texWidth + curX) * 4 + 2];
+                        pAddedDataTemp[numAdded * 4 + 3] = pRWData[(curY * texWidth + curX) * 4 + 3];
+
+                        numAdded++;
+                        isFound = TRUE;
+                        break;
+                    }
+                }               
+            }
+
+            if(!isFound)
+            {
+                // Re-add this point to the queue to process
+                pPendingXYTemp[numLeft*2] = x;
+                pPendingXYTemp[numLeft*2+1] = y;
+                numLeft++;
+            }
+        }
+
+        _LOOPi(numAdded)
+        {
+            int x = pAddedXY[i * 2];
+            int y = pAddedXY[i * 2 + 1];
+
+            pRWData[(y * texWidth + x) * 4]     = pAddedDataTemp[i * 4];
+            pRWData[(y * texWidth + x) * 4 + 1] = pAddedDataTemp[i * 4 + 1];
+            pRWData[(y * texWidth + x) * 4 + 2] = pAddedDataTemp[i * 4 + 2];
+            pRWData[(y * texWidth + x) * 4 + 3] = pAddedDataTemp[i * 4 + 3];
+
+            // Make sure the mask is set to filled
+            pFilledMask[y * texWidth + x] = 0xFF;
+        }
+
+        ushort* pTemp = pPendingXY;
+        pPendingXY = pPendingXYTemp;
+        pPendingXYTemp = pTemp;
+    }
+
+    _ALIGNED_FREE(pAddedXY);
+    _ALIGNED_FREE(pAddedDataTemp);
+    _ALIGNED_FREE(pPendingXY);
+    _ALIGNED_FREE(pPendingXYTemp);
+    _ALIGNED_FREE(pFilledMask);
+}
+#pragma optimize("", off)
+
 uint BakedSMCompute::CreateBakedSMSH16Bit(const BakedSMLocationEntry* pLocEntries, BakedSMSHEntry* pDataEntries, uint numEntries, uint texWidth, uint texHeight, IRTexture2D** ppDest)
 { 
-    // TODO: Have to determine these values empirically
-    const static float BIAS_DATA[BAKED_SM_NUM_SH_BANDS * BAKED_SM_NUM_SH_BANDS]   = { 0.0f, 
-                                                                   -2.0f, -2.0f, -2.0f, 
-                                                                   -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 
-                                                                   -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, - 1.0f };
-                                                                   
-    const static float SCALE_DATA[BAKED_SM_NUM_SH_BANDS * BAKED_SM_NUM_SH_BANDS]  = { 2.0f, 
-                                                                    4.0f, 4.0f, 4.0f, 
-                                                                    2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 
-                                                                    2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f, 2.0f };
-
     // Store 4 bands in 4 textures
     float* pRawData[4];
 
@@ -754,7 +909,7 @@ uint BakedSMCompute::CreateBakedSMSH16Bit(const BakedSMLocationEntry* pLocEntrie
         _LOOPj(4)
         {
             // Store 4 coeffs at a time to the appropriate texture
-            float* pChannel = pRawData[j] + (pLocEntries[i].texY * sizeof(float) * 4 * texWidth) + (pLocEntries[i].texX * sizeof(float) * 4);
+            float* pChannel = pRawData[j] + (pLocEntries[i].texY * texWidth + pLocEntries[i].texX) * 4;
              _LOOPk(4)
             {
                 float shVal = pDataEntries[i].sh[k+offset];
@@ -773,7 +928,7 @@ uint BakedSMCompute::CreateBakedSMSH16Bit(const BakedSMLocationEntry* pLocEntrie
     // Compute push-pull to fill sparse areas in the buffer
     _LOOPi(4)
     {
-        ComputePushPullTex4Channel(pRawData[i], texWidth, texHeight, pLocEntries, numEntries);
+        ComputePushPullTex4ChannelFloat(pRawData[i], texWidth, texHeight, pLocEntries, numEntries);
     }
 
     // Create the actual texture and copy and also do some compression
@@ -791,7 +946,7 @@ uint BakedSMCompute::CreateBakedSMSH16Bit(const BakedSMLocationEntry* pLocEntrie
             {
                 _LOOPk(4)
                 {
-                    float rawSHVal = pRawData[i][(y * texWidth * + x) * 4 + k];
+                    float rawSHVal = pRawData[i][(y * texWidth + x) * 4 + k];
                     float rangeVal = (rawSHVal - BIAS_DATA[k+offset]) / SCALE_DATA[k+offset];
                     _DEBUG_ASSERT(rangeVal >= 0.0f && rangeVal <= 1.0f);
                     ushort* pToWrite = (ushort*) (pDestData + y * pitch + (x * 4 + k) * sizeof(ushort));
@@ -810,4 +965,206 @@ uint BakedSMCompute::CreateBakedSMSH16Bit(const BakedSMLocationEntry* pLocEntrie
     }
 
     return 4;
+}
+
+struct VisData
+{
+    float cosTheta;
+};
+
+void AddSphereVisibility(float* pDest, float weight, const gmtl::VecA3f& dir, uint sampleIndex, void* pUserInfo)
+{
+    VisData* pVisData = (VisData*) pUserInfo;
+    gmtl::VecA3f up;
+    up[0] = 0.0f;
+    up[1] = 1.0f;
+    up[2] = 0.0f;
+
+    float vis = 1.0f;
+
+    float nDotL;
+    VecVecDot(&nDotL, &dir, &up);
+    if(nDotL > pVisData->cosTheta)
+        vis = 0.0f;
+
+    vis *= weight;
+
+    _LOOPi(BAKED_SM_NUM_SH_BANDS)
+    {
+        uint lm = i*(i+1);
+        pDest[i] += ( EvaluateSHFastCartesian(lm, _CAST_VEC3(dir)) * vis );
+    }
+}
+
+struct ExpDepthData
+{
+    float cosTheta;
+    float depth;
+};
+
+void AddSphereExpDepth(float* pDest, float weight, const gmtl::VecA3f& dir, uint sampleIndex, void* pUserInfo)
+{
+    const static float FAR_EXP_DEPTH = 0.0f;//exp(-BAKED_SM_EXP_K_VAL * 1.0f);
+
+    ExpDepthData* pExpDepthData = (ExpDepthData*) pUserInfo;
+    gmtl::VecA3f up;
+    up[0] = 0.0f;
+    up[1] = 1.0f;
+    up[2] = 0.0f;
+
+    float vis = FAR_EXP_DEPTH;
+
+    float nDotL;
+    VecVecDot(&nDotL, &dir, &up);
+    if(nDotL > pExpDepthData->cosTheta)
+        vis = pExpDepthData->depth;
+ 
+    vis *= weight;
+
+    _LOOPi(BAKED_SM_NUM_SH_BANDS)
+    {
+        uint lm = i*(i+1);
+        pDest[i] += ( EvaluateSHFastCartesian(lm, _CAST_VEC3(dir)) * vis );
+    }
+}
+
+IRTexture2D* BakedSMCompute::CreateVisibilitySphereSHTable()
+{
+    IRTexture2D* pSphereVis = m_pRenderer->GetRResourceMgr().CreateTexture2D(NULL, 128, 1, 1, TEXF_A32B32G32R32F, TEXU_DEFAULT);
+    uint texWidth			= pSphereVis->GetWidth(0);
+    float widthInc			= 1.0f / (texWidth - 1);
+
+    float* pSphereVisDest = (float*) _MALLOC( sizeof(float) * BAKED_SM_NUM_SH_BANDS * texWidth );
+    VisData visData;
+
+    // Compute the scales
+    //float scales[SEFX_MAX_SH_BANDS];
+    //_LOOPi(numBands)
+    //{
+    //    scales[i] = gmtl::Math::sqrt( (4.0f * gmtl::Math::PI) / (2.0f * i + 1.0f) );
+    //}
+
+    _LOOPi(texWidth)
+    {
+        m_pAppCallback->Log(ToStringAuto(_W("width: %d\n"), i));
+
+        // Compute g(theta)
+        uint index = i * BAKED_SM_NUM_SH_BANDS;
+        float radiusOverDist = (widthInc * i);
+
+        // Theta = asin( r / length(C - x) ), where r is the radius and C is the center of the sphere,
+        // and x is the surface point
+        // Varies from 0 (farthest) - 1 (closest)
+        float theta = gmtl::Math::abs( gmtl::Math::aSin( radiusOverDist ) );
+        //if( (theta * 180.0f / gmtl::Math::PI) > 80.463082f ) //theta > 0.802664f)
+        //    theta = (80.463082f * gmtl::Math::PI) / 180.0f;
+
+        float cosTheta = gmtl::Math::cos(theta);
+
+        visData.cosTheta = cosTheta;
+        ComputeMonteCarloCubeSampling(pSphereVisDest + index, BAKED_SM_NUM_SH_BANDS, 128, &AddSphereVisibility, &visData);
+
+        //_LOOPj(numBands)
+        //{
+        //    // Compute scaled g(theta)
+        //    pSphereVisDest[index+j]	= //pSphereVisDest[index+i] * scales[i];
+        //        zhLog[j] * scales[j];
+        //}
+
+        //_LOOPj(numBands)
+        //{
+        //    // Increase the range to simulate k spherical occluders
+        //    zhLog[j] *= 2.35f;
+        //}
+    }
+
+    // Only copy 1 row
+    _DEBUG_COMPILE_ASSERT(BAKED_SM_NUM_SH_BANDS <= 4);
+
+    uint pitch = 0;
+    float* pDestData = (float*) pSphereVis->Lock(0, pitch, NULL);
+    _DEBUG_ASSERT(pitch == (texWidth * sizeof(float) * 4));
+    _LOOPi(texWidth)
+    {
+        _LOOPj(BAKED_SM_NUM_SH_BANDS)
+        {
+            pDestData[i * 4 + j] = pSphereVisDest[i * BAKED_SM_NUM_SH_BANDS + j];
+        }
+    }
+    pSphereVis->Unlock(0);
+
+    _FREE(pSphereVisDest);
+
+    return pSphereVis;
+}
+
+IRTexture2D* BakedSMCompute::CreateExpDepthSphereSHTable()
+{
+    IRTexture2D* pSphereExpDepth = m_pRenderer->GetRResourceMgr().CreateTexture2D(NULL, 32, 32, 1, TEXF_A32B32G32R32F, TEXU_DEFAULT);
+    uint texWidth			= pSphereExpDepth->GetWidth(0);
+    uint texHeight          = pSphereExpDepth->GetHeight(0);
+    float widthInc			= 1.0f / (texWidth - 1);
+
+    float* pSphereExpDepthDest = (float*) _MALLOC( sizeof(float) * BAKED_SM_NUM_SH_BANDS * texWidth * texHeight );
+    ExpDepthData expDepthData;
+
+    // Compute the scales
+    //float scales[SEFX_MAX_SH_BANDS];
+    //_LOOPi(numBands)
+    //{
+    //    scales[i] = gmtl::Math::sqrt( (4.0f * gmtl::Math::PI) / (2.0f * i + 1.0f) );
+    //}
+
+    _LOOP(y, texHeight)
+    {
+        float depth = ((float)y + 1.0f) / (texHeight);
+        expDepthData.depth = exp( -BAKED_SM_EXP_K_VAL * depth ); 
+        
+        _LOOP(x, texWidth)
+        {
+            m_pAppCallback->Log(ToStringAuto(_W("depth: %f\n"), depth));
+
+            // Compute g(theta)
+            uint index = (y * texWidth + x) * BAKED_SM_NUM_SH_BANDS;
+            float radiusOverDist = (widthInc * x);
+
+            // Theta = asin( r / length(C - x) ), where r is the radius and C is the center of the sphere,
+            // and x is the surface point
+            // Varies from 0 (farthest) - 1 (closest)
+            float theta = gmtl::Math::abs( gmtl::Math::aSin( radiusOverDist ) );
+            //if( (theta * 180.0f / gmtl::Math::PI) > 80.463082f ) //theta > 0.802664f)
+            //    theta = (80.463082f * gmtl::Math::PI) / 180.0f;
+
+            float cosTheta = gmtl::Math::cos(theta);
+            m_pAppCallback->Log(ToStringAuto(_W("cosTheta: %f\n"), cosTheta));
+
+            expDepthData.cosTheta = cosTheta;
+            ComputeMonteCarloCubeSampling(pSphereExpDepthDest + index, BAKED_SM_NUM_SH_BANDS, 64, &AddSphereExpDepth, &expDepthData);
+        }
+
+    }
+
+    // Only copy 1 row
+    _DEBUG_COMPILE_ASSERT(BAKED_SM_NUM_SH_BANDS <= 4);
+
+    uint pitch = 0;
+    float* pDestData = (float*) pSphereExpDepth->Lock(0, pitch, NULL);
+    _DEBUG_ASSERT(pitch == (texWidth * sizeof(float) * 4));
+
+    _LOOP(y, texHeight)
+    {
+        _LOOP(x, texWidth)
+        {
+            _LOOPi(BAKED_SM_NUM_SH_BANDS)
+            {
+                pDestData[(y * texWidth + x) * 4 + i] = pSphereExpDepthDest[(y * texWidth + x) * BAKED_SM_NUM_SH_BANDS + i];
+            }
+        }
+    }
+
+    pSphereExpDepth->Unlock(0);
+
+    _FREE(pSphereExpDepthDest);
+
+    return pSphereExpDepth;
 }

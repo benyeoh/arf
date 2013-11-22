@@ -124,6 +124,59 @@ void ProcessInput()
 				_CAST_VEC3(g_EyePos) = _CAST_VEC3(g_EyePos) - g_TimeDT * _CAST_VEC3(g_EyeDir) * SPEED;
 				break;
 			}
+
+        case IKC_T:
+            {
+                gmtl::Vec3f forward = gmtl::Vec3f(g_EyeDir[0], 0.0f, g_EyeDir[2]);
+                gmtl::normalize(forward);
+                _CAST_VEC3(g_SphereLight) = _CAST_VEC3(g_SphereLight) + g_TimeDT * forward * SPEED * 0.1f;
+                break;
+            }
+        case IKC_F:
+            {
+                gmtl::Vec3f right;
+                gmtl::Vec3f zAxis = -_CAST_VEC3(g_EyeDir);
+                gmtl::cross(right, _CAST_VEC3(g_EyeUpVec), zAxis);
+                gmtl::normalize(right);
+                _CAST_VEC3(g_SphereLight) = _CAST_VEC3(g_SphereLight) - g_TimeDT * _CAST_VEC3(right) * SPEED * 0.1f;
+                break;
+            }
+        case IKC_G:
+            {
+                gmtl::Vec3f forward = gmtl::Vec3f(g_EyeDir[0], 0.0f, g_EyeDir[2]);
+                gmtl::normalize(forward);
+                _CAST_VEC3(g_SphereLight) = _CAST_VEC3(g_SphereLight) - g_TimeDT * forward * SPEED * 0.1f;
+                break;
+            }
+        case IKC_H:
+            {
+                gmtl::Vec3f right;
+                gmtl::Vec3f zAxis = -_CAST_VEC3(g_EyeDir);
+                gmtl::cross(right, _CAST_VEC3(g_EyeUpVec), zAxis);
+                gmtl::normalize(right);
+                _CAST_VEC3(g_SphereLight) = _CAST_VEC3(g_SphereLight) + g_TimeDT * _CAST_VEC3(right) * SPEED * 0.1f;
+                break;
+            }
+        case IKC_N:
+            {
+                g_SphereLight[3] -= 2.0f * g_TimeDT;
+                break;
+            }
+        case IKC_M:            
+            {
+                g_SphereLight[3] += 2.0f * g_TimeDT;
+                break;
+            }
+        case IKC_V:
+            {
+                g_SphereLight[1] -= 1.0f * g_TimeDT;
+                break;
+            }
+        case IKC_B:
+            {
+                g_SphereLight[1] += 1.0f * g_TimeDT;
+                break;
+            }
 		}
 
 		uint numJustPressedKeys = keyboard.GetNumOfJustPressedKeys();
@@ -132,7 +185,20 @@ void ProcessInput()
 		{
 			switch(justPressedCodes[i])
 			{
-			case IKC_ESC:
+            case IKC_SPACE:
+                {
+                    g_BakedSMCallback.ResetMaterials();
+                    break;
+                }
+
+
+            case IKC_1:
+                {
+                    g_SphereLight.set(0.0f, 8.0f, 0.0f, 1.0f);
+                    break;
+                }
+
+            case IKC_ESC:
 				{
 					if(g_IsFullScreen)
 					{
@@ -146,27 +212,57 @@ void ProcessInput()
 					break;
 				}
 
-			case IKC_1:
-				{
-					g_IsDebugRenderLights = !g_IsDebugRenderLights;
-					break;
-				}
+			//case IKC_1:
+			//	{
+			//		g_IsDebugRenderLights = !g_IsDebugRenderLights;
+			//		break;
+			//	}
 
-			case IKC_2:
-				{
-					g_IsDebugRenderSceneDB = !g_IsDebugRenderSceneDB;
-					break;
-				}
+			//case IKC_2:
+			//	{
+			//		g_IsDebugRenderSceneDB = !g_IsDebugRenderSceneDB;
+			//		break;
+			//	}
 
-			case IKC_4:
-				{
-					g_IsWireFrameMode = !g_IsWireFrameMode;
-					//g_pBaseFX->GetDebug().SetWireFrame(g_IsWireFrameMode);
-					break;
-				}
+			//case IKC_4:
+			//	{
+			//		g_IsWireFrameMode = !g_IsWireFrameMode;
+			//		//g_pBaseFX->GetDebug().SetWireFrame(g_IsWireFrameMode);
+			//		break;
+			//	}
 
+            case IKC_O:
+                {
+                    g_TestLightSize += 0.05f;
+                    if(g_TestLightSize > 1.0f)
+                        g_TestLightSize = 1.0f;
+                    break;
+                }
 
-			}
+            case IKC_P:
+                {
+                    g_TestLightSize -= 0.05f;
+                    if(g_TestLightSize < 0.0f)
+                        g_TestLightSize = 0.0f;
+                     break;
+                }
+
+            case IKC_U:
+                {
+                    g_TestLightDist += 0.05f;
+                    if(g_TestLightDist> 1.0f)
+                        g_TestLightDist = 1.0f;
+                    break;
+                }
+
+            case IKC_I:
+                {
+                    g_TestLightDist -= 0.05f;
+                    if(g_TestLightDist < 0.0f)
+                        g_TestLightDist = 0.0f;
+                    break;
+                }     
+            }
 		}
 
 	}

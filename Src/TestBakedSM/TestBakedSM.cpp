@@ -49,6 +49,7 @@ BFXParamContainer	g_ParamContainer;
 BFXRenderContainer	g_RenderContainer;
 
 BakedSMComputePtr    g_pBakedSMCompute;
+BakedSMRenderCallback g_BakedSMCallback;
 
 ICMMemAllocatorPtr	g_pAllocator;
 IPThreadPoolPtr		g_pThreadPool;
@@ -117,6 +118,10 @@ gmtl::VecA3f		g_ViewFarCornerVecs[4];
 
 gmtl::MatrixA44f	g_MeshesWorld[NUM_MESHES];
 BFXMesh g_Meshes[NUM_MESHES];
+
+float g_TestLightSize = 0.5f;
+float g_TestLightDist = 0.5f;
+gmtl::VecA4f g_SphereLight;
 
 //------------------------------------------------------------------------------
 //	Forward Decls

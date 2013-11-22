@@ -57,7 +57,7 @@ private:
     uint DoComputeUVLocEntries(BakedSMLocationEntry* pLocEntries, const gmtl::VecA4f& v1, const gmtl::VecA4f& v2, const gmtl::VecA4f& v3, 
                                const float* pV1Inter, const float* pV2Inter, const float* pV3Inter, uint texWidth, uint texHeight);
 
-    void ComputePushPullTex4Channel(float* pRWData, uint texWidth, uint texHeight, const BakedSMLocationEntry* pLocEntriesInitial, uint numInitial);
+    void ComputePushPullTex4ChannelFloat(float* pRWData, uint texWidth, uint texHeight, const BakedSMLocationEntry* pLocEntriesInitial, uint numInitial);
 
 public:
     void Initialize(IRRenderer* pRenderer, IAppCallback* pCallback);
@@ -65,14 +65,19 @@ public:
     // TODO: This should be removed
     BakedSMComputeParamPool* GetBakedSMComputeParamPool();
 
+    void ComputePushPullTex4ChannelByte(byte* pRWData, uint texWidth, uint texHeight, const BakedSMLocationEntry* pLocEntriesInitial, uint numInitial);
+
     void CompressSMTexDataToSH(float* pParaTexData, BakedSMSHEntry* pDataEntryDest, const gmtl::Matrix44f& paraView);
 
     uint ComputeUVLocEntries(BakedSMLocationEntry* pLocEntries, const gmtl::MatrixA44f& worldTrans, 
                              void* pPos, uint posStride, void* pNormal, uint normalStride,
-                             void* pUV, uint uvStride, ushort* pIndices, uint numTri, uint texWidth, uint texHeight);
+                             void* pUV, uint uvStride, ushort* pIndices, uint numTri, uint texWidth, uint texHeight, float posBias);
 
     void ComputeShadowMapSH(const BakedSMLocationEntry* pLocEntries, BakedSMSHEntry* pDataEntries, uint numEntries, IBakedSMComputeRenderCallback& occlCallback, IPThreadPool* pThreadPool);
     uint CreateBakedSMSH16Bit(const BakedSMLocationEntry* pLocEntries, BakedSMSHEntry* pDataEntries, uint numEntries, uint texWidth, uint texHeight, IRTexture2D** ppDest);
+
+    IRTexture2D* CreateVisibilitySphereSHTable();
+    IRTexture2D* CreateExpDepthSphereSHTable();
 };
 
 _DECLARE_SMARTPTR(BakedSMCompute)

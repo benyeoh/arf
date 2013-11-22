@@ -19,6 +19,9 @@ private:
     const gmtl::Matrix44f*	m_pParaboloidView;
     IRTexture2D* m_pBakedSM[MAX_NUM_SM];
 
+    float m_TestLightParams[2];
+    gmtl::VecA4f m_SphereLight;
+
 public:
     BakedSMComputeParamPool()
         : m_pParaboloidView(NULL)
@@ -27,6 +30,11 @@ public:
         {
             m_pBakedSM[i] = NULL;
         }
+
+        m_TestLightParams[0] = 0.5f;
+        m_TestLightParams[1] = 0.5f;
+
+        m_SphereLight.set(0.0f, 8.0f, 0.0f, 1.0f);
     }
 
     ~BakedSMComputeParamPool()
@@ -36,6 +44,8 @@ public:
 public:
     void SetParaboloidViewMatrix(const gmtl::Matrix44f* pMat);
     void SetBakedSM(IRTexture2D* pSM, uint index);
+    void SetTestLightParams(float size, float dist);
+    void SetSphereLight(gmtl::VecA3f& pos, float radius);
 
 public:
     void GetParam(uint semantic, REffectParam* pToStore);

@@ -36,12 +36,6 @@
     <ClInclude Include="Update.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BRDFCallback.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BRDFDirs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BakedSMCompute.h">
       <Filter>BakedSM</Filter>
     </ClInclude>
@@ -83,9 +77,6 @@
     <ClCompile Include="Update.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BRDFCallback.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="BakedSMCompute.cpp">
       <Filter>BakedSM</Filter>
     </ClCompile>
@@ -96,6 +87,9 @@
       <Filter>BakedSM</Filter>
     </ClCompile>
     <ClCompile Include="BakedSMMeshCreate.cpp">
+      <Filter>BakedSM</Filter>
+    </ClCompile>
+    <ClCompile Include="BakedSMRenderCallback.cpp">
       <Filter>BakedSM</Filter>
     </ClCompile>
   </ItemGroup>

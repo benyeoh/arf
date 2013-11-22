@@ -18,9 +18,6 @@ _USE_NAMESPACE
 #include "Update.h"
 #include "Init.h"
 
-#include "BRDFDirs.h"
-#include "BRDFCallback.h"
-
 #include "BakedSMDefines.h"
 #include "BakedSMParamPool.h"
 #include "BakedSMComputePipeline.h"
@@ -66,6 +63,7 @@ extern IBFXBaseFXPtr		g_pBaseFX;
 extern IBFXPipelinePtr		g_pBFXPipeline;
 extern IBFXParamPoolPtr		g_pBFXParamPool;
 extern BakedSMComputePtr    g_pBakedSMCompute;
+extern BakedSMRenderCallback g_BakedSMCallback;
 
 extern BFXParamContainer	g_ParamContainer;
 extern BFXRenderContainer	g_RenderContainer;
@@ -140,9 +138,13 @@ extern void*				g_pD3DDevice;
 extern gmtl::VecA3f		g_CameraFarCornerVecs[4];
 extern gmtl::VecA3f		g_ViewFarCornerVecs[4];
 
-const static float FAR_PLANE = 1200.0f;
-const static float NEAR_PLANE = 0.1f;
+const static float FAR_PLANE = 1000.0f;
+const static float NEAR_PLANE = 0.01f;
 
-const static uint NUM_MESHES = 7;
+const static uint NUM_MESHES = 25;
 extern gmtl::MatrixA44f	g_MeshesWorld[NUM_MESHES];
 extern BFXMesh g_Meshes[NUM_MESHES];
+
+extern float g_TestLightSize;
+extern float g_TestLightDist;
+extern gmtl::VecA4f g_SphereLight;

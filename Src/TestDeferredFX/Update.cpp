@@ -274,6 +274,7 @@ void ProcessInput()
 		{
 			switch(justPressedCodes[i])
 			{
+
 			case IKC_ESC:
 				{
 					if(g_IsFullScreen)

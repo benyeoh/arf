@@ -474,107 +474,120 @@ void InitAppHelpers()
 	//g_pEntityMgr->UpdateComponentsTemp();
 }
 
-void InitBakedSM()
+void CreateCube(int indexStart, float cubeSize, const gmtl::Vec3f& pos, float rotAmount)
 {
-    g_pBakedSMCompute = _NEW BakedSMCompute;
-    g_pBakedSMCompute->Initialize(g_pRenderer, &g_AppCallback);
+    const static uint NUM_SUBDIVS = 60;
+    const static float CUBE_SIZE = 2.0f;
 
     const wchar* pFileName = _W("[shd]\\TestBakedSM\\TestBakedSMSH.mgp");
     IFFilePtr pFile = g_pFileSystem->GetFile(pFileName);
     IByteBufferPtr pMatData = _NEW CByteBuffer(pFile->Length());
     AppendData(pMatData, pFile);
 
-    const static uint NUM_SUBDIVS = 20;
-    const static float PLANE_SIZE = 10.0f;
-    const static float CUBE_SIZE = 2.0f;
-    const static float CUBE_HEIGHT = 1.3f;
+    gmtl::AxisAnglef rotY;
+    rotY.set(rotAmount, gmtl::Vec3f(0.0f, 1.0f, 0.0f));
+    gmtl::MatrixA44f rotMat;
+    gmtl::identity(_CAST_MAT44(rotMat));
+    gmtl::setRot(_CAST_MAT44(rotMat), rotY);
 
+    // Make cube
+    g_Meshes[indexStart] = CreatePlanePosY(g_pRenderer, cubeSize, cubeSize, NUM_SUBDIVS, NUM_SUBDIVS);
+    IBFXMaterialGroupTemplatePtr pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
+    g_Meshes[indexStart].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
+    gmtl::identity(_CAST_MAT44(g_MeshesWorld[indexStart]));
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart]), gmtl::Vec3f(0.0f, cubeSize * 0.5f, 0.0f));
+    MatMatMult(&g_MeshesWorld[indexStart], &rotMat, &g_MeshesWorld[indexStart]);
+    gmtl::Vec4f trans;
+    gmtl::setTrans(trans, _CAST_MAT44(g_MeshesWorld[indexStart]));
+    _CAST_VEC3(trans) += pos;
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart]), trans);
+
+    g_Meshes[indexStart+1] = CreatePlaneNegY(g_pRenderer, cubeSize, cubeSize, NUM_SUBDIVS, NUM_SUBDIVS);
+    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
+    g_Meshes[indexStart+1].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
+    gmtl::identity(_CAST_MAT44(g_MeshesWorld[indexStart+1]));
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+1]), gmtl::Vec3f(0.0f, -cubeSize * 0.5f, 0.0f));
+    MatMatMult(&g_MeshesWorld[indexStart+1], &rotMat, &g_MeshesWorld[indexStart+1]);
+    gmtl::setTrans(trans, _CAST_MAT44(g_MeshesWorld[indexStart+1]));
+    _CAST_VEC3(trans) += pos;
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+1]), trans);
+
+    g_Meshes[indexStart+2] = CreatePlanePosZ(g_pRenderer, cubeSize, cubeSize, NUM_SUBDIVS, NUM_SUBDIVS);
+    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
+    g_Meshes[indexStart+2].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
+    gmtl::identity(_CAST_MAT44(g_MeshesWorld[indexStart+2]));
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+2]), gmtl::Vec3f(0.0f, 0.0f, cubeSize * 0.5f));
+    MatMatMult(&g_MeshesWorld[indexStart+2], &rotMat, &g_MeshesWorld[indexStart+2]);
+    gmtl::setTrans(trans, _CAST_MAT44(g_MeshesWorld[indexStart+2]));
+    _CAST_VEC3(trans) += pos;
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+2]), trans);
+
+    g_Meshes[indexStart+3] = CreatePlaneNegZ(g_pRenderer, cubeSize, cubeSize, NUM_SUBDIVS, NUM_SUBDIVS);
+    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
+    g_Meshes[indexStart+3].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
+    gmtl::identity(_CAST_MAT44(g_MeshesWorld[indexStart+3]));
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+3]), gmtl::Vec3f(0.0f, 0.0f, -cubeSize * 0.5f));
+    MatMatMult(&g_MeshesWorld[indexStart+3], &rotMat, &g_MeshesWorld[indexStart+3]);
+    gmtl::setTrans(trans, _CAST_MAT44(g_MeshesWorld[indexStart+3]));
+    _CAST_VEC3(trans) += pos;
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+3]), trans);
+
+    g_Meshes[indexStart+4] = CreatePlanePosX(g_pRenderer, cubeSize, cubeSize, NUM_SUBDIVS, NUM_SUBDIVS);
+    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
+    g_Meshes[indexStart+4].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
+    gmtl::identity(_CAST_MAT44(g_MeshesWorld[indexStart+4]));
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+4]), gmtl::Vec3f(cubeSize * 0.5f, 0.0f, 0.0f));
+    MatMatMult(&g_MeshesWorld[indexStart+4], &rotMat, &g_MeshesWorld[indexStart+4]);
+    gmtl::setTrans(trans, _CAST_MAT44(g_MeshesWorld[indexStart+4]));
+    _CAST_VEC3(trans) += pos;
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+4]), trans);
+
+    g_Meshes[indexStart+5] = CreatePlaneNegX(g_pRenderer, cubeSize, cubeSize, NUM_SUBDIVS, NUM_SUBDIVS);
+    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
+    g_Meshes[indexStart+5].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
+    gmtl::identity(_CAST_MAT44(g_MeshesWorld[indexStart+5]));
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+5]), gmtl::Vec3f(-cubeSize * 0.5f, 0.0f, 0.0f));
+    MatMatMult(&g_MeshesWorld[indexStart+5], &rotMat, &g_MeshesWorld[indexStart+5]);
+    gmtl::setTrans(trans, _CAST_MAT44(g_MeshesWorld[indexStart+5]));
+    _CAST_VEC3(trans) += pos;
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[indexStart+5]), trans);
+
+}
+
+void InitBakedSM()
+{
+    g_pBakedSMCompute = _NEW BakedSMCompute;
+    g_pBakedSMCompute->Initialize(g_pRenderer, &g_AppCallback);
+
+    g_ParamContainer.SetParamCallback(g_pBakedSMCompute->GetBakedSMComputeParamPool(), _GET_LIB_INDEX(BAKEDSMCOMPUTE_EFFECT_PARAM_OFFSET));
+
+    const wchar* pFileName = _W("[shd]\\TestBakedSM\\TestBakedSMSH.mgp");
+    IFFilePtr pFile = g_pFileSystem->GetFile(pFileName);
+    IByteBufferPtr pMatData = _NEW CByteBuffer(pFile->Length());
+    AppendData(pMatData, pFile);
+
+    const static uint NUM_SUBDIVS = 50;
+    const static float PLANE_SIZE = 27.0f;
+   
     g_Meshes[0] = CreatePlanePosY(g_pRenderer, PLANE_SIZE, PLANE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
     IBFXMaterialGroupTemplatePtr pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
     g_Meshes[0].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
     gmtl::identity(_CAST_MAT44(g_MeshesWorld[0]));
+    gmtl::AxisAnglef rotY;
+    rotY.set(0.2f, gmtl::Vec3f(1.0f, 1.0f, 0.0f));
+    gmtl::MatrixA44f rotMat;
+    gmtl::identity(_CAST_MAT44(rotMat));
+    gmtl::setRot(_CAST_MAT44(rotMat), rotY);
+    MatMatMult(&g_MeshesWorld[0], &rotMat, &g_MeshesWorld[0]);
 
-	const static uint TEX_SIZE_X = 128;
-	const static uint TEX_SIZE_Y = 128;
-	BakedSMLocationEntry* pLocEntries = (BakedSMLocationEntry*) _ALIGNED_MALLOC(16, TEX_SIZE_X * TEX_SIZE_Y * 2 * sizeof(BakedSMLocationEntry));
-	uint posOffset = GetVertexOffset(g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_POSITION, 0);
-	uint texOffset = GetVertexOffset(g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_TEXCOORDF2, 0);
-	uint normOffset = GetVertexOffset(g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetDescription(), VDU_NORMAL, 0);
-	byte* pVBReadData = g_Meshes[0].pVBGroup->GetVertexBuffer(0)->Lock(0, 0);
-	uint stride = g_Meshes[0].pVBGroup->GetVertexBuffer(0)->GetVertexSize();
-	ushort* pIBReadData = g_Meshes[0].pIB->Lock(0, 0);
-	uint numEntries = g_pBakedSMCompute->ComputeUVLocEntries(pLocEntries, g_MeshesWorld[0], 
-										   pVBReadData + posOffset, stride, 
-										   pVBReadData + normOffset, stride, 
-										   pVBReadData + texOffset, stride, 
-										   pIBReadData, 
-										   1,//g_Meshes[0].pIB->GetNumIndices() / 3, 
-										   TEX_SIZE_X, TEX_SIZE_Y);
-	g_Meshes[0].pVBGroup->GetVertexBuffer(0)->Unlock(FALSE);
-	g_Meshes[0].pIB->Unlock(FALSE);
+    CreateCube(1, 4.0f, gmtl::Vec3f(1.0f, 1.0f, 0.0f), 0.8f);
+    CreateCube(7, 1.0f, gmtl::Vec3f(-7.5f, 0.5f, 0.0f), 0.3f);
+    CreateCube(13, 1.0f, gmtl::Vec3f(-3.0f, 1.7f, 4.0f), 1.2f);
+    CreateCube(19, 1.3f, gmtl::Vec3f(-1.0f, 1.1f, 8.0f), 2.3f);
 
-	
-	{
-		IRTexture2DPtr pTest = g_pRenderer->GetRResourceMgr().CreateTexture2D(NULL, TEX_SIZE_X, TEX_SIZE_Y, 1, TEXF_A8R8G8B8, TEXU_DEFAULT_STAGING);	
-		uint pitch;
-		byte* pRaw = pTest->Lock(0, pitch, NULL);
-		memset(pRaw, 0, TEX_SIZE_Y * pitch);
-		_LOOPi(numEntries)
-		{
-			_DEBUG_ASSERT(pLocEntries[i].texX <= TEX_SIZE_X);
-			_DEBUG_ASSERT(pLocEntries[i].texY <= TEX_SIZE_Y);
+    g_SphereLight.set(0.0f, 8.0f, 0.0f, 1.0f);
 
-			uint* pToWrite = (uint*)(pRaw + pLocEntries[i].texY * pitch + pLocEntries[i].texX * sizeof(uint));
-			*pToWrite = (0xFF000000) | (((uint) (pLocEntries[i].normal[0] * 255.0f)) << 16) | (((uint) (pLocEntries[i].normal[1] * 255.0f)) << 8) | (((uint) (pLocEntries[i].normal[2] * 255.0f)));
-		}
-
-		pTest->Unlock(0);
-		IByteBufferPtr pToSave = _NEW CByteBuffer();
-		g_pRenderer->GetRResourceMgr().SaveTexture2D(pTest, pToSave);
-		IFFilePtr pToSaveFile = g_pFileSystem->GetFile(_W("[dat]\\Textures\\TestBakedSM\\test.dds"));
-		pToSaveFile->Write(pToSave->GetData(), pToSave->GetDataLength());
-		pToSaveFile->Close();
-	}
-
-	_ALIGNED_FREE(pLocEntries);
-
-    // Make cube
-    g_Meshes[1] = CreatePlanePosY(g_pRenderer, CUBE_SIZE, CUBE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
-    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
-    g_Meshes[1].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
-    gmtl::identity(_CAST_MAT44(g_MeshesWorld[1]));
-    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[1]), gmtl::Vec3f(0.0f, CUBE_HEIGHT + CUBE_SIZE * 0.5f, 0.0f));
-
-    g_Meshes[2] = CreatePlaneNegY(g_pRenderer, CUBE_SIZE, CUBE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
-    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
-    g_Meshes[2].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
-    gmtl::identity(_CAST_MAT44(g_MeshesWorld[2]));
-    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[2]), gmtl::Vec3f(0.0f, CUBE_HEIGHT - CUBE_SIZE * 0.5f, 0.0f));
-
-    g_Meshes[3] = CreatePlanePosZ(g_pRenderer, CUBE_SIZE, CUBE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
-    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
-    g_Meshes[3].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
-    gmtl::identity(_CAST_MAT44(g_MeshesWorld[3]));
-    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[3]), gmtl::Vec3f(0.0f, CUBE_HEIGHT, CUBE_SIZE * 0.5f));
-
-    g_Meshes[4] = CreatePlaneNegZ(g_pRenderer, CUBE_SIZE, CUBE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
-    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
-    g_Meshes[4].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
-    gmtl::identity(_CAST_MAT44(g_MeshesWorld[4]));
-    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[4]), gmtl::Vec3f(0.0f, CUBE_HEIGHT, -CUBE_SIZE * 0.5f));
-
-    g_Meshes[5] = CreatePlanePosX(g_pRenderer, CUBE_SIZE, CUBE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
-    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
-    g_Meshes[5].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
-    gmtl::identity(_CAST_MAT44(g_MeshesWorld[5]));
-    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[5]), gmtl::Vec3f(CUBE_SIZE * 0.5f, CUBE_HEIGHT, 0.0f));
-
-    g_Meshes[6] = CreatePlaneNegX(g_pRenderer, CUBE_SIZE, CUBE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
-    pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
-    g_Meshes[6].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
-    gmtl::identity(_CAST_MAT44(g_MeshesWorld[6]));
-    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[6]), gmtl::Vec3f(-CUBE_SIZE * 0.5f, CUBE_HEIGHT, 0.0f));
-
+    g_BakedSMCallback.Compute();
 // gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[0]), gmtl::Vec4f(0.0f, -0.0f, 0.0f, 0.0f));
 }
 
