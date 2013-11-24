@@ -185,8 +185,8 @@ BakedSMComputeParamPool* BakedSMCompute::GetBakedSMComputeParamPool()
 uint BakedSMCompute::DoComputeUVLocEntries(BakedSMLocationEntry* pLocEntries, const gmtl::VecA4f& v1, const gmtl::VecA4f& v2, const gmtl::VecA4f& v3, 
                                            const float* pV1Inter, const float* pV2Inter, const float* pV3Inter, uint texWidth, uint texHeight)
 {
-    const static uint TOP_TILE_SIZE = 32;
-    const static uint MID_TILE_SIZE = 8;
+    const static uint TOP_TILE_SIZE = 16;
+    const static uint MID_TILE_SIZE = 4;
     const static uint NUM_INTER = 6;
     const static uint RASTER_INFO_SIZE = _GET_RASTER_INFO_SIZE(NUM_INTER, 2);
 
@@ -440,8 +440,8 @@ void BakedSMCompute::CompressSMTexDataToSH(float* pParaTexData, BakedSMSHEntry* 
 
             float nDotL = dir[1] < 0.0f ? 0.0f : dir[1];
             nDotL = nDotL > 1.0f ? 1.0f : nDotL;
-
-            // Then transform the dir with respect to the world space
+			
+			// Then transform the dir with respect to the world space
             NormalizeVec(dir);
             TransformVec(&invParaViewRot, &dir, &dir);
 
@@ -454,7 +454,7 @@ void BakedSMCompute::CompressSMTexDataToSH(float* pParaTexData, BakedSMSHEntry* 
             // SUM( N, Sh(nInHemi) * (4PI/2N * Occl(nInHemi)) )
 
             float depthVal = pParaTexData[index];
-            float expDepth = exp(BAKED_SM_EXP_K_VAL * depthVal) * nDotL; //exp(BAKED_SM_EXP_K_VAL * depthVal);
+            float expDepth = depthVal < 0.001f ? 0.75f * nDotL : exp(BAKED_SM_EXP_K_VAL * depthVal) * nDotL; //exp(BAKED_SM_EXP_K_VAL * depthVal);
             expDepth *= PARABOLOID_PROJ_INTEGRAL_WEIGHTS[index];
 
             _LOOPk(BAKED_SM_NUM_SH_BANDS * BAKED_SM_NUM_SH_BANDS)
@@ -1080,7 +1080,6 @@ IRTexture2D* BakedSMCompute::CreateVisibilitySphereSHTable()
 
     // Only copy 1 row
     _DEBUG_COMPILE_ASSERT(BAKED_SM_NUM_SH_BANDS <= 4);
-
     uint pitch = 0;
     float* pDestData = (float*) pSphereVis->Lock(0, pitch, NULL);
     _DEBUG_ASSERT(pitch == (texWidth * sizeof(float) * 4));

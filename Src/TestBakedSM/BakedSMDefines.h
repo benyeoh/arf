@@ -15,7 +15,7 @@ const uint  BAKED_SM_NUM_SH_BANDS = 4;
 const uint	BAKED_SM_COMPUTE_SM_RT_LOG_SIZE = 6;
 const uint	BAKED_SM_COMPUTE_SM_RT_SIZE = 1 << BAKED_SM_COMPUTE_SM_RT_LOG_SIZE;
 const uint	BAKED_SM_NUM_LATENCY_BUFFERS = 3;
-const float BAKED_SM_EXP_K_VAL = 1.2f;
+const float BAKED_SM_EXP_K_VAL = 3.5f;
 const float BAKED_SM_MAX_FAR_PLANE = 30.0f;
 
 enum

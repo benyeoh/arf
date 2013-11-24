@@ -14,38 +14,36 @@
 void BakedSMRenderCallback::ResetMaterials()
 {
     // Create a new material with the baked SM
-    REffectParamStore effectParamsStore[16];
-    REffectParam effectParams[16];
-    uint semantics[16];
+    REffectParamStore effectParamsStore[16*NUM_MESHES];
+	REffectParam effectParams[16*NUM_MESHES];
+    uint semantics[16*NUM_MESHES];
+	uint numParams[NUM_MESHES];
 
-    uint numParams = g_Meshes[0].pMatGroup->GetNumOfParams();
-    _LOOPi(numParams)
-    {
-        g_Meshes[0].pMatGroup->GetParam(i, effectParams[i]);
-        effectParamsStore[i] = effectParams[i];
-        semantics[i] = g_Meshes[0].pMatGroup->GetSemantic(i);
-    }
+	_LOOPi(NUM_MESHES)
+	{
+		numParams[i] = g_Meshes[i].pMatGroup->GetNumOfParams();
+	
+		_DEBUG_ASSERT(numParams[i] < 16);
+		_LOOPj(numParams[i])
+		{
+			g_Meshes[i].pMatGroup->GetParam(j, effectParams[i*16+j]);
+			effectParamsStore[i*16+j] = effectParams[i*16+j];
+			semantics[i*16+j] = g_Meshes[i].pMatGroup->GetSemantic(j);
+		}
 
-    g_Meshes[0].pMatGroup = NULL;
+		g_Meshes[i].pMatGroup = NULL;
+	}
+	
+	const wchar* pFileName = _W("[shd]\\TestBakedSM\\TestBakedSMSH.mgp");
+	IFFilePtr pFile = g_pFileSystem->GetFile(pFileName);
+	IByteBufferPtr pMatData = _NEW CByteBuffer(pFile->Length());
+	AppendData(pMatData, pFile);
 
-    _LOOPi(NUM_MESHES-1)
-    {
-        g_Meshes[i+1].pMatGroup = NULL;
-    }
-
-    const wchar* pFileName = _W("[shd]\\TestBakedSM\\TestBakedSMSH.mgp");
-    IFFilePtr pFile = g_pFileSystem->GetFile(pFileName);
-    IByteBufferPtr pMatData = _NEW CByteBuffer(pFile->Length());
-    AppendData(pMatData, pFile);
-
-    IBFXMaterialGroupTemplatePtr pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
-    g_Meshes[0].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, effectParams, semantics, numParams);
-
-    _LOOPi(NUM_MESHES-1)
-    {
-        g_Meshes[i+1].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
-    }
-
+	_LOOPi(NUM_MESHES)
+	{
+		IBFXMaterialGroupTemplatePtr pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
+		g_Meshes[i].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, &(effectParams[i*16]), &(semantics[i*16]), numParams[i]);
+	}
 }
 
 void BakedSMRenderCallback::ComputeOneMesh(uint index, uint lightMapSize, IRTexture2D* pVisSphereTex)
@@ -151,10 +149,10 @@ void BakedSMRenderCallback::Compute()
 
     float timeToCompute = 0.0f;
     ComputeOneMesh(0, 128, pVisSphereTex);
-    _LOOPi(6)
+    _LOOPi(24)
     {
         _TRACE(_W("Computing mesh: %d\n"), i+1);
-        ComputeOneMesh(i+1, 128, pVisSphereTex);
+        ComputeOneMesh(i+1, 32, pVisSphereTex);
     }
     timeToCompute += (float) g_pPlatform->GetTimer().GetTimeElapsed();
 
