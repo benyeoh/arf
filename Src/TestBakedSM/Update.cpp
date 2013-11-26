@@ -129,7 +129,10 @@ void ProcessInput()
             {
                 gmtl::Vec3f forward = gmtl::Vec3f(g_EyeDir[0], 0.0f, g_EyeDir[2]);
                 gmtl::normalize(forward);
-                _CAST_VEC3(g_SphereLight) = _CAST_VEC3(g_SphereLight) + g_TimeDT * forward * SPEED * 0.1f;
+                _LOOPi(8)
+                {
+                    _CAST_VEC3(g_AreaLights[i].posAndRadius) = _CAST_VEC3(g_AreaLights[i].posAndRadius) + g_TimeDT * forward * SPEED * 0.1f;
+                }
                 break;
             }
         case IKC_F:
@@ -138,14 +141,20 @@ void ProcessInput()
                 gmtl::Vec3f zAxis = -_CAST_VEC3(g_EyeDir);
                 gmtl::cross(right, _CAST_VEC3(g_EyeUpVec), zAxis);
                 gmtl::normalize(right);
-                _CAST_VEC3(g_SphereLight) = _CAST_VEC3(g_SphereLight) - g_TimeDT * _CAST_VEC3(right) * SPEED * 0.1f;
+                _LOOPi(8)
+                {
+                    _CAST_VEC3(g_AreaLights[i].posAndRadius) = _CAST_VEC3(g_AreaLights[i].posAndRadius) - g_TimeDT * _CAST_VEC3(right) * SPEED * 0.1f;
+                }
                 break;
             }
         case IKC_G:
             {
                 gmtl::Vec3f forward = gmtl::Vec3f(g_EyeDir[0], 0.0f, g_EyeDir[2]);
                 gmtl::normalize(forward);
-                _CAST_VEC3(g_SphereLight) = _CAST_VEC3(g_SphereLight) - g_TimeDT * forward * SPEED * 0.1f;
+                _LOOPi(8)
+                {
+                    _CAST_VEC3(g_AreaLights[i].posAndRadius) = _CAST_VEC3(g_AreaLights[i].posAndRadius) - g_TimeDT * forward * SPEED * 0.1f;
+                }
                 break;
             }
         case IKC_H:
@@ -154,27 +163,43 @@ void ProcessInput()
                 gmtl::Vec3f zAxis = -_CAST_VEC3(g_EyeDir);
                 gmtl::cross(right, _CAST_VEC3(g_EyeUpVec), zAxis);
                 gmtl::normalize(right);
-                _CAST_VEC3(g_SphereLight) = _CAST_VEC3(g_SphereLight) + g_TimeDT * _CAST_VEC3(right) * SPEED * 0.1f;
+                _LOOPi(8)
+                {
+                    _CAST_VEC3(g_AreaLights[i].posAndRadius) = _CAST_VEC3(g_AreaLights[i].posAndRadius) + g_TimeDT * _CAST_VEC3(right) * SPEED * 0.1f;
+                }
+
                 break;
             }
         case IKC_N:
             {
-                g_SphereLight[3] -= 2.0f * g_TimeDT;
+                _LOOPi(8)
+                {
+                    g_AreaLights[i].posAndRadius[3] -= 2.0f * g_TimeDT;
+                }
                 break;
             }
         case IKC_M:            
             {
-                g_SphereLight[3] += 2.0f * g_TimeDT;
+                _LOOPi(8)
+                {
+                    g_AreaLights[i].posAndRadius[3] += 2.0f * g_TimeDT;
+                }
                 break;
             }
         case IKC_V:
             {
-                g_SphereLight[1] -= 1.0f * g_TimeDT;
+                _LOOPi(8)
+                {
+                    g_AreaLights[i].posAndRadius[1] -= 1.0f * g_TimeDT;
+                }
                 break;
             }
         case IKC_B:
             {
-                g_SphereLight[1] += 1.0f * g_TimeDT;
+                _LOOPi(8)
+                {
+                    g_AreaLights[i].posAndRadius[1] += 1.0f * g_TimeDT;
+                }
                 break;
             }
 		}
@@ -194,7 +219,7 @@ void ProcessInput()
 
             case IKC_1:
                 {
-                    g_SphereLight.set(0.0f, 8.0f, 0.0f, 1.0f);
+                    g_AreaLights[i].posAndRadius.set(0.0f, 8.0f, 0.0f, 1.0f);
                     break;
                 }
 

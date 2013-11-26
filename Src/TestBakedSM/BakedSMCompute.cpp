@@ -454,7 +454,7 @@ void BakedSMCompute::CompressSMTexDataToSH(float* pParaTexData, BakedSMSHEntry* 
             // SUM( N, Sh(nInHemi) * (4PI/2N * Occl(nInHemi)) )
 
             float depthVal = pParaTexData[index];
-            float expDepth = depthVal < 0.001f ? 0.75f * nDotL : exp(BAKED_SM_EXP_K_VAL * depthVal) * nDotL; //exp(BAKED_SM_EXP_K_VAL * depthVal);
+            float expDepth = depthVal < 0.001f ? BAKED_SM_INSIDE_DEPTH_VAL * nDotL : exp(BAKED_SM_EXP_K_VAL * depthVal) * nDotL; //exp(BAKED_SM_EXP_K_VAL * depthVal);
             expDepth *= PARABOLOID_PROJ_INTEGRAL_WEIGHTS[index];
 
             _LOOPk(BAKED_SM_NUM_SH_BANDS * BAKED_SM_NUM_SH_BANDS)
@@ -472,7 +472,6 @@ void BakedSMCompute::CompressSMTexDataToSH(float* pParaTexData, BakedSMSHEntry* 
     }
 }
 
-//#pragma optimize("", off)
 void BakedSMCompute::ComputeShadowMapSH(const BakedSMLocationEntry* pLocEntries, BakedSMSHEntry* pDataEntries, uint numEntries, IBakedSMComputeRenderCallback& occlCallback, IPThreadPool* pThreadPool)
 {
     // TODO: Should let the app allocate mem

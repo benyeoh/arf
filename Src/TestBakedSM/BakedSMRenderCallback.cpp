@@ -149,10 +149,15 @@ void BakedSMRenderCallback::Compute()
 
     float timeToCompute = 0.0f;
     ComputeOneMesh(0, 128, pVisSphereTex);
-    _LOOPi(24)
+    _TRACE(_W("Computing mesh: %d\n"), 0);
+    ComputeOneMesh(1, 128, pVisSphereTex);
+    _TRACE(_W("Computing mesh: %d\n"), 1);
+    ComputeOneMesh(2, 128, pVisSphereTex);
+    _TRACE(_W("Computing mesh: %d\n"), 2);
+    _LOOPi(NUM_MESHES-3)
     {
-        _TRACE(_W("Computing mesh: %d\n"), i+1);
-        ComputeOneMesh(i+1, 32, pVisSphereTex);
+        _TRACE(_W("Computing mesh: %d\n"), i+3);
+        ComputeOneMesh(i+3, 32, pVisSphereTex);
     }
     timeToCompute += (float) g_pPlatform->GetTimer().GetTimeElapsed();
 

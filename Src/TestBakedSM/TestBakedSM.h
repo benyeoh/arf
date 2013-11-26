@@ -141,10 +141,12 @@ extern gmtl::VecA3f		g_ViewFarCornerVecs[4];
 const static float FAR_PLANE = 1000.0f;
 const static float NEAR_PLANE = 0.01f;
 
-const static uint NUM_MESHES = 25;
+const static uint NUM_CUBES = 15;
+const static uint NUM_MESHES = NUM_CUBES * 6 + 3;
 extern gmtl::MatrixA44f	g_MeshesWorld[NUM_MESHES];
 extern BFXMesh g_Meshes[NUM_MESHES];
 
 extern float g_TestLightSize;
 extern float g_TestLightDist;
-extern gmtl::VecA4f g_SphereLight;
+
+extern BakedSMAreaLight g_AreaLights[16];
