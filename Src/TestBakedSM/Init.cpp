@@ -573,6 +573,17 @@ void InitBakedSM()
     IBFXMaterialGroupTemplatePtr pMatGroupTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(NULL, pMatData, pFileName);
     g_Meshes[0].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
     gmtl::identity(_CAST_MAT44(g_MeshesWorld[0]));
+    
+    g_Meshes[1] = CreatePlanePosX(g_pRenderer, PLANE_SIZE, PLANE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
+    g_Meshes[1].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
+    gmtl::identity(_CAST_MAT44(g_MeshesWorld[1]));
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[1]), gmtl::Vec3f(-PLANE_SIZE * 0.5f, PLANE_SIZE * 0.5f, 0.0f));
+
+    g_Meshes[2] = CreatePlanePosZ(g_pRenderer, PLANE_SIZE, PLANE_SIZE, NUM_SUBDIVS, NUM_SUBDIVS);
+    g_Meshes[2].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(NULL, pMatGroupTemplate, NULL, NULL, 0);
+    gmtl::identity(_CAST_MAT44(g_MeshesWorld[2]));
+    gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[2]), gmtl::Vec3f(0.0f, PLANE_SIZE * 0.5f, -PLANE_SIZE * 0.5f));
+
     //gmtl::AxisAnglef rotY;
     //rotY.set(1.57f, gmtl::Vec3f(0.0f, 0.0f, 1.0f));
     //gmtl::MatrixA44f rotMat;
@@ -580,12 +591,45 @@ void InitBakedSM()
     //gmtl::setRot(_CAST_MAT44(rotMat), rotY);
     //MatMatMult(&g_MeshesWorld[0], &rotMat, &g_MeshesWorld[0]);
 
-    CreateCube(1, 4.0f, gmtl::Vec3f(1.0f, 1.7f, 0.0f), 0.0f);
-    CreateCube(7, 3.0f, gmtl::Vec3f(-2.5f, 1.5f, 0.0f), 0.3f);
-    CreateCube(13, 1.0f, gmtl::Vec3f(-3.0f, 1.7f, 4.0f), 1.2f);
-    CreateCube(19, 1.3f, gmtl::Vec3f(-1.0f, 1.1f, 8.0f), 2.3f);
+    CreateCube(0*6+3, 4.0f, gmtl::Vec3f(1.0f, 1.7f, 0.0f), 0.0f);
+    CreateCube(1*6+3, 3.0f, gmtl::Vec3f(-2.5f, 1.5f, 0.0f), 0.3f);
+    CreateCube(2*6+3, 1.0f, gmtl::Vec3f(-3.0f, 1.7f, 4.0f), 1.2f);
+    CreateCube(3*6+3, 1.7f, gmtl::Vec3f(8.0f, 0.1f, 6.0f), 1.5f);
+    CreateCube(4*6+3, 2.3f, gmtl::Vec3f(5.0f, 2.1f, 4.0f), 0.8f);
+    CreateCube(5*6+3, 3.3f, gmtl::Vec3f(-5.0f, 2.1f, 9.0f), 0.1f);
+    CreateCube(6*6+3, 2.3f, gmtl::Vec3f(-1.0f, 2.3f, -5.0f), 0.4f);
+    CreateCube(7*6+3, 4.3f, gmtl::Vec3f(6.0f, 4.1f, -3.0f), 0.6f);
+    CreateCube(8*6+3, 2.3f, gmtl::Vec3f(3.0f, 2.1f, -9.0f), 1.1f);
+    CreateCube(9*6+3, 1.3f, gmtl::Vec3f(4.0f, 1.7f, 7.0f), 0.5f);
+    CreateCube(10*6+3, 2.7f, gmtl::Vec3f(-4.0f, 2.2f, -7.0f), 2.1f);
+    CreateCube(11*6+3, 1.8f, gmtl::Vec3f(-7.0f, 4.8f, 4.0f), 3.1f);
+    CreateCube(12*6+3, 1.5f, gmtl::Vec3f(-11.0f, 6.3f, 0.0f), 6.1f);
+    CreateCube(13*6+3, 3.5f, gmtl::Vec3f(-9.0f, 1.75f, 3.0f), 1.0f);
+    CreateCube(14*6+3, 2.5f, gmtl::Vec3f(-11.0f, 6.1f, -11.0f), 0.95f);
 
-    g_SphereLight.set(0.0f, 8.0f, 0.0f, 1.0f);
+    g_AreaLights[0].posAndRadius.set(0.0f, 8.0f, 0.0f, 1.0f);
+    g_AreaLights[0].lightColor.set(0.5f, 0.5f, 0.5f, 1.0f);
+
+    g_AreaLights[1].posAndRadius.set(8.0f, 8.0f, 0.0f, 1.0f);
+    g_AreaLights[1].lightColor.set(1.0f, 0.0f, 0.0f, 1.0f);
+
+    g_AreaLights[2].posAndRadius.set(16.0f, 8.0f, 0.0f, 1.0f);
+    g_AreaLights[2].lightColor.set(0.3f, 0.8f, 0.4f, 1.0f);
+    
+    g_AreaLights[3].posAndRadius.set(24.0f, 8.0f, 0.0f, 1.0f);
+    g_AreaLights[3].lightColor.set(0.0f, 0.0f, 1.0f, 1.0f);
+
+    g_AreaLights[4].posAndRadius.set(0.0f, 8.0f, 12.0f, 1.0f);
+    g_AreaLights[4].lightColor.set(0.7f, 0.0f, 0.6f, 1.0f);
+   
+    g_AreaLights[5].posAndRadius.set(8.0f, 8.0f, 12.0f, 1.0f);
+    g_AreaLights[5].lightColor.set(0.6f, 0.7f, 0.2f, 1.0f);
+    
+    g_AreaLights[6].posAndRadius.set(16.0f, 8.0f, 12.0f, 1.0f);
+    g_AreaLights[6].lightColor.set(0.1f, 0.6f, 0.7f, 1.0f);
+
+    g_AreaLights[7].posAndRadius.set(24.0f, 8.0f, 12.0f, 1.0f);
+    g_AreaLights[7].lightColor.set(0.0f, 1.0f, 0.0f, 1.0f);
 
     g_BakedSMCallback.Compute();
 // gmtl::setTrans(_CAST_MAT44(g_MeshesWorld[0]), gmtl::Vec4f(0.0f, -0.0f, 0.0f, 0.0f));

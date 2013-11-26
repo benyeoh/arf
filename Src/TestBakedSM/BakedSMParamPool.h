@@ -11,6 +11,12 @@
 
 #pragma once
 
+struct BakedSMAreaLight
+{
+    gmtl::VecA4f posAndRadius;
+    gmtl::VecA4f lightColor;
+};
+
 class BakedSMComputeParamPool : public IBFXParamCallback
 {
 private:
@@ -22,9 +28,14 @@ private:
     float m_TestLightParams[2];
     gmtl::VecA4f m_SphereLight;
 
+    BakedSMAreaLight* m_pBakedSMAreaLights;
+    uint m_NumAreaLights;
+
 public:
     BakedSMComputeParamPool()
         : m_pParaboloidView(NULL)
+        , m_pBakedSMAreaLights(NULL)
+        , m_NumAreaLights(0)
     {
         _LOOPi(MAX_NUM_SM)
         {
@@ -46,6 +57,7 @@ public:
     void SetBakedSM(IRTexture2D* pSM, uint index);
     void SetTestLightParams(float size, float dist);
     void SetSphereLight(gmtl::VecA3f& pos, float radius);
+    void SetAreaLights(BakedSMAreaLight* pAreaLights, uint numAreaLights);
 
 public:
     void GetParam(uint semantic, REffectParam* pToStore);

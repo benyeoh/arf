@@ -121,7 +121,7 @@ BFXMesh g_Meshes[NUM_MESHES];
 
 float g_TestLightSize = 0.5f;
 float g_TestLightDist = 0.5f;
-gmtl::VecA4f g_SphereLight;
+BakedSMAreaLight g_AreaLights[16];
 
 //------------------------------------------------------------------------------
 //	Forward Decls
