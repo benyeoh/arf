@@ -24,8 +24,6 @@ class CSDBArray;
 
 _NAMESPACE_END
 
-//#pragma optimize("", off)
-
 #include "SDBLayer.h"
 #include "CSDBSparseLooseOctTree.h"
 #include "CSDBArray.h"

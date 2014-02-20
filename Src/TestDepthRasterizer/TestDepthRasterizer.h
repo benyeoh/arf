@@ -101,7 +101,7 @@ extern uint				g_NumTriangles;
 extern uint             g_NumPixelsProcessed;
 
 const static uint NUM_CUBES = 512;
-const static int NUM_THREADS = 3;
+const static int NUM_THREADS = 7;
 
 extern IPThreadPoolPtr	g_pThreadPool;
 extern IPThreadPtr		g_pThreads[NUM_THREADS];

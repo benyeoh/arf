@@ -18,9 +18,9 @@ TransformVecW1(const gmtl::MatrixA44f* pMat, const float* pVecIn, gmtl::VecA4f* 
 {
 	__m128 xmm0, xmm1, xmm2;
 	
-	float* __restrict pMatData = (float*) pMat->mData;
-	float* __restrict pIn = (float*) pVecIn;
-	float* __restrict pOut = (float*) pVecOut;
+	float* pMatData = (float*) pMat->mData;
+	float* pIn = (float*) pVecIn;
+	float* pOut = (float*) pVecOut;
 
 	__m128 xmm4 = *((__m128*)(pMatData));		// col 0
 	__m128 xmm5 = *((__m128*)(pMatData + 4));	// col 1
@@ -57,9 +57,9 @@ TransformVecW1(const gmtl::Matrix44f* pMat, const gmtl::Vec4f* pVecIn, gmtl::Vec
 	__m128 xmm0, xmm1, xmm2;
 	__m128 xmm4, xmm5, xmm6, xmm7;
 
-	float* __restrict pMatData = (float*) pMat->mData;
-	float* __restrict pIn = (float*) pVecIn;
-	float* __restrict pOut = (float*) pVecOut;
+	float* pMatData = (float*) pMat->mData;
+	float* pIn = (float*) pVecIn;
+	float* pOut = (float*) pVecOut;
 
 	xmm4 = _mm_loadu_ps(pMatData);		// col 0
 	xmm5 = _mm_loadu_ps(pMatData + 4);	// col 1
@@ -88,9 +88,9 @@ TransformVecW1(const gmtl::MatrixA44f* pMat, const gmtl::VecA3f* pVecIn, gmtl::V
 {
 	__m128 xmm0, xmm1, xmm2;
 	
-	float* __restrict pMatData = (float*) pMat->mData;
-	float* __restrict pIn = (float*) pVecIn;
-	float* __restrict pOut = (float*) pVecOut;
+	float* pMatData = (float*) pMat->mData;
+	float* pIn = (float*) pVecIn;
+	float* pOut = (float*) pVecOut;
 
 	__m128 xmm4 = *((__m128*)(pMatData));		// col 0
 	__m128 xmm5 = *((__m128*)(pMatData + 4));	// col 1
@@ -122,9 +122,9 @@ TransformVecW1(const gmtl::Matrix44f* pMat, const gmtl::Vec3f* pVecIn, gmtl::Vec
 
 	_ALIGN(16) float toStore[4];
 	
-	float* __restrict pMatData = (float*) pMat->mData;
-	float* __restrict pIn = (float*) pVecIn;
-	float* __restrict pOut = (float*) pVecOut;
+	float* pMatData = (float*) pMat->mData;
+	float* pIn = (float*) pVecIn;
+	float* pOut = (float*) pVecOut;
 
 	xmm4 = _mm_loadu_ps(pMatData);		// col 0
 	xmm5 = _mm_loadu_ps(pMatData + 4);	// col 1
