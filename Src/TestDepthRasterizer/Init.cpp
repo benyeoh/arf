@@ -517,6 +517,8 @@ void Shutdown()
 	_ALIGNED_FREE(g_pRasterizeBuffer);
 	_ALIGNED_FREE(g_pRasterizeDepthBuffer);
 	_ALIGNED_FREE(g_pFastDepthClearBuffer);
+	_ALIGNED_FREE(g_pTriBins);
+	_ALIGNED_FREE(g_pNumTrisInBins);
 
 	g_pRasterizeTex = NULL;
 	g_pTriangleEffect = NULL;
