@@ -110,8 +110,20 @@ extern gmtl::MatrixA44f g_CubeWorld[NUM_CUBES];
 extern gmtl::MatrixA44f g_CubeWorldViewProj[NUM_CUBES];
 extern gmtl::Vec3f		g_CubeRotAxis[NUM_CUBES];
 
+//const static uint RASTERIZE_BUFFER_W = 1280;
+//const static uint RASTERIZE_BUFFER_H = 720;
+//const static uint BIN_WIDTH     = 320;
+//const static uint BIN_HEIGHT    = 180;
 const static uint RASTERIZE_BUFFER_W = 256;
 const static uint RASTERIZE_BUFFER_H = 128;
+const static uint BIN_WIDTH     = 64;
+const static uint BIN_HEIGHT    = 32;
+const static uint NUM_BINS_X = RASTERIZE_BUFFER_W / BIN_WIDTH;
+const static uint NUM_BINS_Y = RASTERIZE_BUFFER_H / BIN_HEIGHT;
+
+const static uint       NUM_BIN_CONTEXTS = NUM_THREADS + 1;
+extern TriangleBin*     g_pTriBins;
+extern uint*            g_pNumTrisInBins;
 
 const static uint FAST_DEPTH_CLEAR_W = (RASTERIZE_BUFFER_W / 2) / 32;
 const static uint FAST_DEPTH_CLEAR_H = RASTERIZE_BUFFER_H / 2;
@@ -119,14 +131,15 @@ const static uint FAST_DEPTH_CLEAR_H = RASTERIZE_BUFFER_H / 2;
 //const static float CUBE_SIZE = 1.0f;
 const static float FAR_PLANE = 20.0f;
 const static float FAR_PLANE_RCP = 1.0f / FAR_PLANE;
-const static float NEAR_PLANE = 0.5f;
+const static float NEAR_PLANE = 0.1f;
 const static uint CUBE_VERTEX_STRIDE	= 5;
 const static uint CUBE_TEXUV_OFFSET		= 3;
 
 const static float CUBE_SIZE = 1.0f;
 const static float CUBE_DISTANCE_MULT = 1.0f;
 
-const static float g_CubeVertices[] = 
+const static uint NUM_CUBE_VERTICES = 24;
+const static float g_CubeVertices[CUBE_VERTEX_STRIDE * NUM_CUBE_VERTICES] = 
 {
 	// Front
 	-CUBE_SIZE, CUBE_SIZE, CUBE_SIZE,		0.0f, 0.0f,		// 0

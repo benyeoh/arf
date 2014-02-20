@@ -88,6 +88,97 @@ void CubeVertexTransform(const gmtl::MatrixA44f& worldViewProj, const float* pXY
 	TransformVecW1((gmtl::MatrixA44f*) &worldViewProj, pXYZ, pXYZWOut);
 }
 
+void CubeVertexTransformBatchInt(const gmtl::MatrixA44f& worldViewProj, const float* pXYZ, uint inPosStride, float* pXYZWOut, uint outPosStride, uint numVertices)
+{
+    __m128 xmm0, xmm1, xmm2, xmm3;
+
+    _DEBUG_ASSERT((outPosStride & 0x3) == 0);
+
+    float* __restrict pMatData = (float*) worldViewProj.mData;
+    float* __restrict pIn = (float*) pXYZ;
+    float* __restrict pOut = (float*) pXYZWOut;
+
+    __m128 xmm4 = *((__m128*)pMatData);		// col 0
+    __m128 xmm5 = *((__m128*)(pMatData + 4));	// col 1
+    __m128 xmm6 = *((__m128*)(pMatData + 8));	// col 2
+    __m128 xmm7 = *((__m128*)(pMatData + 12));	// col 3
+
+    if(numVertices & 0x1)
+    {
+        xmm0 = _mm_load_ps1(pIn);		// Load and broadcast x
+        xmm1 = _mm_load_ps1(pIn + 1);	// Load and broadcast y
+        xmm2 = _mm_load_ps1(pIn + 2);	// Load and broadcast z
+
+        xmm0 = _mm_mul_ps(xmm0, xmm4);
+        xmm1 = _mm_mul_ps(xmm1, xmm5);	
+        xmm2 = _mm_mul_ps(xmm2, xmm6);		
+
+        xmm0 = _mm_add_ps(xmm0, xmm1);		
+        xmm2 = _mm_add_ps(xmm2, xmm7);
+        xmm0 = _mm_add_ps(xmm0, xmm2);
+
+        __m128 notNearClip = _mm_cmpge_ps( _mm_shuffle_ps(xmm0, xmm0, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setzero_ps() );
+        __m128 wRcp = ( _mm_shuffle_ps(xmm0, xmm0, _MM_SHUFFLE(3, 3, 3, 3)) );
+        xmm0 = _mm_div_ps( xmm0, wRcp );
+        xmm0 = _mm_and_ps( xmm0, notNearClip );
+
+        _mm_store_ps(pOut, xmm0);
+
+        pIn += inPosStride;
+        pOut += outPosStride;
+    }
+
+    numVertices >>= 1;
+
+    _LOOPi(numVertices)	
+    {	
+        // Process 2 vertices at a time to take advantage of memory locality
+        // Note that the matrix is in column major format and the vertices are in each column
+        // Process x
+        xmm0 = _mm_load_ps1(pIn);
+        xmm1 = _mm_load_ps1(pIn + inPosStride);
+        xmm2 = _mm_mul_ps(xmm0, xmm4);
+        xmm3 = _mm_mul_ps(xmm1, xmm4);
+
+        // Process y
+        xmm0 = _mm_load_ps1(pIn + 1);
+        xmm1 = _mm_load_ps1(pIn + inPosStride + 1);
+        xmm0 = _mm_mul_ps(xmm0, xmm5);
+        xmm1 = _mm_mul_ps(xmm1, xmm5);	
+        xmm2 = _mm_add_ps(xmm2, xmm0);		
+        xmm3 = _mm_add_ps(xmm3, xmm1);
+
+        // Process z
+        xmm0 = _mm_load_ps1(pIn + 2);
+        xmm1 = _mm_load_ps1(pIn + inPosStride + 2);
+        xmm0 = _mm_mul_ps(xmm0, xmm6);
+        xmm1 = _mm_mul_ps(xmm1, xmm6);	
+        xmm2 = _mm_add_ps(xmm2, xmm0);		
+        xmm3 = _mm_add_ps(xmm3, xmm1);
+
+        // Process w	
+        xmm2 = _mm_add_ps(xmm2, xmm7);		
+        xmm3 = _mm_add_ps(xmm3, xmm7);
+
+        __m128 notNearClip = _mm_cmpge_ps( _mm_shuffle_ps(xmm2, xmm2, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setzero_ps() );
+        __m128 wRcp = ( _mm_shuffle_ps(xmm2, xmm2, _MM_SHUFFLE(3, 3, 3, 3)) );
+        xmm2 = _mm_div_ps( xmm2, wRcp );
+        xmm2 = _mm_and_ps( xmm2, notNearClip );
+
+        notNearClip = _mm_cmpge_ps( _mm_shuffle_ps(xmm3, xmm3, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setzero_ps() );
+        wRcp = ( _mm_shuffle_ps(xmm3, xmm3, _MM_SHUFFLE(3, 3, 3, 3)) );
+        xmm3 = _mm_div_ps( xmm3, wRcp );
+        xmm3 = _mm_and_ps( xmm3, notNearClip );
+
+        _mm_store_ps(pOut, xmm2);
+        _mm_store_ps(pOut + outPosStride, xmm3);
+
+        pIn += (inPosStride * 2);
+        pOut += (outPosStride * 2);
+    }
+}
+
+
 #define _THE_PIXEL_SHADER &LinearDepthOutPixelShader
 #define NUM_LAYERS 1
 
@@ -208,6 +299,20 @@ RenderJob<HALF_RASTERIZE_BUFFER_W, HALF_RASTERIZE_BUFFER_H> g_RenderJob2;
 RenderJob<HALF_RASTERIZE_BUFFER_W, HALF_RASTERIZE_BUFFER_H> g_RenderJob3;
 RenderJob<HALF_RASTERIZE_BUFFER_W, HALF_RASTERIZE_BUFFER_H> g_RenderJob4;
 
+struct RenderJobInt : public IPRunnable
+{
+    int binIndex;
+    int Run()
+    {
+        //_mm_setcsr( _mm_getcsr() | 0x8040 );
+
+        TilesRasterizeDepthInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, NUM_BIN_CONTEXTS>
+            (&(g_pTriBins[binIndex]), &(g_pNumTrisInBins[binIndex]), g_pRasterizeDepthBuffer, binIndex % NUM_BINS_X, binIndex / NUM_BINS_X);
+
+        return 0;
+    }
+};
+
 struct TransformAndSetupJob : public IPRunnable
 {
 	const gmtl::MatrixA44f* pCubeProjs;
@@ -268,6 +373,49 @@ struct TransformAndSetupJob : public IPRunnable
 };
 
 TransformAndSetupJob g_TransformAndSetupJobs[4];
+
+struct TransformAndSetupIntJob : public IPRunnable
+{
+    gmtl::MatrixA44f* pCubeWVP;
+    uint numCubes;
+
+    TriangleBin* pTriBins;
+    uint* pNumTrisInBins;
+
+    int Run()
+    {
+        _mm_setcsr( _mm_getcsr() | 0x8040 );
+
+        _DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_W % BIN_WIDTH) == 0 );
+        _DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_H % BIN_HEIGHT) == 0 );
+
+        _ALIGN(16) float postCubeVertices[4 * NUM_CUBE_VERTICES * NUM_CUBES];
+        
+        memset(pNumTrisInBins, 0, NUM_BINS_Y * NUM_BINS_X * 1 * sizeof(uint));
+
+        //gmtl::MatrixA44f viewportMat;
+        //viewportMat.set(0.5f * RASTERIZE_BUFFER_W, 0.0f, 0.0f, 0.5f * RASTERIZE_BUFFER_W - 0.5f / RASTERIZE_BUFFER_W,
+        //                0.0f, 0.5f * RASTERIZE_BUFFER_H, 0.0f, 0.5f * RASTERIZE_BUFFER_H - 0.5f / RASTERIZE_BUFFER_H,
+        //                0.0f, 0.0f, 1.0f, 0.0f,
+        //                0.0f, 0.0f, 0.0f, 1.0f);
+
+        _LOOPi(numCubes)
+        {
+            const gmtl::MatrixA44f& cubeWorldViewProj = pCubeWVP[i];
+
+            // Transform also to viewport space
+            //gmtl::MatrixA44f wvpViewport;
+            // MatMatMult(&wvpViewport, &viewportMat, &cubeWorldViewProj);
+
+            CubeVertexTransformBatchInt(cubeWorldViewProj, g_CubeVertices, CUBE_VERTEX_STRIDE, &postCubeVertices[i * 4 * NUM_CUBE_VERTICES], 4, NUM_CUBE_VERTICES);
+            TriangleSetupDepthIntBatch<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H>((gmtl::VecA4f*) &(postCubeVertices[i * 4 * NUM_CUBE_VERTICES]), g_CubeIndices, 12, pTriBins, pNumTrisInBins);
+        }
+
+        return 0;
+    }
+};
+
+//TransformAndSetupIntJob g_TransformAndSetupIntJobs[4];
 
 volatile int g_RenderSync;
 
@@ -381,8 +529,8 @@ void UntileDepthBuffer()
 
 void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 {
-	int numPerJob = CUBE_BATCH / 4;
-    _DEBUG_ASSERT((CUBE_BATCH % 4) == 0);
+	int numPerJob = NUM_CUBES / 4;
+    _DEBUG_ASSERT((NUM_CUBES % 4) == 0);
 	//_DEBUG_COMPILE_ASSERT((CUBE_BATCH % 4) == 0);
 	double swStart = g_pPlatform->GetTimer().GetTime();
 
@@ -424,20 +572,24 @@ void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 
 void RenderSWCubesST()
 {
+    _mm_setcsr( _mm_getcsr() | 0x8040 );
+
+    double swStart = g_pPlatform->GetTimer().GetTime();
+
     _LOOPi(NUM_CUBES)
     {
         const gmtl::MatrixA44f& cubeWorldViewProj = g_CubeWorldViewProj[i];
-
+        
         const static uint TOP_TILE_SIZE = 16;
         const static uint NUM_TOP_TILES = _GET_NUM_TILES_DEPTH(RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, TOP_TILE_SIZE, TOP_TILE_SIZE);
 
         _ALIGN(16) byte raster[_GET_RASTER_INFO_SIZE_DEPTH(1)];
 
-        _LOOPi(12)
+        _LOOPj(12)
         {
-            uint i1 = g_CubeIndices[i*3];
-            uint i2 = g_CubeIndices[i*3+1];
-            uint i3 = g_CubeIndices[i*3+2];
+            uint i1 = g_CubeIndices[j*3];
+            uint i2 = g_CubeIndices[j*3+1];
+            uint i3 = g_CubeIndices[j*3+2];
 
             const float* pV1XYZ = g_CubeVertices + i1 * CUBE_VERTEX_STRIDE;
             const float* pV2XYZ = g_CubeVertices + i2 * CUBE_VERTEX_STRIDE;
@@ -479,6 +631,124 @@ void RenderSWCubesST()
         }
     }
 
+    g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
+
+    UntileDepthBuffer();
+}
+
+void RenderSWCubeInt()
+{
+    _DEBUG_COMPILE_ASSERT((NUM_BIN_CONTEXTS >= (NUM_THREADS + 1)));
+
+    int numPerJob = NUM_CUBES / NUM_BIN_CONTEXTS;
+    _DEBUG_COMPILE_ASSERT((NUM_CUBES % NUM_BIN_CONTEXTS) == 0);
+   
+    g_pThreadPool->SetAlwaysActive(TRUE);
+    TransformAndSetupIntJob transformJobs[NUM_BIN_CONTEXTS];
+
+    double swStart = g_pPlatform->GetTimer().GetTime();
+    _LOOPi(NUM_BIN_CONTEXTS)
+    {
+        transformJobs[i].pCubeWVP = &(g_CubeWorldViewProj[i*numPerJob]);
+        transformJobs[i].numCubes = numPerJob;
+        transformJobs[i].pTriBins = g_pTriBins + i * NUM_BINS_X * NUM_BINS_Y;
+        transformJobs[i].pNumTrisInBins = g_pNumTrisInBins + i * NUM_BINS_X * NUM_BINS_Y;
+      
+        g_pThreadPool->QueueJobUnsafe(transformJobs[i]);
+    }
+
+    while(g_pThreadPool->GetNumJobsPending() > 0)
+    {
+        g_pThreadPool->ProcessJob();
+    }
+
+    // Sort bins in order of most triangles to least
+    uint binIndices[NUM_BINS_X * NUM_BINS_Y];
+    uint totalNumTrianglesBins[NUM_BINS_X * NUM_BINS_Y];
+ 
+    _LOOPi(NUM_BINS_Y)
+    {
+        _LOOPj(NUM_BINS_X)
+        {
+            binIndices[i * NUM_BINS_X + j] = i * NUM_BINS_X + j;
+
+            uint totalThisBin = 0;
+            _LOOPk(NUM_BIN_CONTEXTS)
+            {
+                totalThisBin += g_pNumTrisInBins[NUM_BINS_X * NUM_BINS_Y * k + i * NUM_BINS_X + j];
+            }
+
+            totalNumTrianglesBins[i * NUM_BINS_X + j] = totalThisBin;
+        }
+    }
+
+    std::sort(binIndices, binIndices + NUM_BINS_X * NUM_BINS_Y, [&](const uint a, const uint b){ return totalNumTrianglesBins[a] > totalNumTrianglesBins[b]; });
+
+    RenderJobInt rasterJobs[NUM_BINS_Y * NUM_BINS_X];
+
+    // Render all bins
+    _LOOPi(NUM_BINS_Y * NUM_BINS_X)
+    {
+        rasterJobs[i].binIndex = binIndices[i];
+        g_pThreadPool->QueueJobUnsafe(rasterJobs[i]);        
+    }
+
+    while(g_pThreadPool->GetNumJobsPending() > 0)
+    {
+        g_pThreadPool->ProcessJob();
+    }
+
+    g_pThreadPool->SetAlwaysActive(FALSE);
+
+    g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
+    //g_SWTimeElapsed += (g_RenderJob1.end - g_RenderJob1.start);
+
+    UntileDepthBuffer();
+}
+
+void RenderSWCubesIntST()
+{
+    _mm_setcsr( _mm_getcsr() | 0x8040 );
+
+    _DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_W % BIN_WIDTH) == 0 );
+    _DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_H % BIN_HEIGHT) == 0 );
+
+    _ALIGN(16) float postCubeVertices[4 * NUM_CUBE_VERTICES * NUM_CUBES];
+    double swStart = g_pPlatform->GetTimer().GetTime();
+
+    memset(g_pNumTrisInBins, 0, NUM_BINS_Y * NUM_BINS_X * 1 * sizeof(uint));
+
+    //gmtl::MatrixA44f viewportMat;
+    //viewportMat.set(0.5f * RASTERIZE_BUFFER_W, 0.0f, 0.0f, 0.5f * RASTERIZE_BUFFER_W - 0.5f / RASTERIZE_BUFFER_W,
+    //                0.0f, 0.5f * RASTERIZE_BUFFER_H, 0.0f, 0.5f * RASTERIZE_BUFFER_H - 0.5f / RASTERIZE_BUFFER_H,
+    //                0.0f, 0.0f, 1.0f, 0.0f,
+    //                0.0f, 0.0f, 0.0f, 1.0f);
+                    
+    _LOOPi(NUM_CUBES)
+    {
+        const gmtl::MatrixA44f& cubeWorldViewProj = g_CubeWorldViewProj[i];
+
+        // Transform also to viewport space
+        //gmtl::MatrixA44f wvpViewport;
+       // MatMatMult(&wvpViewport, &viewportMat, &cubeWorldViewProj);
+
+        CubeVertexTransformBatchInt(cubeWorldViewProj, g_CubeVertices, CUBE_VERTEX_STRIDE, &postCubeVertices[i * 4 * NUM_CUBE_VERTICES], 4, NUM_CUBE_VERTICES);
+        TriangleSetupDepthIntBatch<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H>((gmtl::VecA4f*) &(postCubeVertices[i * 4 * NUM_CUBE_VERTICES]), g_CubeIndices, 12, g_pTriBins, g_pNumTrisInBins);
+    }
+
+    g_NumTriangles = 0;
+
+    _LOOPi(NUM_BINS_Y)
+    {
+        _LOOPj(NUM_BINS_X)
+        {
+            TilesRasterizeDepthInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, 1>(&(g_pTriBins[i*NUM_BINS_X+j]), &(g_pNumTrisInBins[i*NUM_BINS_X+j]), g_pRasterizeDepthBuffer, j, i);
+            g_NumTriangles += g_pNumTrisInBins[i*NUM_BINS_X+j];
+        }
+    }
+
+    g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
+
     UntileDepthBuffer();
 }
 
@@ -495,7 +765,7 @@ void RenderQuad()
 	
 	double timeStart = g_pPlatform->GetTimer().GetTime();
 
-	const static uint TOP_TILE_SIZE = 16;
+	const static uint TOP_TILE_SIZE = 8;
 	const static uint NUM_TOP_TILES = _GET_NUM_TILES_DEPTH(RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, TOP_TILE_SIZE, TOP_TILE_SIZE);
 	
 	_ALIGN(16) byte raster[_GET_RASTER_INFO_SIZE_DEPTH(1)];
@@ -523,6 +793,59 @@ void RenderQuad()
 	g_SWQuadTimeElapsed +=  (float) (g_pPlatform->GetTimer().GetTime() - timeStart);
 
     UntileDepthBuffer();
+}
+
+void RenderQuadInt()
+{
+    //gmtl::VecA4f pos1;
+    //pos1[0] = -1.0f; pos1[1] = 1.0f; pos1[2] = 0.997f; pos1[3] = 1.0f;
+    //gmtl::VecA4f pos2;
+    //pos2[0] = 1.0f; pos2[1] = 1.0f; pos2[2] = 0.997f; pos2[3] = 1.0f;
+    //gmtl::VecA4f pos3;
+    //pos3[0] = -1.0f; pos3[1] = -1.0f; pos3[2] = 0.997f; pos3[3] = 1.0f;
+    //gmtl::VecA4f pos4;
+    //pos4[0] = 1.0f; pos4[1] = -1.0f; pos4[2] = 0.997f; pos4[3] = 1.0f;
+
+    //_DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_W % BIN_WIDTH) == 0 );
+    //_DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_H % BIN_HEIGHT) == 0 );
+
+    //_ALIGN(16) float postQuadVertices[4 * 4];
+    //double swStart = g_pPlatform->GetTimer().GetTime();
+
+    //memset(g_pNumTrisInBins, 0, NUM_BINS_Y * NUM_BINS_X * 1 * sizeof(uint));
+
+    ////gmtl::MatrixA44f viewportMat;
+    ////viewportMat.set(0.5f * RASTERIZE_BUFFER_W, 0.0f, 0.0f, 0.5f * RASTERIZE_BUFFER_W - 0.5f / RASTERIZE_BUFFER_W,
+    ////    0.0f, 0.5f * RASTERIZE_BUFFER_H, 0.0f, 0.5f * RASTERIZE_BUFFER_H - 0.5f / RASTERIZE_BUFFER_H,
+    ////    0.0f, 0.0f, 1.0f, 0.0f,
+    ////    0.0f, 0.0f, 0.0f, 1.0f);
+
+    ////MatMatMult(&wvpViewport, &viewportMat, &cubeWorldViewProj);
+
+    //_LOOPi(NUM_CUBES)
+    //{
+    //    const gmtl::MatrixA44f& cubeWorldViewProj = g_CubeWorldViewProj[i];
+
+    //    // Transform also to viewport space
+    //   // gmtl::MatrixA44f wvpViewport;
+    //    //MatMatMult(&wvpViewport, &viewportMat, &cubeWorldViewProj);
+
+    //    CubeVertexTransformBatchInt(cubeWorldViewProj, g_CubeVertices, CUBE_VERTEX_STRIDE, &postCubeVertices[i * 4 * NUM_CUBE_VERTICES], 4, NUM_CUBE_VERTICES);
+    //    TriangleSetupDepthIntBatch<BIN_WIDTH, BIN_WIDTH, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H>((gmtl::VecA4f*) &(postCubeVertices[i * 4 * NUM_CUBE_VERTICES]), g_CubeIndices, 12, g_pTriBins, g_pNumTrisInBins);
+    //}
+
+    //_LOOPi(NUM_BINS_Y)
+    //{
+    //    _LOOPj(NUM_BINS_X)
+    //    {
+    //        TilesRasterizeDepthInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, 1>(g_pTriBins, g_pNumTrisInBins, g_pRasterizeDepthBuffer, j, i);
+    //    }
+    //}
+
+
+    //g_SWQuadTimeElapsed +=  (float) (g_pPlatform->GetTimer().GetTime() - timeStart);
+
+    //UntileDepthBuffer();
 }
 
 void RenderStats()
@@ -632,12 +955,10 @@ void RenderAll()
 
 
 		// Render software
-        _LOOPi(NUM_CUBES / CUBE_BATCH)
-        {
-            RenderSWCube(&(g_CubeWorldViewProj[i * CUBE_BATCH]));
-        }
-
+        RenderSWCube(&(g_CubeWorldViewProj[0]));
+        //RenderSWCubeInt();
         //RenderSWCubesST();
+        //RenderSWCubesIntST();
         //RenderQuad();
         
 		//gmtl::VecA4f pos1;

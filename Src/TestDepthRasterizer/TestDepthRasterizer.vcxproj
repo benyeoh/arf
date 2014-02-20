@@ -97,7 +97,10 @@
     <ClInclude Include="RasterInfoDepth_SSE.h" />
     <ClInclude Include="Render.h" />
     <ClInclude Include="TestDepthRasterizer.h" />
+    <ClInclude Include="TilesRasterizeDepthInt_SSE.h" />
     <ClInclude Include="TilesRasterizeDepth_SSE.h" />
+    <ClInclude Include="TriangleBinDepth_SSE.h" />
+    <ClInclude Include="TriangleSetupDepthInt_SSE.h" />
     <ClInclude Include="TriangleBoundingBoxDepth_SSE.h" />
     <ClInclude Include="TriangleSetupDepth_SSE.h" />
     <ClInclude Include="Update.h" />

@@ -61,5 +61,14 @@
     <ClInclude Include="TriangleBoundingBoxDepth_SSE.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TriangleSetupDepthInt_SSE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TriangleBinDepth_SSE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TilesRasterizeDepthInt_SSE.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

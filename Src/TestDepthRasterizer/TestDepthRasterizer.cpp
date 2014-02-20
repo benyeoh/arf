@@ -76,6 +76,9 @@ float               g_SWQuadTimeElapsed;
 uint				g_NumTriangles = 0;
 uint                g_NumPixelsProcessed = 0;
 
+TriangleBin*        g_pTriBins;
+uint*               g_pNumTrisInBins;
+
 void*				g_pD3DDevice;
 IPThreadPoolPtr		g_pThreadPool;
 IPThreadPtr			g_pThreads[NUM_THREADS];
