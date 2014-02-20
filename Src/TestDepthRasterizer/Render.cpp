@@ -94,9 +94,9 @@ void CubeVertexTransformBatchInt(const gmtl::MatrixA44f& worldViewProj, const fl
 
     _DEBUG_ASSERT((outPosStride & 0x3) == 0);
 
-    float* __restrict pMatData = (float*) worldViewProj.mData;
-    float* __restrict pIn = (float*) pXYZ;
-    float* __restrict pOut = (float*) pXYZWOut;
+    float* pMatData = (float*) worldViewProj.mData;
+    float* pIn = (float*) pXYZ;
+    float* pOut = (float*) pXYZWOut;
 
     __m128 xmm4 = *((__m128*)pMatData);		// col 0
     __m128 xmm5 = *((__m128*)(pMatData + 4));	// col 1
@@ -955,8 +955,8 @@ void RenderAll()
 
 
 		// Render software
-        RenderSWCube(&(g_CubeWorldViewProj[0]));
-        //RenderSWCubeInt();
+        //RenderSWCube(&(g_CubeWorldViewProj[0]));
+        RenderSWCubeInt();
         //RenderSWCubesST();
         //RenderSWCubesIntST();
         //RenderQuad();

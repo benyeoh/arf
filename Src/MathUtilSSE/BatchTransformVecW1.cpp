@@ -18,9 +18,9 @@ BatchTransformVecW1(const gmtl::MatrixA44f* pMat, const gmtl::VecA4f* pVecIn, gm
 {
 	__m128 xmm0, xmm1, xmm2, xmm3;
 	
-	float* __restrict pMatData = (float*) pMat->mData;
-	float* __restrict pIn = (float*) pVecIn;
-	float* __restrict pOut = (float*) pVecOut;
+	float* pMatData = (float*) pMat->mData;
+	float* pIn = (float*) pVecIn;
+	float* pOut = (float*) pVecOut;
 
 	__m128 xmm4 = *((__m128*)pMatData);		// col 0
 	__m128 xmm5 = *((__m128*)(pMatData + 4));	// col 1
@@ -93,9 +93,9 @@ BatchTransformVecW1(const gmtl::Matrix44f* pMat, const gmtl::Vec4f* pVecIn, gmtl
 	__m128 xmm0, xmm1, xmm2, xmm3;
 	__m128 xmm4, xmm5, xmm6, xmm7;
 
-	float* __restrict pMatData = (float*) pMat->mData;
-	float* __restrict pIn = (float*) pVecIn;
-	float* __restrict pOut = (float*) pVecOut;
+	float* pMatData = (float*) pMat->mData;
+	float* pIn = (float*) pVecIn;
+	float* pOut = (float*) pVecOut;
 
 	xmm4 = _mm_loadu_ps(pMatData);		// col 0
 	xmm5 = _mm_loadu_ps(pMatData + 4);	// col 1
@@ -173,9 +173,9 @@ BatchTransformAndProjectVecW1(const gmtl::MatrixA44f* pMat, const gmtl::VecA4f* 
 {
 	__m128 xmm0, xmm1, xmm2, xmm3;
 
-	float* __restrict pMatData = (float*) pMat->mData;
-	float* __restrict pIn = (float*) pVecIn->mData;
-	float* __restrict pOut = (float*) pVecOut->mData;
+	float* pMatData = (float*) pMat->mData;
+	float* pIn = (float*) pVecIn->mData;
+	float* pOut = (float*) pVecOut->mData;
 
 	__m128 xmm4 = *((__m128*)pMatData);		// col 0
 	__m128 xmm5 = *((__m128*)(pMatData + 4));	// col 1
