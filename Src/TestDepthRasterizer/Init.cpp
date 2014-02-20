@@ -228,6 +228,9 @@ boolean InitRenderer()
 	g_pRasterizeDepthBuffer = (float*) _ALIGNED_MALLOC(16, RASTERIZE_BUFFER_W * RASTERIZE_BUFFER_H * sizeof(float));
 	g_pFastDepthClearBuffer = (uint*) _ALIGNED_MALLOC(16, FAST_DEPTH_CLEAR_W * FAST_DEPTH_CLEAR_H * sizeof(uint));
 
+    g_pTriBins = (TriangleBin*) _ALIGNED_MALLOC(16, NUM_BIN_CONTEXTS * NUM_BINS_X * NUM_BINS_Y * sizeof(TriangleBin));
+    g_pNumTrisInBins = (uint*) _ALIGNED_MALLOC(16, NUM_BIN_CONTEXTS * NUM_BINS_X * NUM_BINS_Y * sizeof(uint));
+
 	g_pSWGroup = g_pRenderer->GetRResourceMgr().CreateRenderGroup(NULL);
 	g_pSWGroup->AddRenderTarget(g_pRenderer->GetBackBufferColor());
 	g_pSWGroup->SetDepthBuffer(g_pRenderer->GetBackBufferDepth());
@@ -477,7 +480,7 @@ boolean Initialize()
 
 	InitMesh();
 
-	gmtl::Math::seedRandom( (uint) (g_pPlatform->GetTimer().GetTime() * 10000.0) );
+	gmtl::Math::seedRandom( (uint) 1000 );//(g_pPlatform->GetTimer().GetTime() * 10000.0) );
 	_LOOPi(NUM_CUBES)
 	{
 		gmtl::identity(_CAST_MAT44(g_CubeWorld[i]));
@@ -490,6 +493,10 @@ boolean Initialize()
 			gmtl::Math::rangeRandom(-1.0f, 1.0f), 
 			gmtl::Math::rangeRandom(-1.0f, 1.0f));
 		gmtl::normalize(g_CubeRotAxis[i]);
+        gmtl::AxisAnglef cubeRotAxis;
+        cubeRotAxis.setAxis( g_CubeRotAxis[i] );
+        cubeRotAxis.setAngle( gmtl::Math::rangeRandom(-3.142f, 3.142f) );
+        gmtl::setRot(g_CubeWorld[i], cubeRotAxis);
 	}
 
 	return TRUE;

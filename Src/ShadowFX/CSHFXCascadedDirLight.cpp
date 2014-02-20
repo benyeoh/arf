@@ -47,7 +47,7 @@ void
 CSHFXCascadedDirLight::UpdateZSplits(float nearBiasExponent, float nearViewZ, float farViewZ)
 {
 	float lastFarDist = 0.0f;
-	float lastFarDistView = 0.0f;
+	float lastFarDistView = nearViewZ;
 	float diff = farViewZ - nearViewZ;
 
 	_LOOPi(4)

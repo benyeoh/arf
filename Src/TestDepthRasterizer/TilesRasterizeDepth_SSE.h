@@ -17,7 +17,7 @@ const static __m128 zeroConstant = _mm_setzero_ps();
 
 #define _ZERO (_mm_setzero_ps())
 
-#if defined(_DEBUG)
+#if 0//defined(_DEBUG)
     #define _CHECK_DEPTH(depthBuffer, min) \
     { \
         __m128 ___checkDepth = *((__m128*) (depthBuffer)); \
@@ -333,7 +333,7 @@ __forceinline void QuadEdgeCheckDepth(const void* pRasterInfo, float* pDepthBuff
 }
 
 template<uint outTileSize>
-__forceinline void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, float* pDepthBuffer, float startX, float startY, float endX, float endY)
+void TilesRasterizeEdgeCheckWithBBDepth(const void* pRasterInfo, float* pDepthBuffer, float startX, float startY, float endX, float endY)
 {
 	const RasterInfoDepth<1>* __restrict pRaster = ((RasterInfoDepth<1>*) pRasterInfo);
 

@@ -47,4 +47,8 @@
 #include "RasterInfoDepth_SSE.h"
 #include "TilesRasterizeDepth_SSE.h"
 
+#include "TriangleBinDepth_SSE.h"
+#include "TriangleSetupDepthInt_SSE.h"
+#include "TilesRasterizeDepthInt_SSE.h"
+
 #include "TestDepthRasterizer.h"

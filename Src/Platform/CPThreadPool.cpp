@@ -262,8 +262,10 @@ void CPThreadPool::ProcessJob()
 
 void CPThreadPool::QueueJobUnsafe(IPRunnable& job)
 {
-	while(m_ReservedQueue[m_JobIndexAdd] != EMPTY);
-	int jobIndex = m_JobIndexAdd;
+    volatile int* pState = m_ReservedQueue + m_JobIndexAdd;
+    while (*pState != EMPTY);
+
+    int jobIndex = m_JobIndexAdd;
 	m_JobIndexAdd = (jobIndex+1) & (m_QueueSize-1);
 
 	m_pJobQueue[jobIndex] = &job;

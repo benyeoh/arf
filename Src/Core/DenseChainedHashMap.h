@@ -52,7 +52,7 @@ const static uint PRIME_NUMBERS[MAX_PRIME_NUMBERS] =
 template<typename Key, typename Value, typename HashFn>
 class DenseChainedHashMap
 {
-	#define	__DCHM_BUCKET_UNUSED	((Bucket*)(size_t)0xFFFFFFFF)
+	#define	__DCHM_BUCKET_UNUSED	((Bucket*)(size_t)-1)
 
 	typedef DenseChainedHashMap<Key, Value, HashFn> TheHashMap;
 	const static uint MIN_BUCKET_SIZE	= 32;
