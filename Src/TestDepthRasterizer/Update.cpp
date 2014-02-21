@@ -33,56 +33,56 @@ void ProcessInput()
 	// Process mouse input
 	IIMouse& mouse = g_pInput->GetMouse();
 	uint numActiveButtons = mouse.GetNumOfActiveButtons();
-	_LOOPi(numActiveButtons)
-	{
-		const eIMouseCode* pActiveButtons = mouse.GetActiveButtons();
-		if(pActiveButtons[i] == IMC_RIGHTBUTTON)
-		{
-			// Rotate camera
+    _LOOPi(numActiveButtons)
+    {
+        const eIMouseCode* pActiveButtons = mouse.GetActiveButtons();
+        if(pActiveButtons[i] == IMC_RIGHTBUTTON)
+        {
+            // Rotate camera
 
-			// Get direction vector of mouse movement in screen space
-			gmtl::VecA3f mouseVec;//gmtl::Vec3f(1.0f, 1.0f, 0.0f);
-			_CAST_VEC3(mouseVec) = mouse.GetPosDelta();
-			mouseVec[1] = -mouseVec[1];
-			float length = gmtl::normalize(_CAST_VEC3(mouseVec));
-			if(length > gmtl::GMTL_EPSILON)
-			{			
-				// In reference space
-				gmtl::VecA3f axisOfRot;
-				gmtl::cross(_CAST_VEC3(axisOfRot), _CAST_VEC3(mouseVec), gmtl::Vec3f(0.0f, 0.0f, 1.0f));
+            // Get direction vector of mouse movement in screen space
+            gmtl::VecA3f mouseVec;//gmtl::Vec3f(1.0f, 1.0f, 0.0f);
+            _CAST_VEC3(mouseVec) = mouse.GetPosDelta();
+            mouseVec[1] = -mouseVec[1];
+            float length = gmtl::normalize(_CAST_VEC3(mouseVec));
+            if(length > gmtl::GMTL_EPSILON)
+            {			
+                // In reference space
+                gmtl::VecA3f axisOfRot;
+                gmtl::cross(_CAST_VEC3(axisOfRot), _CAST_VEC3(mouseVec), gmtl::Vec3f(0.0f, 0.0f, 1.0f));
 
-				// Convert rotation to eye space
-				gmtl::MatrixA44f rotToWorldSpaceMat;
-				gmtl::VecA3f xAxis, yAxis, zAxis;
-				_CAST_VEC3(zAxis) = -_CAST_VEC3(g_EyeDir);
-				yAxis = g_EyeUpVec;
-				gmtl::cross(_CAST_VEC3(xAxis), _CAST_VEC3(yAxis), _CAST_VEC3(zAxis));
-				NormalizeVec(xAxis);
-				gmtl::cross(_CAST_VEC3(yAxis), _CAST_VEC3(zAxis), _CAST_VEC3(xAxis));
-				NormalizeVec(yAxis);
-				rotToWorldSpaceMat.set(xAxis[0], xAxis[1], xAxis[2],
-					yAxis[0], yAxis[1], yAxis[2], 						
-					zAxis[0], zAxis[1], zAxis[2]);					
-				gmtl::invert(_CAST_MAT44(rotToWorldSpaceMat));
-				gmtl::VecA3f axisOfRotInWorldSpace;
-				TransformVec(&rotToWorldSpaceMat, &axisOfRot, &axisOfRotInWorldSpace);
+                // Convert rotation to eye space
+                gmtl::MatrixA44f rotToWorldSpaceMat;
+                gmtl::VecA3f xAxis, yAxis, zAxis;
+                _CAST_VEC3(zAxis) = -_CAST_VEC3(g_EyeDir);
+                yAxis = g_EyeUpVec;
+                gmtl::cross(_CAST_VEC3(xAxis), _CAST_VEC3(yAxis), _CAST_VEC3(zAxis));
+                NormalizeVec(xAxis);
+                gmtl::cross(_CAST_VEC3(yAxis), _CAST_VEC3(zAxis), _CAST_VEC3(xAxis));
+                NormalizeVec(yAxis);
+                rotToWorldSpaceMat.set(xAxis[0], xAxis[1], xAxis[2],
+                    yAxis[0], yAxis[1], yAxis[2], 						
+                    zAxis[0], zAxis[1], zAxis[2]);					
+                gmtl::invert(_CAST_MAT44(rotToWorldSpaceMat));
+                gmtl::VecA3f axisOfRotInWorldSpace;
+                TransformVec(&rotToWorldSpaceMat, &axisOfRot, &axisOfRotInWorldSpace);
 
-				gmtl::AxisAnglef rotAxis;
-				rotAxis.setAxis(_CAST_VEC3(axisOfRotInWorldSpace));
-				rotAxis.setAngle(length * g_TimeDT * 4.0f);
+                gmtl::AxisAnglef rotAxis;
+                rotAxis.setAxis(_CAST_VEC3(axisOfRotInWorldSpace));
+                rotAxis.setAngle(length * 0.005f);
 
-				// Transform eye direction
-				gmtl::MatrixA44f cameraRotMat;
-				gmtl::setRot(cameraRotMat, rotAxis);
+                // Transform eye direction
+                gmtl::MatrixA44f cameraRotMat;
+                gmtl::setRot(cameraRotMat, rotAxis);
 
-				gmtl::VecA3f oldEyeDir = g_EyeDir;
-				TransformVec(&cameraRotMat, &oldEyeDir, &oldEyeDir);
-				g_EyeDir = oldEyeDir;
+                gmtl::VecA3f oldEyeDir = g_EyeDir;
+                TransformVec(&cameraRotMat, &oldEyeDir, &oldEyeDir);
+                g_EyeDir = oldEyeDir;
 
-				//gmtl::xform(g_EyeDir, cameraRotMat, oldEyeDir);
-			}			
-		}
-	}
+                //gmtl::xform(g_EyeDir, cameraRotMat, oldEyeDir);
+            }			
+        }
+    }
 
 	// Process keyboard input
 	IIKeyboard& keyboard = g_pInput->GetKeyboard();

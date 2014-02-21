@@ -698,10 +698,10 @@ void RenderSWCubeInt()
         g_pThreadPool->ProcessJob();
     }
 
-    g_pThreadPool->SetAlwaysActive(FALSE);
-
     g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
-    //g_SWTimeElapsed += (g_RenderJob1.end - g_RenderJob1.start);
+    
+    g_pThreadPool->SetAlwaysActive(FALSE);
+  //g_SWTimeElapsed += (g_RenderJob1.end - g_RenderJob1.start);
 
     UntileDepthBuffer();
 }
@@ -956,8 +956,8 @@ void RenderAll()
 
 		// Render software
         //RenderSWCube(&(g_CubeWorldViewProj[0]));
-        RenderSWCubeInt();
         //RenderSWCubesST();
+        RenderSWCubeInt();
         //RenderSWCubesIntST();
         //RenderQuad();
         

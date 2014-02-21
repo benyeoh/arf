@@ -49,7 +49,7 @@ const static uint NUM_PRTCOMPUTE_PROCESS_THREADS = 3;
 const static uint NUM_ENTITIES = 6;
 #else
 const static uint NUM_POINT_LIGHTS = 0;
-const static uint NUM_THREADS = 3;
+const static uint NUM_THREADS = 7;
 const static uint NUM_PRTCOMPUTE_PHASE_THREADS = 1;
 const static uint NUM_PRTCOMPUTE_PROCESS_THREADS = 1;
 const static uint NUM_ENTITIES = 200000;
@@ -145,6 +145,8 @@ extern boolean	g_IsDebugRenderObjects;
 extern boolean	g_IsDebugRenderSceneDB;
 extern boolean	g_IsDebugRenderLights;
 extern boolean	g_IsWireFrameMode;
+extern boolean  g_IsShowDebugText;
+extern boolean  g_IsPaused;
 
 extern AppCallback	g_AppCallback;
 
