@@ -91,6 +91,8 @@ boolean g_IsDebugRenderObjects = TRUE;
 boolean g_IsDebugRenderSceneDB = TRUE;
 boolean g_IsWireFrameMode = FALSE;
 boolean	g_IsDebugRenderLights = TRUE;
+boolean  g_IsShowDebugText = TRUE;
+boolean  g_IsPaused = FALSE;
 
 AppCallback	g_AppCallback;
 

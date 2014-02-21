@@ -429,6 +429,8 @@ boolean	CSDBOctantOrderLooseOctTree::UpdateMove(SDBDataHandle handle, const AABo
 
 SDBDataHandle CSDBOctantOrderLooseOctTree::Insert(const AABox* pAABox, const OOBox* pOOBV, uint filterType, void* pData)
 {
+    _DEBUG_ASSERT((size_t) pData != __INVALID);
+
 	gmtl::VecA3f diff;
 	VecVecSub(&diff, &(pAABox->max), &(pAABox->min));
 	float size = diff[0] > diff[1] ? diff[0] : diff[1];

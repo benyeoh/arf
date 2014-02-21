@@ -203,7 +203,7 @@ boolean InitPlatform()
 		pThreads[i]->Initialize();
 	}
 
-	g_pThreadPool->Initialize(10, pThreads, NUM_THREADS);
+	g_pThreadPool->Initialize(8, pThreads, NUM_THREADS);
 
 	return TRUE;
 }
@@ -309,14 +309,14 @@ FlockingAIComponent* CreateFlockingAILights()
 	pFlockingAI->AddBehavior(pBoxAvoid);
 
 	SeparationBehavior* pSep = _NEW SeparationBehavior;
-	pSep->SetRadius(100.0f);
+	pSep->SetRadius(40.0f);
 	pSep->SetStrength(1.0f);
 	pFlockingAI->AddBehavior(pSep);
 
-	//CohesionBehavior* pCoh	= _NEW CohesionBehavior;
-	//pCoh->SetRadius(10.0f);
-	//pCoh->SetStrength(0.2f);
-	//pFlockingAI->AddBehavior(pCoh);
+	CohesionBehavior* pCoh	= _NEW CohesionBehavior;
+	pCoh->SetRadius(100.0f);
+	pCoh->SetStrength(0.1f);
+	pFlockingAI->AddBehavior(pCoh);
 
 	return pFlockingAI;
 }
@@ -348,10 +348,10 @@ FlockingAIComponent* CreateFlockingAIEntities()
 	pCoh->SetStrength(0.1f);
 	pFlockingAI->AddBehavior(pCoh);
 
-	//AlignmentBehavior* pAlign	= _NEW AlignmentBehavior;
-	//pAlign->SetRadius(7.0f);
-	//pAlign->SetStrength(0.1f);
-	//pFlockingAI->AddBehavior(pAlign);
+    AlignmentBehavior* pAlign	= _NEW AlignmentBehavior;
+    pAlign->SetRadius(9.0f);
+    pAlign->SetStrength(0.2f);
+    pFlockingAI->AddBehavior(pAlign);
 
 	return pFlockingAI;
 }
@@ -497,7 +497,7 @@ void InitAppHelpers()
 	CreateEntity(_W("[msh]\\TestAppHelpers\\floor_radiance.mls"), gmtl::VecA3f(0.0f, 0.0f, 0.0f), gmtl::VecA3f(0.0f, 0.0f, 1.0f));
 #else
 
-    const static float GRID_SIZE = 75.0f;
+    const static float GRID_SIZE = 79.0f;
     float numFloorsRoot = (2 * AREA_ROOT / GRID_SIZE) + 1;
 	float curX = -GRID_SIZE * (numFloorsRoot / 2);
 	float curY = -GRID_SIZE * (numFloorsRoot / 2);
@@ -648,9 +648,9 @@ void InitAppHelpers()
 		//pos[1] = 6.0f;
 		//pos[2] = FastCeiling(zMod * 0.5f) * ((zMod % 2) * 2.0f - 1.0f) * 20.0f + 3.0f;
 
-		float x = ((((float) rand()) / RAND_MAX) * 2.0f - 1.0f) * AREA_ROOT;
-		float z = ((((float) rand()) / RAND_MAX) * 2.0f - 1.0f) * AREA_ROOT;
-		float y = ((((float) rand()) / RAND_MAX)) * 100.0f;
+		float x = ((((float) rand()) / RAND_MAX) * 2.0f - 1.0f) * 30.0f;
+		float z = ((((float) rand()) / RAND_MAX) * 2.0f - 1.0f) * 30.0f;
+		float y = ((((float) rand()) / RAND_MAX)) * 10.0f;
 
 		pos[0] = x;
 		pos[1] = y;
@@ -801,7 +801,7 @@ void InitAppHelpers()
 		pShadowDL->AddContext();
 	}
 
-	pDirLight->SetShadowDirLight(pShadowDL, 1.5f, 800.0f, FALSE);
+	pDirLight->SetShadowDirLight(pShadowDL, 1.8f, 700.0f, FALSE);
 	pDirLight->SetDeferredDirLight(pLightGroup, pRender);
 	pDirLight->SetScene(g_pSceneContainer);
 

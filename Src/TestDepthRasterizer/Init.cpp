@@ -293,7 +293,7 @@ boolean InitPlatform()
 		g_pThreads[i]->Initialize();
 	}
 
-	g_pThreadPool->Initialize(4, pThreads, NUM_THREADS);
+	g_pThreadPool->Initialize(8, pThreads, NUM_THREADS);
 
 	//SetThreadAffinityMask(GetCurrentThread(), 1);
 	return TRUE;
@@ -481,12 +481,16 @@ boolean Initialize()
 	InitMesh();
 
 	gmtl::Math::seedRandom( (uint) 1000 );//(g_pPlatform->GetTimer().GetTime() * 10000.0) );
-	_LOOPi(NUM_CUBES)
+    const static float X_RANGE = 40.0;
+    const static float Y_RANGE = 20.0;
+    const static float Z_START = -25.0;
+    const static float Z_END = -10.0;
+    _LOOPi(NUM_CUBES)
 	{
 		gmtl::identity(_CAST_MAT44(g_CubeWorld[i]));
-		float x = gmtl::Math::rangeRandom(-4.0f, 4.0f) * CUBE_DISTANCE_MULT;
-		float y = gmtl::Math::rangeRandom(-4.0f, 4.0f) * CUBE_DISTANCE_MULT;
-		float z = gmtl::Math::rangeRandom(-10.0f, -6.0f);
+		float x = gmtl::Math::rangeRandom(-X_RANGE, X_RANGE) * CUBE_DISTANCE_MULT;
+		float y = gmtl::Math::rangeRandom(-Y_RANGE, Y_RANGE) * CUBE_DISTANCE_MULT;
+		float z = gmtl::Math::rangeRandom(Z_START, Z_END);
 		gmtl::setTrans(_CAST_MAT44(g_CubeWorld[i]), gmtl::Vec3f(x, y, z));
 		g_CubeRotAxis[i] = gmtl::Vec3f(
 			gmtl::Math::rangeRandom(-1.0f, 1.0f), 

@@ -167,7 +167,8 @@ void RenderAll()
 
 		RenderDebugObjects();
 		
-		RenderStats();
+        if(g_IsShowDebugText)
+		    RenderStats();
 
 		g_pRenderer->EndRender();
 	}

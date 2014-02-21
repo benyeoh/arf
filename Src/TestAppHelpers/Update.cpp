@@ -145,6 +145,11 @@ void ProcessInput()
 					}
 					break;
 				}
+            case IKC_SPACE:
+                {
+                    g_IsPaused = !g_IsPaused;
+                    break;
+                };
 
 			case IKC_1:
 				{
@@ -157,7 +162,11 @@ void ProcessInput()
 					g_IsDebugRenderSceneDB = !g_IsDebugRenderSceneDB;
 					break;
 				}
-
+            case IKC_3:
+                {
+                    g_IsShowDebugText = !g_IsShowDebugText;
+                    break;
+                }
 			case IKC_4:
 				{
 					g_IsWireFrameMode = !g_IsWireFrameMode;
@@ -181,35 +190,47 @@ void ProcessInput()
 
 	//g_pShadowDirLight->Update(g_CascadeFrustum, g_DirLight.dir, _CAST_VEC3(g_EyePos) - g_DirLight.dir * 100.0f, _CAST_MAT44(g_View));
 
-    // Disable all AI
-#ifndef _USE_PRT_VERSION
-    AABox box;
-    box.min[0] = g_EyePos[0] - FAR_PLANE;
-    box.min[1] = g_EyePos[1] - FAR_PLANE;
-    box.min[2] = g_EyePos[2] - FAR_PLANE;
-
-    box.max[0] = g_EyePos[0] + FAR_PLANE;
-    box.max[1] = g_EyePos[1] + FAR_PLANE;
-    box.max[2] = g_EyePos[2] + FAR_PLANE;
-
-    Sphere enableSphere;
-    enableSphere.center[0] = g_EyePos[0];
-    enableSphere.center[1] = g_EyePos[1];
-    enableSphere.center[2] = g_EyePos[2];
-    enableSphere.center[3] = FAR_PLANE;
-
-    AHComponent* pAI[64000];
-    uint numEntities = g_pSceneEntityFlockContainer->QuerySphere((void**) pAI, 64000, box, enableSphere, SDB_FILTER_FLOCKING_COMP);
-    _LOOPi(numEntities)
+  
+    if(!g_IsPaused)
     {
-        FlockingAIComponent* pFlock = (FlockingAIComponent*) pAI[i];
-        pFlock->EnableOneFrame();
-    }
+    #ifndef _USE_PRT_VERSION
+        const static float ENABLE_DISTANCE = FAR_PLANE + 100.0f;
+        AABox box;
+        box.min[0] = g_EyePos[0] - ENABLE_DISTANCE;
+        box.min[1] = g_EyePos[1] - ENABLE_DISTANCE;
+        box.min[2] = g_EyePos[2] - ENABLE_DISTANCE;
 
-#endif
-	double renderStart = g_pPlatform->GetTimer().GetTime();
-	g_pEntityMgr->Update( UPDATE_PHASE_GROUP_1 );
-	g_UpdateTimes[g_TimeCounter] = g_pPlatform->GetTimer().GetTime() - renderStart;
+        box.max[0] = g_EyePos[0] + ENABLE_DISTANCE;
+        box.max[1] = g_EyePos[1] + ENABLE_DISTANCE;
+        box.max[2] = g_EyePos[2] + ENABLE_DISTANCE;
+
+        Sphere enableSphere;
+        enableSphere.center[0] = g_EyePos[0];
+        enableSphere.center[1] = g_EyePos[1];
+        enableSphere.center[2] = g_EyePos[2];
+        enableSphere.center[3] = ENABLE_DISTANCE;
+
+        AHComponent* pAI[64000];
+        uint numEntities = g_pSceneEntityFlockContainer->QuerySphere((void**) pAI, 64000, box, enableSphere, SDB_FILTER_FLOCKING_COMP);
+        _LOOPi(numEntities)
+        {
+            FlockingAIComponent* pFlock = (FlockingAIComponent*) pAI[i];
+            pFlock->EnableOneFrame();
+        }
+
+        uint numLights = g_pSceneLightFlockContainer->QuerySphere((void**) pAI, 64000, box, enableSphere, SDB_FILTER_FLOCKING_COMP);
+        _LOOPi(numEntities)
+        {
+            FlockingAIComponent* pFlock = (FlockingAIComponent*) pAI[i];
+            pFlock->EnableOneFrame();
+        }
+
+    #endif
+    
+        double renderStart = g_pPlatform->GetTimer().GetTime();
+	    g_pEntityMgr->Update( UPDATE_PHASE_GROUP_1 );
+	    g_UpdateTimes[g_TimeCounter] = g_pPlatform->GetTimer().GetTime() - renderStart;
+    }
 
 //	g_pSkyDomeSpatial->SetWorldPos(g_EyePos);
 //	g_pEntityMgr->UpdateComponentsTemp();
