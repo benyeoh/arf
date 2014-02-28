@@ -75,6 +75,8 @@ float				g_VertTransTimeElapsed;
 float               g_SWQuadTimeElapsed;
 uint				g_NumTriangles = 0;
 uint                g_NumPixelsProcessed = 0;
+double              g_SWTimeElapsedPrevious[NUM_AVG_TIMES];
+uint                g_CurSWTimeIndex = 0;
 
 TriangleBin*        g_pTriBins;
 uint*               g_pNumTrisInBins;

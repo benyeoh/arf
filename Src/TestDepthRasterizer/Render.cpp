@@ -306,7 +306,7 @@ struct RenderJobInt : public IPRunnable
     {
         //_mm_setcsr( _mm_getcsr() | 0x8040 );
 
-        TilesRasterizeDepthInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, NUM_BIN_CONTEXTS>
+        TilesRasterizeDepthUnrollXInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, NUM_BIN_CONTEXTS>
             (&(g_pTriBins[binIndex]), &(g_pNumTrisInBins[binIndex]), g_pRasterizeDepthBuffer, binIndex % NUM_BINS_X, binIndex / NUM_BINS_X);
 
         return 0;
@@ -565,6 +565,9 @@ void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 	}
 
 	g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
+    g_SWTimeElapsedPrevious[g_CurSWTimeIndex % NUM_AVG_TIMES] = g_SWTimeElapsed;
+    g_CurSWTimeIndex++;
+
 	//g_SWTimeElapsed += (g_RenderJob1.end - g_RenderJob1.start);
 
     UntileDepthBuffer();
@@ -632,6 +635,8 @@ void RenderSWCubesST()
     }
 
     g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
+    g_SWTimeElapsedPrevious[g_CurSWTimeIndex % NUM_AVG_TIMES] = g_SWTimeElapsed;
+    g_CurSWTimeIndex++;
 
     UntileDepthBuffer();
 }
@@ -643,7 +648,7 @@ void RenderSWCubeInt()
     int numPerJob = NUM_CUBES / NUM_BIN_CONTEXTS;
     _DEBUG_COMPILE_ASSERT((NUM_CUBES % NUM_BIN_CONTEXTS) == 0);
    
-    g_pThreadPool->SetAlwaysActive(TRUE);
+   // g_pThreadPool->SetAlwaysActive(TRUE);
     TransformAndSetupIntJob transformJobs[NUM_BIN_CONTEXTS];
 
     double swStart = g_pPlatform->GetTimer().GetTime();
@@ -665,7 +670,8 @@ void RenderSWCubeInt()
     // Sort bins in order of most triangles to least
     uint binIndices[NUM_BINS_X * NUM_BINS_Y];
     uint totalNumTrianglesBins[NUM_BINS_X * NUM_BINS_Y];
- 
+    uint numBins = NUM_BINS_Y * NUM_BINS_X;
+
     _LOOPi(NUM_BINS_Y)
     {
         _LOOPj(NUM_BINS_X)
@@ -678,6 +684,9 @@ void RenderSWCubeInt()
                 totalThisBin += g_pNumTrisInBins[NUM_BINS_X * NUM_BINS_Y * k + i * NUM_BINS_X + j];
             }
 
+            //if(totalThisBin == 0)
+            //    numBins--;
+
             totalNumTrianglesBins[i * NUM_BINS_X + j] = totalThisBin;
         }
     }
@@ -687,7 +696,7 @@ void RenderSWCubeInt()
     RenderJobInt rasterJobs[NUM_BINS_Y * NUM_BINS_X];
 
     // Render all bins
-    _LOOPi(NUM_BINS_Y * NUM_BINS_X)
+    _LOOPi(numBins)
     {
         rasterJobs[i].binIndex = binIndices[i];
         g_pThreadPool->QueueJobUnsafe(rasterJobs[i]);        
@@ -699,8 +708,10 @@ void RenderSWCubeInt()
     }
 
     g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
-    
-    g_pThreadPool->SetAlwaysActive(FALSE);
+    g_SWTimeElapsedPrevious[g_CurSWTimeIndex % NUM_AVG_TIMES] = g_SWTimeElapsed;
+    g_CurSWTimeIndex++;
+
+    //g_pThreadPool->SetAlwaysActive(FALSE);
   //g_SWTimeElapsed += (g_RenderJob1.end - g_RenderJob1.start);
 
     UntileDepthBuffer();
@@ -708,7 +719,7 @@ void RenderSWCubeInt()
 
 void RenderSWCubesIntST()
 {
-    _mm_setcsr( _mm_getcsr() | 0x8040 );
+   // _mm_setcsr( _mm_getcsr() | 0x8040 );
 
     _DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_W % BIN_WIDTH) == 0 );
     _DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_H % BIN_HEIGHT) == 0 );
@@ -742,12 +753,14 @@ void RenderSWCubesIntST()
     {
         _LOOPj(NUM_BINS_X)
         {
-            TilesRasterizeDepthInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, 1>(&(g_pTriBins[i*NUM_BINS_X+j]), &(g_pNumTrisInBins[i*NUM_BINS_X+j]), g_pRasterizeDepthBuffer, j, i);
+            TilesRasterizeDepthUnrollXInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, 1>(&(g_pTriBins[i*NUM_BINS_X+j]), &(g_pNumTrisInBins[i*NUM_BINS_X+j]), g_pRasterizeDepthBuffer, j, i);
             g_NumTriangles += g_pNumTrisInBins[i*NUM_BINS_X+j];
         }
     }
 
     g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
+    g_SWTimeElapsedPrevious[g_CurSWTimeIndex % NUM_AVG_TIMES] = g_SWTimeElapsed;
+    g_CurSWTimeIndex++;
 
     UntileDepthBuffer();
 }
@@ -892,7 +905,14 @@ void RenderStats()
 	fontPos[1] += 17;
 	g_pCourierFontFace->RenderString(ToStringAuto(_W("totalPageSizeUsed: %d"), memMetrics.totalPageSizeUsed), fontPos, 0xFFA0F07F);
 	fontPos[1] += 34;
-	g_pCourierFontFace->RenderString(ToStringAuto(_W("Software Raster Time: %f"), g_SWTimeElapsed * 1000.0), fontPos, 0xFFF0207F);
+    double swTimeElapsed = 0.0;
+    _LOOPi(NUM_AVG_TIMES)
+    {
+        swTimeElapsed += g_SWTimeElapsedPrevious[i];
+    }
+
+    swTimeElapsed /= NUM_AVG_TIMES;
+	g_pCourierFontFace->RenderString(ToStringAuto(_W("Software Raster Time: %f"), swTimeElapsed * 1000.0), fontPos, 0xFFF0207F);
 	fontPos[1] += 17;
 	g_pCourierFontFace->RenderString(ToStringAuto(_W("Software VS Time: %f"), g_VertTransTimeElapsed * 1000.0f), fontPos, 0xFFF0207F);
 	fontPos[1] += 17;
@@ -922,7 +942,7 @@ void RenderAll()
 	g_SWQuadTimeElapsed = 0;
 
 	memset(g_pRasterizeBuffer, 0, sizeof(byte) * RASTERIZE_BUFFER_W * RASTERIZE_BUFFER_H);
-	FastDepthClear();
+	//FastDepthClear();
 
 	g_CurIndex += g_IncRate * g_TimeDT;
 	if(g_CurIndex >= 4.0f)
