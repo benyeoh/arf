@@ -15,19 +15,35 @@ _NAMESPACE_BEGIN
 
 class CPThreadPool : public CRefCounted<IPThreadPool>, public IPRunnable
 {
+    _ALIGN(_CACHE_LINE_SIZE) struct ProcessData
+    {
+        int jobIndexProcess;
+        int processLock;
+    };
+
+    _ALIGN(_CACHE_LINE_SIZE) struct AddData
+    {
+        int jobIndexAdd;
+        int queueLock;
+    };
+
+    _ALIGN(_CACHE_LINE_SIZE) struct JobData
+    {
+        int numJobsInQueue;
+    };
+
 private:
-	IPRunnable** m_pJobQueue;
+    //_ALIGN(_CACHE_LINE_SIZE) struct  
+   // {
+        ProcessData m_ProcessData;
+        AddData m_AddData;
+        JobData m_JobData;
+   // }// m_SyncData;
+
+    IPRunnable** m_pJobQueue;
 	int* m_ReservedQueue;
 	
-	int m_JobIndexAdd;
-	int m_JobIndexProcess;
-	
-	int m_QueueLock;
-	int m_ProcessLock;
-	int m_NumJobsInQueue;
 	//int m_NumJobsPending;
-
-	uint m_QueueSize;
 	
 	IPThread**	m_ppThreads;
 	uint		m_NumThreads;
@@ -36,6 +52,8 @@ private:
 	boolean m_IsAlwaysActive;
 
 	int		m_ThreadIndexCount;
+
+    uint m_QueueSize;
 
 public:
 	CPThreadPool();
@@ -73,7 +91,8 @@ public:
 	uint GetNumThreads();
 
 	uint GetCurrentThreadIndex();
-};
 
+    _IMPL_ALIGNED_ALLOCS(_CACHE_LINE_SIZE)
+};
 
 _NAMESPACE_END

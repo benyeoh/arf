@@ -164,6 +164,8 @@ void TriangleSetupDepthIntBatch(const gmtl::VecA4f* pVertices, const ushort* pIn
                     pTriData->z[1] = vZ[1].m128_f32[triangleIndex];
                     pTriData->z[2] = vZ[2].m128_f32[triangleIndex];
                     pNumTrisInBins[triBinOffset] += 1;
+
+                    _DEBUG_ASSERT(pNumTrisInBins[triBinOffset] < TriangleBin::MAX_NUM_TRIANGLES_PER_BIN);
                 }
             }
 

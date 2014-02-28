@@ -100,6 +100,10 @@ extern void*			g_pD3DDevice;
 extern uint				g_NumTriangles;
 extern uint             g_NumPixelsProcessed;
 
+const static uint       NUM_AVG_TIMES = 512;
+extern double           g_SWTimeElapsedPrevious[NUM_AVG_TIMES];
+extern uint             g_CurSWTimeIndex;
+
 const static uint NUM_CUBES = 2048;
 const static int NUM_THREADS = 7;
 
@@ -112,8 +116,8 @@ extern gmtl::Vec3f		g_CubeRotAxis[NUM_CUBES];
 
 //const static uint RASTERIZE_BUFFER_W = 1280;
 //const static uint RASTERIZE_BUFFER_H = 720;
-//const static uint BIN_WIDTH     = 160;
-//const static uint BIN_HEIGHT    = 180;
+//const static uint BIN_WIDTH     = 80;
+//const static uint BIN_HEIGHT    = 90;
 const static uint RASTERIZE_BUFFER_W = 256;
 const static uint RASTERIZE_BUFFER_H = 128;
 const static uint BIN_WIDTH     = 64;

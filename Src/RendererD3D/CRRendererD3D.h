@@ -21,23 +21,22 @@ class CRRendererD3D : public CRRenderer
 		uint flags;
 	};
 
-	const static uint MAX_NUM_STREAMS = 8;
+	const static uint MAX_NUM_STREAMS = 4;
 	
 private:
-	IDirect3D9Ptr		m_pD3D;
 	IDirect3DDevice9Ptr	m_pD3DDevice;	
+    RD3DEffectStateManagerPtr m_pStateManager;	
+    CRIndexBufferD3D* m_pPrevIB;
 
-	RD3DEffectStateManagerPtr m_pStateManager;	
-	
-	D3DPRESENT_PARAMETERS m_PresentParams;
-	
+    IDirect3DVertexDeclaration9* m_pPrevDecl;
+    VBStream m_PrevStreams[MAX_NUM_STREAMS];
+    uint m_PrevNumStreams;
+
 	//CRVertexBufferGroupD3D* m_pPrevVBGroup;
-	CRIndexBufferD3D* m_pPrevIB;
 	
-	IDirect3DVertexDeclaration9* m_pPrevDecl;
-	VBStream m_PrevStreams[MAX_NUM_STREAMS];
-	uint m_PrevNumStreams;
-	
+    IDirect3D9Ptr		m_pD3D;
+    D3DPRESENT_PARAMETERS m_PresentParams;
+
 public:
 	CRRendererD3D()
 		: CRRenderer()

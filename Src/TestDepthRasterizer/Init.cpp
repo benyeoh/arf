@@ -225,11 +225,11 @@ boolean InitRenderer()
 	
 	g_pRasterizeTex = g_pRenderer->GetRResourceMgr().CreateTexture2D(NULL, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, 1, TEXF_R32F, TEXU_DYNAMIC);
 	g_pRasterizeBuffer = (float*) _ALIGNED_MALLOC(16, RASTERIZE_BUFFER_W * RASTERIZE_BUFFER_H * sizeof(float));
-	g_pRasterizeDepthBuffer = (float*) _ALIGNED_MALLOC(16, RASTERIZE_BUFFER_W * RASTERIZE_BUFFER_H * sizeof(float));
+	g_pRasterizeDepthBuffer = (float*) _ALIGNED_MALLOC(64, RASTERIZE_BUFFER_W * RASTERIZE_BUFFER_H * sizeof(float));
 	g_pFastDepthClearBuffer = (uint*) _ALIGNED_MALLOC(16, FAST_DEPTH_CLEAR_W * FAST_DEPTH_CLEAR_H * sizeof(uint));
 
-    g_pTriBins = (TriangleBin*) _ALIGNED_MALLOC(16, NUM_BIN_CONTEXTS * NUM_BINS_X * NUM_BINS_Y * sizeof(TriangleBin));
-    g_pNumTrisInBins = (uint*) _ALIGNED_MALLOC(16, NUM_BIN_CONTEXTS * NUM_BINS_X * NUM_BINS_Y * sizeof(uint));
+    g_pTriBins = (TriangleBin*) _ALIGNED_MALLOC(64, NUM_BIN_CONTEXTS * NUM_BINS_X * NUM_BINS_Y * sizeof(TriangleBin));
+    g_pNumTrisInBins = (uint*) _ALIGNED_MALLOC(64, NUM_BIN_CONTEXTS * NUM_BINS_X * NUM_BINS_Y * sizeof(uint));
 
 	g_pSWGroup = g_pRenderer->GetRResourceMgr().CreateRenderGroup(NULL);
 	g_pSWGroup->AddRenderTarget(g_pRenderer->GetBackBufferColor());
@@ -282,15 +282,14 @@ boolean InitPlatform()
 
 	g_pThreadPool = g_pPlatform->GetResourceMgr().CreateThreadPool();
 
-	IPThread* pThreads[NUM_THREADS];
-	
+    IPThread* pThreads[NUM_THREADS];
 	_LOOPi(NUM_THREADS)
 	{
 		pThreads[i] = g_pPlatform->GetResourceMgr().CreateThread();
 		pThreads[i]->Initialize();
 
-		g_pThreads[i] = g_pPlatform->GetResourceMgr().CreateThread();
-		g_pThreads[i]->Initialize();
+		//g_pThreads[i] = g_pPlatform->GetResourceMgr().CreateThread();
+		//g_pThreads[i]->Initialize();
 	}
 
 	g_pThreadPool->Initialize(8, pThreads, NUM_THREADS);
@@ -438,6 +437,7 @@ boolean Initialize()
 	m_LastNumOfFrames = 0;
 	m_NumFrames = 0;
 	m_LastTimeElapsed = 0.0f;
+    memset(g_SWTimeElapsedPrevious, 0, sizeof(g_SWTimeElapsedPrevious));
 
 	// Get the application path	
 	wchar filePath[256];
@@ -510,11 +510,11 @@ void Shutdown()
 {
 	ShutdownManualJobDispatch();
 
-	_LOOPi(NUM_THREADS)
-	{
-		g_pThreads[i]->Join();
-		g_pThreads[i] = NULL;
-	}
+	//_LOOPi(NUM_THREADS)
+	//{
+	//	g_pThreads[i]->Join();
+	//	g_pThreads[i] = NULL;
+	//}
 
 	g_pThreadPool = NULL;
 

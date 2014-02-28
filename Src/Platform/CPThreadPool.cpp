@@ -27,19 +27,19 @@ const static int SPIN_LOCK_RELEASED = 0;
 CPThreadPool::CPThreadPool()
 	: m_pJobQueue(NULL)
 	, m_ReservedQueue(NULL)
-	, m_JobIndexAdd(0)
-	, m_JobIndexProcess(0)
 	, m_QueueSize(0)
-	, m_NumJobsInQueue(0)
 	, m_IsTerminating(FALSE)
 	, m_IsAlwaysActive(FALSE)
-	, m_QueueLock(SPIN_LOCK_RELEASED)
-	, m_ProcessLock(SPIN_LOCK_RELEASED)
 	, m_NumThreads(0)
 	, m_ppThreads(NULL)
 	, m_ThreadIndexCount(0)
 	//, m_NumJobsPending(0)
 {
+    m_ProcessData.jobIndexProcess = 0;
+    m_ProcessData.processLock = SPIN_LOCK_RELEASED;
+    m_AddData.jobIndexAdd = 0;
+    m_AddData.queueLock = SPIN_LOCK_RELEASED;
+    m_JobData.numJobsInQueue = 0;
 }
 
 CPThreadPool::~CPThreadPool()
@@ -73,11 +73,11 @@ void CPThreadPool::Initialize(uint queueSizePow2, IPThread** pThreads, uint numT
 	m_IsAlwaysActive	= FALSE;
 
 	m_ThreadIndexCount	= 0;
-	m_ProcessLock		= SPIN_LOCK_RELEASED;
-	m_QueueLock			= SPIN_LOCK_RELEASED;
-	m_JobIndexAdd		= 0;
-	m_JobIndexProcess	= 0;
-	m_NumJobsInQueue	= 0;
+	m_ProcessData.processLock	= SPIN_LOCK_RELEASED;
+    m_ProcessData.jobIndexProcess = 0;
+    m_AddData.queueLock         = SPIN_LOCK_RELEASED;
+    m_AddData.jobIndexAdd       = 0;
+    m_JobData.numJobsInQueue	= 0;
 	//m_NumJobsPending	= 0;
 
 	m_QueueSize			= 1 << queueSizePow2;
@@ -149,26 +149,26 @@ void CPThreadPool::WorkerProcessJobs()
 {
 	// Keep trying to get a lock as long as there are jobs
 	// This is to support threads not in the threadpool to also process jobs in the queue
-	while( m_NumJobsInQueue > 0 )
+	while( m_JobData.numJobsInQueue > 0 )
 	{
-		if( AtomicCompareAndSwap(&m_ProcessLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
+		if( AtomicCompareAndSwap(&m_ProcessData.processLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
 		{
-			int jobIndexProcess = m_JobIndexProcess;
+			int jobIndexProcess = m_ProcessData.jobIndexProcess;
 			if(m_ReservedQueue[jobIndexProcess] == RESERVED)
 			{
 				m_ReservedQueue[jobIndexProcess] = PROCESSING;
-				m_JobIndexProcess = (jobIndexProcess+1) & (m_QueueSize-1);
+				m_ProcessData.jobIndexProcess = (jobIndexProcess+1) & (m_QueueSize-1);
 
 				// Release lock
-				//AtomicSwap(&m_ProcessLock, SPIN_LOCK_RELEASED);
-				m_ProcessLock = SPIN_LOCK_RELEASED;
+				//AtomicSwap(&m_ProcessData.processLock, SPIN_LOCK_RELEASED);
+				m_ProcessData.processLock = SPIN_LOCK_RELEASED;
 
 				// Run the process
 				IPRunnable* pRunnable = m_pJobQueue[jobIndexProcess];
 				m_ReservedQueue[jobIndexProcess] = EMPTY;
 
 				pRunnable->Run();	
-				int numJobs = AtomicDec(&m_NumJobsInQueue);
+				int numJobs = AtomicDec(&m_JobData.numJobsInQueue);
 
 				//AtomicDec(&m_NumJobsPending);
 
@@ -179,11 +179,11 @@ void CPThreadPool::WorkerProcessJobs()
 			}
 			else
 			{
-				m_ProcessLock = SPIN_LOCK_RELEASED;
+				m_ProcessData.processLock = SPIN_LOCK_RELEASED;
 			}
 		}
 
-		//int jobIndexProcess = m_JobIndexProcess ;//(m_JobIndexProcess) & (m_QueueSize-1);//m_JobIndexProcess 
+		//int jobIndexProcess = m_ProcessData.jobIndexProcess ;//(m_ProcessData.jobIndexProcess) & (m_QueueSize-1);//m_ProcessData.jobIndexProcess 
 
 		//// We try to get a short spin lock on the current job
 		//if( AtomicCompareAndSwap(&(m_ReservedQueue[jobIndexProcess]), PROCESSING, RESERVED) == RESERVED )
@@ -192,8 +192,8 @@ void CPThreadPool::WorkerProcessJobs()
 		//	// So let other threads process available jobs
 		//	int nextIndexToProcess = (jobIndexProcess+1) & (m_QueueSize-1);
 		//	next = nextIndexToProcess;
-		//	//AtomicInc(&m_JobIndexProcess);
-		//	last = AtomicCompareAndSwap(&m_JobIndexProcess, nextIndexToProcess, jobIndexProcess);
+		//	//AtomicInc(&m_ProcessData.jobIndexProcess);
+		//	last = AtomicCompareAndSwap(&m_ProcessData.jobIndexProcess, nextIndexToProcess, jobIndexProcess);
 
 		//	// Run the process
 		//	IPRunnable* pRunnable = m_pJobQueue[jobIndexProcess];
@@ -203,10 +203,10 @@ void CPThreadPool::WorkerProcessJobs()
 		//	m_ReservedQueue[jobIndexProcess] = EMPTY;
 		//	//AtomicSwap(&m_ReservedQueue[jobIndexProcess], EMPTY);
 
-		//	//int numJobs = AtomicDec(&m_NumJobsInQueue);
+		//	//int numJobs = AtomicDec(&m_JobData.numJobsInQueue);
 		//	
 		//	pRunnable->Run();	
-		//	int numJobs = AtomicDec(&m_NumJobsInQueue);
+		//	int numJobs = AtomicDec(&m_JobData.numJobsInQueue);
 
 		//	//AtomicDec(&m_NumJobsPending);
 
@@ -228,19 +228,19 @@ void CPThreadPool::ProcessJob()
 {
 	// NOTE: Called by external threads to also share in processing jobs in the queue
 
-	while( m_NumJobsInQueue > 0 )
+	while( m_JobData.numJobsInQueue > 0 )
 	{
-		if( AtomicCompareAndSwap(&m_ProcessLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
+		if( AtomicCompareAndSwap(&m_ProcessData.processLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
 		{
-			int jobIndexProcess = m_JobIndexProcess;
+			int jobIndexProcess = m_ProcessData.jobIndexProcess;
 			if(m_ReservedQueue[jobIndexProcess] == RESERVED)
 			{
 				m_ReservedQueue[jobIndexProcess] = PROCESSING;
-				m_JobIndexProcess = (jobIndexProcess+1) & (m_QueueSize-1);
+				m_ProcessData.jobIndexProcess = (jobIndexProcess+1) & (m_QueueSize-1);
 
 				// Release lock
-				//AtomicSwap(&m_ProcessLock, SPIN_LOCK_RELEASED);
-				m_ProcessLock = SPIN_LOCK_RELEASED;
+				//AtomicSwap(&m_ProcessData.processLock, SPIN_LOCK_RELEASED);
+				m_ProcessData.processLock = SPIN_LOCK_RELEASED;
 
 				// Run the process
 				IPRunnable* pRunnable = m_pJobQueue[jobIndexProcess];
@@ -249,12 +249,12 @@ void CPThreadPool::ProcessJob()
 				pRunnable->Run();	
 				
 				// Lock shared count
-				AtomicDec(&m_NumJobsInQueue);
+				AtomicDec(&m_JobData.numJobsInQueue);
 				return;
 			}
 			else
 			{
-				m_ProcessLock = SPIN_LOCK_RELEASED;
+				m_ProcessData.processLock = SPIN_LOCK_RELEASED;
 			}
 		}
 	}
@@ -262,19 +262,19 @@ void CPThreadPool::ProcessJob()
 
 void CPThreadPool::QueueJobUnsafe(IPRunnable& job)
 {
-    volatile int* pState = m_ReservedQueue + m_JobIndexAdd;
+    volatile int* pState = m_ReservedQueue + m_AddData.jobIndexAdd;
     while (*pState != EMPTY);
 
-	//while(m_ReservedQueue[m_JobIndexAdd] != EMPTY);
-	int jobIndex = m_JobIndexAdd;
-	m_JobIndexAdd = (jobIndex+1) & (m_QueueSize-1);
+	//while(m_ReservedQueue[m_AddData.jobIndexAdd] != EMPTY);
+	int jobIndex = m_AddData.jobIndexAdd;
+	m_AddData.jobIndexAdd = (jobIndex+1) & (m_QueueSize-1);
 
 	m_pJobQueue[jobIndex] = &job;
 	
 	m_ReservedQueue[jobIndex] = RESERVED;
 
 	//AtomicInc(&m_NumJobsPending);
-	int numJobs = AtomicInc(&m_NumJobsInQueue);
+	int numJobs = AtomicInc(&m_JobData.numJobsInQueue);
 	
 	// Setup new job incoming
 	WorkerJobInit(numJobs);
@@ -288,31 +288,31 @@ void CPThreadPool::QueueJob(IPRunnable& job)
 
 	do 
 	{
-		if( AtomicCompareAndSwap(&m_QueueLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
+		if( AtomicCompareAndSwap(&m_AddData.queueLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
 		{
-			jobIndexAdd = m_JobIndexAdd;
+			jobIndexAdd = m_AddData.jobIndexAdd;
 			if(m_ReservedQueue[jobIndexAdd] == EMPTY)
 			{
 				m_ReservedQueue[jobIndexAdd] = ADDING;
 				break;
 			}
 			else
-				m_QueueLock = SPIN_LOCK_RELEASED;
+				m_AddData.queueLock = SPIN_LOCK_RELEASED;
 		}
 		//AtomicInc((int*)&totalQueueLock);
 
 	} while (true);
 
-	m_JobIndexAdd = (jobIndexAdd+1) & (m_QueueSize-1);
-	//AtomicSwap(&m_QueueLock, SPIN_LOCK_RELEASED);
-	m_QueueLock = SPIN_LOCK_RELEASED;
+	m_AddData.jobIndexAdd = (jobIndexAdd+1) & (m_QueueSize-1);
+	//AtomicSwap(&m_AddData.queueLock, SPIN_LOCK_RELEASED);
+	m_AddData.queueLock = SPIN_LOCK_RELEASED;
 
 	m_pJobQueue[jobIndexAdd] = &job;
 
 	// Set the reserved flag to show that buffer hole is reserved
 	m_ReservedQueue[jobIndexAdd] = RESERVED;
 	//AtomicInc(&m_NumJobsPending);
-	int numJobs = AtomicInc(&m_NumJobsInQueue);
+	int numJobs = AtomicInc(&m_JobData.numJobsInQueue);
 	
 	// Setup new job incoming
 	WorkerJobInit(numJobs);
@@ -320,7 +320,7 @@ void CPThreadPool::QueueJob(IPRunnable& job)
 
 //uint CPThreadPool::GetNumJobsInQueue()
 //{
-//	return (uint) m_NumJobsInQueue;
+//	return (uint) m_JobData.numJobsInQueue;
 //}
 
 uint CPThreadPool::GetQueueSize()
@@ -330,7 +330,7 @@ uint CPThreadPool::GetQueueSize()
 
 uint CPThreadPool::GetNumJobsPending()
 {
-	return (uint) m_NumJobsInQueue;
+	return (uint) m_JobData.numJobsInQueue;
 }
 
 void CPThreadPool::SetAlwaysActive(boolean isEnabled)

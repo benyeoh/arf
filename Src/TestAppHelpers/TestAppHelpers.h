@@ -178,5 +178,5 @@ extern void*				g_pD3DDevice;
 extern gmtl::VecA3f		g_CameraFarCornerVecs[4];
 extern gmtl::VecA3f		g_ViewFarCornerVecs[4];
 
-const static float FAR_PLANE = 1200.0f;
+const static float FAR_PLANE = 1500.0f;
 const static float NEAR_PLANE = 0.1f;
