@@ -82,6 +82,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CRDepthBufferD3D11.h" />
     <ClInclude Include="CRIndexBufferD3D11.h" />
     <ClInclude Include="CRRendererD3D11.h" />
     <ClInclude Include="CRResourceMgrD3D11.h" />
@@ -90,11 +91,13 @@
     <ClInclude Include="CRTextureCubeD3D11.h" />
     <ClInclude Include="CRTextureRTD3D11.h" />
     <ClInclude Include="CRVertexBufferD3D11.h" />
+    <ClInclude Include="CRVertexBufferGroupD3D11.h" />
     <ClInclude Include="D3D11HelperFns.h" />
     <ClInclude Include="Interfaces.h" />
     <ClInclude Include="RendererD3D11Framework.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CRDepthBufferD3D11.cpp" />
     <ClCompile Include="CRIndexBufferD3D11.cpp" />
     <ClCompile Include="CRRendererD3D11.cpp" />
     <ClCompile Include="CRResourceMgrD3D11.cpp" />
@@ -103,6 +106,7 @@
     <ClCompile Include="CRTextureCubeD3D11.cpp" />
     <ClCompile Include="CRTextureRTD3D11.cpp" />
     <ClCompile Include="CRVertexBufferD3D11.cpp" />
+    <ClCompile Include="CRVertexBufferGroupD3D11.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="RendererD3D11Framework.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">RendererD3D11Framework.h</PrecompiledHeaderFile>

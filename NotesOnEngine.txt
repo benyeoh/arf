@@ -1,0 +1,25 @@
+EffectTemplate
+--------------
+We need some way to quickly compare dynamic parameters and also only update those without needing to re-update constant parameters.
+
+Constant parameters should probably go into 1 constant buffer which is unique per Effect.
+
+Dynamic parameters should probably be in another constant buffer which is global, since these are updated every frame per object, like world matrices etc.
+
+Some dynamic parameters should also have a <int group = X> annotation tag that will put it in another global constant buffer, based on the value X.
+The idea being these parameters are shared per object, like time for example.
+
+
+
+
+VertexBufferGroup & EffectTemplate & ID3D11InputLayout
+------------------------------------------------------
+We should probably store the HashMap<VertexBufferGroup->VertexDesc->ID, ID3D11InputLayout*> in the EffectTemplate for cache coherency reasons.
+We can have multiple meshes with the same effect template in a draw pass so it helps that they are accessing roughly the same area in memory when we fetch InputLayour.
+
+When we do not have an entry in the EffectTemplate HashMap, then we create an ID3D11InputLayout based on the VertexDesc->ID and EffectTemplate. 
+The VertexDesc->ID is derived from a global HashMap<VertexDescPackedKey, ID>. The ID can simply be incremental. This list is never removed from, only added.
+
+In the end we only have a relatively small number of VertexDesc so I think it's fine even if it there's some VertexDesc->ID to InputLayout mapping that is never removed.
+
+VertexBufferGroup for D3D11 should use SV_InstanceID for instancing. So, no need for creating a separate vertex buffer. Just pass all parameters via constant buffers.

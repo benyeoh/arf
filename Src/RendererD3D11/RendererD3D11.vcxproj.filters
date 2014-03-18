@@ -46,6 +46,12 @@
     <ClInclude Include="CRTexture3DD3D11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CRDepthBufferD3D11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CRVertexBufferGroupD3D11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RendererD3D11Framework.cpp" />
@@ -74,6 +80,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CRTexture3DD3D11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CRDepthBufferD3D11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CRVertexBufferGroupD3D11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
