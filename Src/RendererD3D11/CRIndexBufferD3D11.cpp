@@ -13,7 +13,7 @@
 
 _NAMESPACE_BEGIN
 
-ushort* CRIndexBufferD3D11::DoLock(uint startIndexToWrite, uint numIndicesToWrite);
+ushort* CRIndexBufferD3D11::DoLock(uint startIndexToWrite, uint numIndicesToWrite)
 {
 	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
 	ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
@@ -28,8 +28,7 @@ ushort* CRIndexBufferD3D11::DoLock(uint startIndexToWrite, uint numIndicesToWrit
 			pOffscreen->Release();
 		}
 
-		HRESULT hr = pContext->UpdateSubresource(pOffscreen, 0, NULL, m_pD3DIB, 0, 0);
-		_DEBUG_ASSERT(SUCCEEDED(hr));
+		pContext->UpdateSubresource(m_pOffScreen, 0, NULL, m_pD3DIB, 0, 0);
 	}
 
 	byte* pToReturn;
@@ -48,7 +47,7 @@ ushort* CRIndexBufferD3D11::DoLock(uint startIndexToWrite, uint numIndicesToWrit
 		pToReturn = (byte*) pPad->pMem;
 	}
 
-	return pToReturn;	
+	return (ushort*) pToReturn;	
 }
 
 boolean CRIndexBufferD3D11::DoUnlock()
@@ -67,22 +66,21 @@ boolean CRIndexBufferD3D11::DoUnlock()
 
 	if(m_pOffScreen)
 	{	
-		HRESULT hr = pContext->UpdateSubresource(m_pD3DIB, 0, &startCopy, m_pLockData, 0, 0);
-		_DEBUG_ASSERT(SUCCEEDED(hr));
-
+		pContext->UpdateSubresource(m_pD3DIB, 0, &startCopy, m_pLockData, 0, 0);
+		
 		m_pLockData = NULL;
 
-		hr = pContext->Unmap(m_pOffScreen, 0);
-		_DEBUG_ASSERT(SUCCEEDED(hr));
+		pContext->Unmap(m_pOffScreen, 0);
 	}
 	else
 	{
-		HRESULT hr = pContext->UpdateSubresource(m_pD3DIB, 0, &startCopy, m_pScratchPad->pMem, 0, 0);
-		_DEBUG_ASSERT(SUCCEEDED(hr));
-
+		pContext->UpdateSubresource(m_pD3DIB, 0, &startCopy, m_pScratchPad->pMem, 0, 0);
+		
 		pRenderer->DisposeScratchPad(m_pScratchPad);
 		m_pScratchPad = NULL;
 	}
+
+	return TRUE;
 }
 
 void CRIndexBufferD3D11::SetD3DIB(ID3D11Buffer* pD3DIB)
@@ -94,8 +92,8 @@ void CRIndexBufferD3D11::SetD3DIB(ID3D11Buffer* pD3DIB)
 void CRIndexBufferD3D11::SetD3DSharedIB(CRIndexBufferD3D11* pParent)
 {
 	m_pParent = pParent;
-	m_pD3DIB = pParent->GetD3DVB();
-	m_pOffScreen = pParent->GetOffscreenVB();
+	m_pD3DIB = pParent->GetD3DIB();
+	m_pOffScreen = pParent->GetOffscreenIB();
 	m_pD3DIB->GetDesc(&m_Desc);
 }
 

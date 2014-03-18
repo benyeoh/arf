@@ -29,9 +29,11 @@ _DECLARE_SMARTPTR(IDXGISwapChain)
 _DECLARE_SMARTPTR(ID3D11RenderTargetView)
 _DECLARE_SMARTPTR(ID3D11DepthStencilView)
 _DECLARE_SMARTPTR(ID3D11Texture2D)
+_DECLARE_SMARTPTR(ID3D11Texture3D)
 _DECLARE_SMARTPTR(ID3D11ShaderResourceView)
 _DECLARE_SMARTPTR(ID3D11UnorderedAccessView)
 _DECLARE_SMARTPTR(ID3D11Buffer)
+_DECLARE_SMARTPTR(ID3D11Resource)
 
 class CRRendererD3D11;
 
@@ -63,6 +65,8 @@ struct ScratchPad
 };
 
 _NAMESPACE_END
+
+#include "D3D11HelperFns.h"
 
 #include "CRTextureRTD3D11.h"
 #include "CRTexture2DD3D11.h"

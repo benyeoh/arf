@@ -46,7 +46,7 @@ protected:
 	//boolean DoSetData(IByteBuffer* pData);
 
 public:
-	void SetD3DIB(ID3D11Buffer* pD3DIB, IByteBuffer* pOffScreen);
+	void SetD3DIB(ID3D11Buffer* pD3DIB);
 	void SetD3DSharedIB(CRIndexBufferD3D11* pParent);
 
 	ID3D11Buffer* GetOffscreenIB() { return m_pOffScreen; }

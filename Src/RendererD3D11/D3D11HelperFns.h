@@ -13,25 +13,6 @@
 
 _NAMESPACE_BEGIN
 
-inline boolean IsBlockCompressed(eRTexFormat format)
-{
-	return IsBlockCompressed(TexFormatToD3D11(format));
-}
-
-inline boolean IsBlockCompressed(DXGI_FORMAT format)
-{
-	switch(format)
-	{
-	case DXGI_FORMAT_BC1_UNORM:
-	case DXGI_FORMAT_BC2_UNORM:
-	case DXGI_FORMAT_BC2_UNORM:
-	case DXGI_FORMAT_BC3_UNORM:
-	case DXGI_FORMAT_BC3_UNORM:	return TRUE;
-	}
-
-	return FALSE;
-}
-
 inline eRCubeFace CubeFaceFromD3D11(D3D11_TEXTURECUBE_FACE face)
 {
 	switch(face)
@@ -63,7 +44,7 @@ inline D3D11_TEXTURECUBE_FACE CubeFaceToD3D11(eRCubeFace face)
 	default: _DEBUG_ASSERT(FALSE);
 	}
 
-	return D3DCUBEMAP_FACE_FORCE_DWORD;	
+	return (D3D11_TEXTURECUBE_FACE) 0xFFFFFFFF;	
 }
 
 inline eRTexFormat TexFormatFromD3D11Typeless(DXGI_FORMAT format)
@@ -173,7 +154,7 @@ inline DXGI_FORMAT TexFormatToD3D11(eRTexFormat format)
 inline DXGI_FORMAT TexFormatToD3D11Full(eRTexFormat format)
 {
 	DXGI_FORMAT toReturn = TexFormatToD3D11Typeless(format);
-	if(toReturn == DXGI_FORMAT)
+	if(toReturn == DXGI_FORMAT_UNKNOWN)
 		toReturn = TexFormatToD3D11(format);
 
 	return toReturn;
@@ -261,7 +242,37 @@ inline D3D11_USAGE BufUsageToD3D11(eRBufferUsage usage)
 	default:	_DEBUG_ASSERT(FALSE);
 	}
 
-	return BUF_DEFAULT;
+	return (D3D11_USAGE) (0xFFFFFFFF);
+}
+
+inline boolean IsBlockCompressed(DXGI_FORMAT format)
+{
+	switch(format)
+	{
+	case DXGI_FORMAT_BC1_UNORM_SRGB:
+	case DXGI_FORMAT_BC1_UNORM:
+	case DXGI_FORMAT_BC1_TYPELESS:
+	case DXGI_FORMAT_BC2_UNORM_SRGB:
+	case DXGI_FORMAT_BC2_UNORM:
+	case DXGI_FORMAT_BC2_TYPELESS:
+	case DXGI_FORMAT_BC3_UNORM_SRGB:
+	case DXGI_FORMAT_BC3_UNORM:
+	case DXGI_FORMAT_BC3_TYPELESS:
+	case DXGI_FORMAT_BC4_UNORM:
+	case DXGI_FORMAT_BC4_SNORM:
+	case DXGI_FORMAT_BC4_TYPELESS:
+	case DXGI_FORMAT_BC5_UNORM:
+	case DXGI_FORMAT_BC5_SNORM:	
+	case DXGI_FORMAT_BC5_TYPELESS:	
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+inline boolean IsBlockCompressed(eRTexFormat format)
+{
+	return IsBlockCompressed(TexFormatToD3D11(format));
 }
 
 _NAMESPACE_END

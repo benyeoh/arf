@@ -86,6 +86,7 @@
     <ClInclude Include="CRRendererD3D11.h" />
     <ClInclude Include="CRResourceMgrD3D11.h" />
     <ClInclude Include="CRTexture2DD3D11.h" />
+    <ClInclude Include="CRTexture3DD3D11.h" />
     <ClInclude Include="CRTextureCubeD3D11.h" />
     <ClInclude Include="CRTextureRTD3D11.h" />
     <ClInclude Include="CRVertexBufferD3D11.h" />
@@ -98,6 +99,7 @@
     <ClCompile Include="CRRendererD3D11.cpp" />
     <ClCompile Include="CRResourceMgrD3D11.cpp" />
     <ClCompile Include="CRTexture2DD3D11.cpp" />
+    <ClCompile Include="CRTexture3DD3D11.cpp" />
     <ClCompile Include="CRTextureCubeD3D11.cpp" />
     <ClCompile Include="CRTextureRTD3D11.cpp" />
     <ClCompile Include="CRVertexBufferD3D11.cpp" />

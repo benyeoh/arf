@@ -22,11 +22,11 @@ byte* CRTexture2DD3D11::MapDirectResource(uint level, uint& pitch)
 	CRRendererD3D11* pRenderer = (CRRendererD3D11*) m_pRenderer;
 	ID3D11DeviceContext* pContext = pRenderer->GetCurrentContext();
 
-	D3D11_SUBRESOURCE_DATA subRes;
+	D3D11_MAPPED_SUBRESOURCE subRes;
 	HRESULT hr = pContext->Map(m_pD3DTexture, level, D3D11_MAP_WRITE_DISCARD, 0, &subRes);
 	_DEBUG_ASSERT(hr == S_OK);
-	pBuf = subRes.pSysMem;
-	pitch = subRes.SysMemPitch;
+	pBuf = (byte*) subRes.pData;
+	pitch = subRes.RowPitch;
 
 	return pBuf;
 }
@@ -155,97 +155,94 @@ boolean CRTexture2DD3D11::DoUnlock(uint level)
 	if(m_pOffscreen)
 	{
 		// Now copy if there was any writing done
-		if((m_WriteOffset[2] > 0) && (m_WriteOffset[3] > 0))
+		if((m_WriteOffset[2] > 0) && (m_WriteOffset[3] > 0) && (m_Desc.Usage & D3D11_USAGE_DYNAMIC))
 		{
-			if(m_Desc.Usage & D3D11_USAGE_DYNAMIC)
+			// This is the case where we have an offscreen buffer but also dynamic flag
+			// IE, reading with the dynamic flag
+
+			// TODO: Beware of dynamic flag
+			// Basically with dynamic flag the entire buffer is discarded
+			// so locking a portion is not supported
+
+			// If dynamic then Map and memcpy entire buffer with D3D11_MAP_WRITE_DISCARD
+
+			// Lock render resource
+			uint pitch;
+			byte* pBuf = MapDirectResource(level, pitch);
+
+			_DEBUG_ASSERT(m_OffscreenData.pData);
+			_DEBUG_ASSERT(m_OffscreenData.RowPitch == pitch);
+
+			// Copy the app results
+			uint height = (m_Desc.Height >> level);
+			height = height > 0 ? height : 1;
+			uint numRows = height;
+			if(IsBlockCompressed(m_Desc.Format))
 			{
-				// TODO: Beware of dynamic flag
-				// Basically with dynamic flag the entire buffer is discarded
-				// so locking a portion is not supported
+				numRows = height >> 2;
+				numRows = numRows > 0 ? numRows : 1;
+			}
 
-				// If dynamic then Map and memcpy entire buffer with D3D11_MAP_WRITE_DISCARD
-
-				// Lock render resource
-				uint pitch;
-				byte* pBuf = MapDirectResource(level, pitch);
-
-				_DEBUG_ASSERT(m_OffscreenData.pSysMem);
-				_DEBUG_ASSERT(m_OffscreenData.SysMemPitch == pitch);
-
-				// Copy the app results
-				uint height = (m_Desc.Height >> level);
-				height = height > 0 ? height : 1;
-				uint numRows = height;
-				if(IsBlockCompressed(m_Desc.Format))
-				{
-					numRows = height >> 2;
-					numRows = numRows > 0 ? numRows : 1;
-				}
-
-				memcpy(pBuf, m_OffscreenData.pSysMem, numRows * pitch);
+			memcpy(pBuf, m_OffscreenData.pData, numRows * pitch);
 				
-				// Unlock
-				UnmapDirectResource(level);
+			// Unlock
+			UnmapDirectResource(level);
 
-				// WARNING: Do we need an immediate context?
-				// Apparently, only MAP_DISCARD is allowed for deferred contexts
-				pContext->Unmap(m_pOffscreen, level);
+			// WARNING: Do we need an immediate context?
+			// Apparently, only MAP_DISCARD is allowed for deferred contexts
+			pContext->Unmap(m_pOffscreen, level);
 
-				m_OffscreenData.pSysMem = NULL;
-				m_OffscreenData.SysMemPitch = 0;
-
-			}
-			else
-			{
-				// WARNING: Do we need an immediate context?
-				// Apparently, only MAP_DISCARD is allowed for deferred contexts
-				pContext->Unmap(m_pOffscreen, level);
-
-				m_OffscreenData.pSysMem = NULL;
-				m_OffscreenData.SysMemPitch = 0;
-
-				// We can copy the relevant portion
-				D3D11_BOX updateBox;
-				updateBox.left = m_WriteOffset[0];
-				updateBox.right = m_WriteOffset[0] + m_WriteOffset[2];
-				updateBox.top = m_WriteOffset[1];
-				updateBox.bottom = m_WriteOffset[1] + m_WriteOffset[3];
-				updateBox.front = 0;
-				updateBox.back = 1;
-
-				//// Offset the data
-				//uint width = (m_Desc.Width >> level);
-				//uint height = (m_Desc.Height >> level);
-				//height = height > 0 ? height : 1;
-				//width = width > 0 ? width : 1;
-				//uint pitch = width * GetSizePerElem();
-				//uint numRows = height;
-				//if(IsBlockCompressed(m_Desc.Format))
-				//{
-				//	pitch = ((width + 3) >> 2) * GetSizePerElem();
-				//	numRows = height >> 2;
-				//	numRows = numRows > 0 ? numRows : 1;
-				//	alignBox.left >>= 2;
-				//	alignBox.right >>= 2;
-				//	alignBox.top >>= 2;
-				//	alignBox.bottom >>= 2;
-				//}
-
-				//_DEBUG_ASSERT(m_OffscreenData.SysMemPitch == pitch);
-
-				//byte* pSrcData = ((byte*)m_OffscreenData.pSysMem) + alignBox.left * GetSizePerElem() + alignBox.top * m_OffscreenData.SysMemPitch;
-				HRESULT hr = pContext->CopySubresourceRegion(m_pOffscreen, level, m_WriteOffset[0], m_WriteOffset[1], 0, m_pOffscreen, level, &updateBox);
-				_DEBUG_ASSERT(SUCCEEDED(hr));
-				//pContext->UpdateSubresource(m_pD3DTexture, level, &updateBox, pSrcData, m_OffscreenData.SysMemPitch, 0);
-			}
+			m_OffscreenData.pData = NULL;
+			m_OffscreenData.RowPitch = 0;
 		}
+		else
+		{
+			// WARNING: Do we need an immediate context?
+			// Apparently, only MAP_DISCARD is allowed for deferred contexts
+			pContext->Unmap(m_pOffscreen, level);
 
+			m_OffscreenData.pData = NULL;
+			m_OffscreenData.RowPitch = 0;
+
+			// We can copy the relevant portion
+			D3D11_BOX updateBox;
+			updateBox.left = m_WriteOffset[0];
+			updateBox.right = m_WriteOffset[0] + m_WriteOffset[2];
+			updateBox.top = m_WriteOffset[1];
+			updateBox.bottom = m_WriteOffset[1] + m_WriteOffset[3];
+			updateBox.front = 0;
+			updateBox.back = 1;
+
+			//// Offset the data
+			//uint width = (m_Desc.Width >> level);
+			//uint height = (m_Desc.Height >> level);
+			//height = height > 0 ? height : 1;
+			//width = width > 0 ? width : 1;
+			//uint pitch = width * GetSizePerElem();
+			//uint numRows = height;
+			//if(IsBlockCompressed(m_Desc.Format))
+			//{
+			//	pitch = ((width + 3) >> 2) * GetSizePerElem();
+			//	numRows = height >> 2;
+			//	numRows = numRows > 0 ? numRows : 1;
+			//	alignBox.left >>= 2;
+			//	alignBox.right >>= 2;
+			//	alignBox.top >>= 2;
+			//	alignBox.bottom >>= 2;
+			//}
+
+			//_DEBUG_ASSERT(m_OffscreenData.RowPitch == pitch);
+
+			//byte* pSrcData = ((byte*)m_OffscreenData.pData) + alignBox.left * GetSizePerElem() + alignBox.top * m_OffscreenData.RowPitch;
+			if((m_WriteOffset[2] > 0) && (m_WriteOffset[3] > 0))
+				pContext->CopySubresourceRegion(m_pD3DTexture, level, m_WriteOffset[0], m_WriteOffset[1], 0, m_pOffscreen, level, &updateBox);
+		}
 	}
 	else
 	{
 		// We have no offscreen buffer
 		// Which means the buffer is either not dynamic or we are writing the whole buffer
-		if(m_Desc & D3D11_USAGE_DYNAMIC)
+		if(m_Desc.Usage & D3D11_USAGE_DYNAMIC)
 		{
 			UnmapDirectResource(level);
 		}
@@ -268,8 +265,8 @@ byte* CRTexture2DD3D11::DoLock(uint level, uint& pitch, const gmtl::Vec4i* pToWr
 	if(pToWrite)
 	{
 		// We need an offscreen buffer if app needs to read data
-		// or app is only updating a portion
-		if( ((*pToWrite)[2] <= 0) || ((*pToWrite)[3] <= 0) || (m_Desc.Usage & D3D11_USAGE_DEFAULT) )
+		// or app is only updating a portion and texture is dynamic
+		if( ((*pToWrite)[2] <= 0) || ((*pToWrite)[3] <= 0) || (m_Desc.Usage & D3D11_USAGE_DYNAMIC) )
 		{
 			if(!m_pOffscreen)
 			{
@@ -304,13 +301,13 @@ byte* CRTexture2DD3D11::DoLock(uint level, uint& pitch, const gmtl::Vec4i* pToWr
 		// Apparently, only MAP_DISCARD is allowed for deferred contexts	
 		HRESULT hr = pContext->Map(m_pOffscreen, level, D3D11_MAP_READ_WRITE, 0, &m_OffscreenData);
 		_DEBUG_ASSERT(hr == S_OK);
-		pBuf = m_OffscreenData.pSysMem;
-		pitch = m_OffscreenData.SysMemPitch;
+		pBuf = (byte*) m_OffscreenData.pData;
+		pitch = m_OffscreenData.RowPitch;
 	}
 	else
 	{
 		// Skip offscreen buffer
-		if(m_Desc.Usage & D3D11_USAGE_DEFAULT)
+		if(m_Desc.Usage & D3D11_USAGE_DYNAMIC)
 		{
 			// Make sure that we are writing the whole buffer
 			_DEBUG_ASSERT(!pToWrite);
@@ -409,10 +406,10 @@ void CRTexture2DD3D11::SetD3DTexture(ID3D11Texture2D* pTex, ID3D11Texture2D* pOf
 		{
 			D3D11_RENDER_TARGET_VIEW_DESC rtDesc;
 			rtDesc.Format = srvFormat;
-			rtDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+			rtDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			rtDesc.Texture2D.MipSlice = i;
 
-			CRTextureRTD3D11* pRT = pRenderer->GetResourceMgrD3D()->CreateRenderTargetFromResource(m_pD3DTexture, &rtDesc, GetWidth(i), GetHeight(i));
+			CRTextureRTD3D11* pRT = pRenderer->GetResourceMgrD3D()->CreateRenderTargetFromResource(m_pD3DTexture, &rtDesc);
 			m_pRT.push_back(pRT);
 		}
 	}
