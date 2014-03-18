@@ -25,7 +25,7 @@ private:
 
 	ScratchPad* m_pLockPad;
 	gmtl::Vec4i m_WriteOffset;
-	D3D11_SUBRESOURCE_DATA	m_OffscreenData;
+	D3D11_MAPPED_SUBRESOURCE m_OffscreenData;
 	//std::vector<CRTextureRTD3D11Ptr> m_pRT;
 
 public: 
@@ -33,14 +33,15 @@ public:
 		: CRTexture2D(pRenderer)
 		, m_pLockPad(NULL)
 	{
-		m_OffscreenData.pSysMem = NULL;
-		m_OffscreenData.SysMemPitch = 0;
+		m_OffscreenData.pData = NULL;
+		m_OffscreenData.RowPitch = 0;
+		m_OffscreenData.DepthPitch = 0;
 	}
 
 	virtual ~CRTexture2DD3D11()
 	{
 		_DEBUG_ASSERT(m_pLockPad == NULL);
-		_DEBUG_ASSERT(m_OffscreenData.pSysMem == NULL);
+		_DEBUG_ASSERT(m_OffscreenData.pData == NULL);
 	}
 
 private:

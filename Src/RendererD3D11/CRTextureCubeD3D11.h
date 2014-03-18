@@ -25,19 +25,32 @@ private:
 
 	ScratchPad* m_pLockPad;
 	gmtl::Vec4i m_WriteOffset;
-	D3D11_SUBRESOURCE_DATA	m_OffscreenData;
+	D3D11_MAPPED_SUBRESOURCE m_OffscreenData;
 
 public: 
 	CRTextureCubeD3D11(CRRenderer* pRenderer)
 		: CRTextureCube(pRenderer)
 	{
+		m_OffscreenData.DepthPitch = 0;
+		m_OffscreenData.pData = NULL;
+		m_OffscreenData.RowPitch = 0;
 	}
 
 	virtual ~CRTextureCubeD3D11()
 	{
+		_DEBUG_ASSERT(m_OffscreenData.pData == NULL);
 	}
 
+private:
+	byte* MapDirectResource(uint level, eRCubeFace face, uint& pitch);
+	void UnmapDirectResource(uint level, eRCubeFace face);
+	byte* MapProxyResource(uint level, uint& outPitch);
+	void UnmapProxyResource(uint level, eRCubeFace face);
+
 protected:
+	//byte* DoLockImmediate(uint level, eRCubeFace face, uint& pitch);
+	//boolean DoUnlockImmediate(uint level, eRCubeFace face);
+
 	boolean DoUnlock(uint level, eRCubeFace face);
 	byte* DoLock(uint level, eRCubeFace face, uint& pitch, const gmtl::Vec4i* pToWrite);
 

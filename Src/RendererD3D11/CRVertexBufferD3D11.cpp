@@ -28,8 +28,7 @@ byte* CRVertexBufferD3D11::DoLock(uint startVertexToWrite, uint numVerticesToWri
 			pOffscreen->Release();
 		}
 
-		HRESULT hr = pContext->UpdateSubresource(m_pOffScreen, 0, NULL, m_pD3DVB, 0, 0);
-		_DEBUG_ASSERT(SUCCEEDED(hr));
+		pContext->UpdateSubresource(m_pOffScreen, 0, NULL, m_pD3DVB, 0, 0);
 	}
 
 	byte* pToReturn;
@@ -79,6 +78,8 @@ boolean CRVertexBufferD3D11::DoUnlock()
 		pRenderer->DisposeScratchPad(m_pScratchPad);
 		m_pScratchPad = NULL;
 	}
+
+	return TRUE;
 }
 
 byte* CRVertexBufferD3D11::DoLockImmediate(uint startVertexToWrite, uint numVerticesToWrite)
@@ -126,8 +127,7 @@ boolean CRVertexBufferD3D11::DoUnlockImmediate()
 
 	if(m_Desc.Usage & D3D11_USAGE_DYNAMIC)
 	{
-		HRESULT hr = pContext->Unmap(m_pD3DVB, 0);
-		_DEBUG_ASSERT(SUCCEEDED(hr));
+		pContext->Unmap(m_pD3DVB, 0);
 	}
 	else
 	{
@@ -140,8 +140,7 @@ boolean CRVertexBufferD3D11::DoUnlockImmediate()
 		startCopy.front = 0;
 		startCopy.back = 1;
 
-		HRESULT hr = pContext->UpdateSubresource(m_pD3DVB, 0, &startCopy, m_pScratchPad->pMem, 0, 0);
-		_DEBUG_ASSERT(SUCCEEDED(hr));
+		pContext->UpdateSubresource(m_pD3DVB, 0, &startCopy, m_pScratchPad->pMem, 0, 0);
 		
 		pRenderer->DisposeScratchPad(m_pScratchPad);
 		m_pScratchPad = NULL;

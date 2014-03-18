@@ -48,7 +48,7 @@ protected:
 	//boolean DoSetData(IByteBuffer* pData);
 
 public:
-	void SetD3DVB(ID3D11Buffer* pD3DVB, IByteBuffer* pOffScreen);
+	void SetD3DVB(ID3D11Buffer* pD3DVB);
 	void SetD3DSharedVB(CRVertexBufferD3D11* pParent);
 
 	ID3D11Buffer* GetOffscreenVB() { return m_pOffScreen; }

@@ -37,6 +37,9 @@ protected:
 	//	DWORD usage,
 	//	D3DPOOL pool);
 
+	ID3D11Texture2D* CreateD3DTexture3D(D3D11_TEXTURE3D_DESC& desc);
+
+	ID3D11Texture2D* CreateD3DTexture(D3D11_TEXTURE2D_DESC& desc);
 	ID3D11Texture2D* CreateD3DTexture(uint width, uint height, uint mipMapLevel, uint arraySize,
 								      DXGI_FORMAT format, D3D11_USAGE usage, D3D11_BIND_FLAG bindFlag, D3D11_RESOURCE_MISC_FLAG miscFlags);
 
@@ -106,10 +109,11 @@ protected:
 	void DoOnLostDevice() {}
 
 public:
+	ID3D11Texture3D* CreateOffscreenTexture3D(D3D11_TEXTURE3D_DESC& desc);
 	ID3D11Texture2D* CreateOffscreenTexture2D(D3D11_TEXTURE2D_DESC& desc);
 	ID3D11Buffer* CreateOffscreenIB(const D3D11_BUFFER_DESC& desc);
 	ID3D11Buffer* CreateOffscreenVB(const D3D11_BUFFER_DESC& desc);
-	CRTextureRTD3D11* CreateRenderTargetFromResource(ID3D11Resource* pRes, D3D11_RENDER_TARGET_VIEW_DESC* pDesc, uint width, uint height);
+	CRTextureRTD3D11* CreateRenderTargetFromResource(ID3D11Resource* pRes, D3D11_RENDER_TARGET_VIEW_DESC* pDesc);
 };
 
 _NAMESPACE_END

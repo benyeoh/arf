@@ -356,9 +356,9 @@ WeldSimilarVertices(IByteBuffer* pVBData, uint vertexSize, IRIndexBuffer* pIB)
 	
 	// Remap indices
 	// Lock for read
-	ushort* pReadIndices = pIB->Lock(0, 0);
-	ushort* pIndicesTemp = _NEW ushort[pIB->GetNumIndices()];
-	memcpy(pIndicesTemp, pReadIndices, sizeof(ushort) * pIB->GetNumIndices());
+	ushort* pReadTemp = pIB->Lock(0, 0);
+	ushort* pReadIndices = _NEW ushort[pIB->GetNumIndices()];
+	memcpy(pReadIndices, pReadTemp, sizeof(ushort) * pIB->GetNumIndices());
 	pIB->Unlock(FALSE);
 
 	// Lock for write now

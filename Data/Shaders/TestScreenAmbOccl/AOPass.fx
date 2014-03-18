@@ -353,3 +353,358 @@ technique t1
 	}
 
 };
+
+/*
+
+#include "Common.cg"
+
+cbuffer SAOParams
+{
+	float4 g_ViewFarPlaneUVOffset;
+	float4 g_ProjParams;	// x = proj[0][0], y = proj[1][1], z = screenWidth, w = screenHeight
+
+	float g_Intensity;		
+	float g_Contrast;
+	float g_Bias;
+	float g_SampleOffset;
+
+	float g_OcclusionMax;
+	float g_FalloffRadius;
+	float g_SpiralTurns;
+	float g_ScreenMipRadiusFactor;		// Higher value forces higher LOD sampling
+
+	float g_FarPlane;
+    float g_NearFalloffThreshold;
+    float g_MaxScreenRadius;
+	int	g_NumSamples;
+}
+
+cbuffer LinearizeParams
+{
+	float g_ProjMat22;						// Q = far / (far - near)
+	float g_ProjMat32RcpFar;				// Q * near / far
+}
+
+cbuffer DownsampleParams
+{
+	float2 g_RenderTargetSize;
+}
+
+Texture2D<float4>	g_NormalTex;
+Texture2D<float>	g_DepthTex;
+Texture2D<float4>	g_AOTex;
+
+SamplerState g_SamplePoint
+{
+	Filter                      = MIN_MAG_MIP_POINT;
+	AddressU                    = CLAMP;
+	AddressV                    = CLAMP;
+};
+
+SamplerState g_SampleLinear
+{
+	Filter                      = MIN_MAG_MIP_LINEAR;
+	AddressU                    = CLAMP;
+	AddressV                    = CLAMP;
+};
+
+SamplerState g_SamplePointMipLinear;
+
+struct VS_INPUT
+{
+	float3 position : POSITION; 
+	float2 texCoord : TEXCOORD0; 
+};
+
+struct VS_OUTPUT
+{
+	float4 position : SV_POSITION; 
+	float2 texCoord : TEXCOORD0;
+};
+
+VS_OUTPUT MainVS(VS_INPUT In)
+{
+	VS_OUTPUT Out;
+	
+	Out.position.x = In.position.x;
+	Out.position.y = In.position.y;
+	Out.position.z = In.position.z;
+	Out.position.w = 1.0f;
+	
+	Out.texCoord = In.texCoord;
+	
+	return Out;    
+}
+
+VS_OUTPUT MainFarPlaneVS(VS_INPUT In)
+{
+	VS_OUTPUT Out;
+	
+	Out.position.x = In.position.x;
+	Out.position.y = In.position.y;
+	Out.position.z = 1.0f;
+	Out.position.w = 1.0f;
+	
+	Out.texCoord = In.texCoord;
+	
+	return Out;    
+}
+
+// Linearize depth
+float GetLinearizeDepth(float projDepth)
+{
+	return -g_ProjMat32RcpFar / ( projDepth - g_ProjMat22 );
+	//return -g_ProjMat32RcpFar / (g_ProjMat22 - projDepth);
+}
+
+float4 LinearizeDepthPS(VS_OUTPUT In) : SV_TARGET0
+{
+	float linearDepth = GetLinearizeDepth( g_DepthTex.SampleLevel( g_SamplePoint, In.texCoord, 0 ) );
+	return linearDepth; 
+}
+
+// Downsampling
+// Rotated grid
+float4 SampleRotatedGrid(float2 uv)
+{
+	int2 pixelPos = uv * g_RenderTargetSize;
+	pixelPos = pixelPos * 2 + int2((pixelPos.y & 1) ^ 1, (pixelPos.x & 1) ^ 1);
+	return g_DepthTex.Load( int3(pixelPos, 0) );
+}
+
+// Rotated grid
+float4 SampleMax(float2 uv)
+{
+	float d1 = g_DepthTex.SampleLevel( g_SamplePoint, uv + float2(-0.25f, 0.25f) / g_RenderTargetSize, 0 ).r;
+	float d2 = g_DepthTex.SampleLevel( g_SamplePoint, uv + float2(0.25f, 0.25f) / g_RenderTargetSize, 0 ).r;
+	float d3 = g_DepthTex.SampleLevel( g_SamplePoint, uv + float2(-0.25f, -0.25f) / g_RenderTargetSize, 0 ).r;
+	float d4 = g_DepthTex.SampleLevel( g_SamplePoint, uv + float2(0.25f, -0.25f) / g_RenderTargetSize, 0 ).r;
+
+	return max( max( max(d1, d2), d3 ), d4 );
+}
+
+// Average
+float4 SampleAverage(float2 uv)
+{
+	return g_DepthTex.SampleLevel( g_SampleLinear, uv, 0 );
+}
+
+float4 DownsampleDepthPS(VS_OUTPUT In) : SV_TARGET0
+{
+	return SampleRotatedGrid(In.texCoord);
+}
+
+// AO
+float3 ComputeViewPos(float2 uv, float linearDepth)
+{
+	return float3(g_ViewFarPlaneUVOffset.xy + uv * g_ViewFarPlaneUVOffset.zw, g_FarPlane) * linearDepth;
+}
+
+float3 ComputeNormalFromDDXY(float3 center, float2 texUV, float centerDepth)
+{
+	float4 linearDepth;
+	linearDepth.x = g_DepthTex.SampleLevel( g_SamplePoint, texUV - float2(1.0f / g_ProjParams.z, 0.0f), 0 ).r;
+	linearDepth.y = g_DepthTex.SampleLevel( g_SamplePoint, texUV + float2(1.0f / g_ProjParams.z, 0.0f), 0 ).r;
+	linearDepth.z = g_DepthTex.SampleLevel( g_SamplePoint, texUV - float2(0.0f, 1.0f / g_ProjParams.w), 0 ).r;
+	linearDepth.w = g_DepthTex.SampleLevel( g_SamplePoint, texUV + float2(0.0f, 1.0f / g_ProjParams.w), 0 ).r;
+
+	float4 linearDepthDiffAbs = abs(linearDepth.xyzw - centerDepth);
+	float4 diffXY;
+	diffXY.xy = linearDepthDiffAbs.x < linearDepthDiffAbs.y ? float2(linearDepth.x, -1.0f) : float2(linearDepth.y, 1.0f);
+	diffXY.zw = linearDepthDiffAbs.z < linearDepthDiffAbs.w ? float2(linearDepth.z, -1.0f) : float2(linearDepth.w, 1.0f);
+
+	float3 posLR = ComputeViewPos(texUV + float2(1.0f / g_ProjParams.z, 0.0f) * diffXY.y, diffXY.x);
+	float3 posTB = ComputeViewPos(texUV + float2(0.0f, 1.0f / g_ProjParams.w) * diffXY.w, diffXY.z);
+
+	float3 diffLR = (posLR - center) * diffXY.y;
+	float3 diffTB = (posTB - center) * diffXY.w;
+	
+	float3 normal = normalize( cross(diffLR, diffTB) );
+	return normal;
+
+
+	//float2 texUVddx = texUV;
+	//float2 texUVddy = texUV;
+
+	//texUVddx.x += 1.0f / g_ProjParams.z;
+	//texUVddy.y += 1.0f / g_ProjParams.w;
+
+	//float linearDepthddx = g_DepthTex.SampleLevel( g_SamplePoint, texUVddx, 0 ).r;
+	//float linearDepthddy = g_DepthTex.SampleLevel( g_SamplePoint, texUVddy, 0 ).r;
+
+	//float3 posddx = ComputeViewPos(texUVddx, linearDepthddx);
+	//float3 posddy = ComputeViewPos(texUVddy, linearDepthddy);
+
+	//float3 diffddx = posddx - center;
+	//float3 diffddy = posddy - center;
+
+	//float3 normal = normalize( cross(diffddx, diffddy) );
+	//return normal;
+
+}
+
+
+float3 ComputeNormalFromBuffer(float2 uv)
+{
+	float4 texColor = g_NormalTex.SampleLevel( g_SampleLinear, uv, 0 );
+
+	float3 normal;
+	normal.xy = texColor.xy;
+	normal.z = -sqrt( saturate(1.0f - dot(normal.xy, normal.xy)) );
+	
+	return normal;
+}
+
+float ComputeNoise(float2 uv)
+{
+	// Hash function used in the HPG12 AlchemyAO paper
+	// For DX11
+	int2 pixelPos = uv * g_ProjParams.zw;		
+	float randomPhi = (3 * pixelPos.x ^ pixelPos.y + pixelPos.x * pixelPos.y) * 10.0f;
+
+	//const static float2 NOISE_SCALE = 13.0f;
+	//float randomPhi = (tex2D( g_SampNoise, texUV * NOISE_SCALE).r) * 2.0f * 3.1425f;	
+	return randomPhi;//3.1425f;
+}
+
+float ComputeScreenRadius(float viewZ)
+{
+	return min(g_FalloffRadius.x * g_ProjParams.x / viewZ, g_MaxScreenRadius);
+}
+
+float ScreenToWorldRadius(float screenRadius, float viewZ)
+{
+    return screenRadius * viewZ / g_ProjParams.x;
+}
+
+float3 ComputeDistributionUV(float sampleNumber, float totalNumSamplesRcp, float randomPhi, float screenRadius, float2 uv)
+{
+	float alpha = totalNumSamplesRcp * (sampleNumber + g_SampleOffset);
+	float h = screenRadius * alpha;
+
+	float theta = alpha * g_SpiralTurns + randomPhi;
+	float sinTheta;// = sin(theta);
+	float cosTheta;// = cos(theta);
+	sincos(theta, sinTheta, cosTheta);
+	float2 offset = float2(cosTheta, sinTheta);
+
+	// Only compute for x direction (assume pixels are same sized)
+	int mipLevel = ( log2(h * g_ScreenMipRadiusFactor) );
+
+	float2 sampleUV = (h * offset + uv);
+	return float3(sampleUV, mipLevel);
+}
+
+float ComputeSphereFalloff(float3 center, float linearDepth, float3 samplePos, float3 normal, float bias)
+{
+	const float EPSILON = 0.0001f;
+	
+	float3 v = samplePos - center;
+	float lengthSq = dot(v, v);
+	float3 dirV = v * rsqrt(lengthSq);
+	float cosAlpha = saturate( dot(normal, dirV ) );
+	
+	return clamp(cosAlpha * 1.0f / ((lengthSq) + EPSILON + bias * bias), 0.0f, g_OcclusionMax);  
+}
+
+float ComputeSphereGrowFalloff(float falloffRadius, float3 center, float linearDepth, float3 samplePos, float3 normal, float bias)
+{
+	const float EPSILON = 0.001f;
+  
+	float3 v = (samplePos - center) / falloffRadius;
+	float top = max(0.0f, dot(v, normal) - bias);
+    float vDotv = dot(v, v);
+	float distFalloff = vDotv + EPSILON;
+
+    float closeFactor = 1.0 - saturate( vDotv * (falloffRadius * falloffRadius) / (g_NearFalloffThreshold * g_NearFalloffThreshold) );
+    float closeOcclMax = max(g_OcclusionMax * closeFactor, 1.0);
+    float resNear = clamp(top / distFalloff, 0.0f, closeOcclMax);
+	return resNear;//clamp(top / distFalloff, 0.0f, g_OcclusionMax);
+}
+
+float ComputeUpdatedAlchemyFalloff(float falloffRadius, float3 center, float linearDepth, float3 samplePos, float3 normal)
+{
+	const float EPSILON = 0.0001f;
+
+	float3 v = samplePos - center;
+	float vDistSq = dot(v, v);
+	float worldFalloff = pow( max( 0.0f, (falloffRadius * falloffRadius) - vDistSq ), 3.0f);
+	float geometricFalloff = max( 0.0f, (dot(v, normal) ) / (vDistSq + EPSILON) );
+	return worldFalloff * geometricFalloff;
+}
+
+float ComputeUpdatedAlchemyFinal(float falloffRadius, float totalFalloff, float totalNumSamplesRcp)
+{ 
+	float worldDistFactor = pow(falloffRadius, 6.0f);
+	float accessibility = max(0.0f, 1.0f - ((5.0f * g_Intensity * totalNumSamplesRcp) / (worldDistFactor)) * totalFalloff);
+	return pow(accessibility, g_Contrast);
+}
+
+float ComputeFinal(float totalFalloff, float totalNumSamplesRcp)
+{
+	float accessibility = max(0.0f, 1.0f - (g_Intensity * totalNumSamplesRcp * totalFalloff));
+	return pow(accessibility, g_Contrast);
+}
+
+float4 ComputeAOAndCompressLinearZ(float2 uv, int numSamples)
+{
+	float randomPhi = ComputeNoise(uv);
+	
+	float linearDepth = g_DepthTex.SampleLevel( g_SamplePoint, uv, 0 ).r;
+	float3 viewCenteredPos = ComputeViewPos(uv, linearDepth);
+
+	// Use normal from screen derivatives
+	// But switch to normal buffer once translucent objects are not rendered in depth
+	float3 normal = ComputeNormalFromDDXY(viewCenteredPos, uv, linearDepth);
+	//float3 normal = ComputeNormalFromBuffer(uv);
+
+	float viewZ = viewCenteredPos.z;
+	float screenRadius = ComputeScreenRadius(viewZ);
+    float falloffRadius = ScreenToWorldRadius(screenRadius, viewZ);
+
+	float totalOcclusion = 0.0f;
+	float bias = g_Bias * linearDepth;
+	float numSamplesRcp = 1.0f / numSamples;
+
+	//[unroll]
+	for(int i=0; i < numSamples; i++)
+	{
+		// Compute distribution
+		float3 sampleUV = ComputeDistributionUV(i, numSamplesRcp, randomPhi, screenRadius, uv);
+
+		// Reset mip level for now
+		//sampleUV.w = 0.0f;
+		float sampleLinearDepth = g_DepthTex.SampleLevel( g_SamplePointMipLinear, sampleUV.xy, sampleUV.z).r;
+		float3 sampleViewCenteredPos = ComputeViewPos(sampleUV.xy, sampleLinearDepth);
+
+		// Compute AO
+		float occlusion = ComputeSphereGrowFalloff(falloffRadius, viewCenteredPos, linearDepth, sampleViewCenteredPos, normal, bias);
+		//ComputeUpdatedAlchemyFalloff(viewCenteredPos, linearDepth, sampleViewCenteredPos, normal);
+		totalOcclusion += occlusion;
+	}
+
+	float accessibility = ComputeFinal(totalOcclusion, numSamplesRcp);
+	//ComputeUpdatedAlchemyFinal(totalOcclusion, numSamplesRcp);
+
+	// If we are using normal buffer, then we can output/compress linear depth instead
+	// for faster blur pass
+	// Alternatively, store color
+	float4 colorOut = accessibility;
+	colorOut.yzw = normal * 0.5f + 0.5f;
+	//colorOut.yzw = CompressNormalizedFloat8BitRGB(linearDepth);
+	//colorOut = float4(normal * 0.5f + 0.5f, 1.0f);
+	return colorOut;
+}
+
+float4 ComputeAOPS(VS_OUTPUT In) : SV_TARGET0
+{
+	return ComputeAOAndCompressLinearZ(In.texCoord, g_NumSamples);
+}
+
+// Compose results
+float4 ComposeResultPS(VS_OUTPUT In) : SV_TARGET0
+{
+	return float4(g_AOTex.SampleLevel( g_SampleLinear, In.texCoord, 0 ).wwww );
+}
+
+*/

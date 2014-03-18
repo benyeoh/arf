@@ -43,12 +43,12 @@
     <ClInclude Include="CRTextureCubeD3D11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CRTexture3DD3D11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RendererD3D11Framework.cpp" />
-    <ClCompile Include="CRRendererD3D11.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -68,6 +68,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CRTextureCubeD3D11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CRRendererD3D11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CRTexture3DD3D11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
