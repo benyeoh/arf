@@ -23,6 +23,12 @@ typedef byte	boolean;
 #define TRUE	1
 #define NULL	0
 
+#ifdef _MSC_VER
+    #define _FORCE_INLINE __forceinline
+#else
+    #define _FORCE_INLINE inline
+#endif
+
 // Common utility macros
 #define _W(str)				L ## str
 #define _DELETE(p)			{ if((p)){delete (p); (p)=0;} }

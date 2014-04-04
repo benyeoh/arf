@@ -40,6 +40,8 @@ CSDBOctantOrderLooseOctTree::CSDBOctantOrderLooseOctTree(uint numLevels, float s
 	m_FrustumQueryLimits.min = gmtl::VecA3f(-1.0f, -1.0f, 0.0f);
 	m_FrustumQueryLimits.max = gmtl::VecA3f(1.0f, 1.0f, 1.0f);
 
+    memset(m_NumOctantsYPlane, 0, sizeof(m_NumOctantsYPlane));
+
     m_Octants.Initialize(32, 0.67f);
 }
 
@@ -500,6 +502,9 @@ SDBDataHandle CSDBOctantOrderLooseOctTree::Insert(const AABox* pAABox, const OOB
 			m_Octants.FinishedAdding();
 			pOctant = m_Octants.Get(octantKey);
 
+            _DEBUG_ASSERT((octantKey.octantPos >> (NUM_BITS_XZ + NUM_BITS_XZ)) < (1 << NUM_BITS_Y));
+            m_NumOctantsYPlane[octantKey.octantPos >> (NUM_BITS_XZ + NUM_BITS_XZ)]++;
+
 			_DEBUG_ASSERT(pOctant);
 		}
 
@@ -638,6 +643,10 @@ void CSDBOctantOrderLooseOctTree::Remove(SDBDataHandle handle)
 						_DEBUG_ASSERT(pOctant->pDataTable->GetNumOfElements() == 0);
                         m_FreeOctantData.push_back(*pOctant);
                         m_Octants.Remove(octantKey);
+
+                        _DEBUG_ASSERT((octantKey.octantPos >> (NUM_BITS_XZ + NUM_BITS_XZ)) < (1 << NUM_BITS_Y));
+                        _DEBUG_ASSERT(m_NumOctantsYPlane[octantKey.octantPos >> (NUM_BITS_XZ + NUM_BITS_XZ)] > 0);
+                        m_NumOctantsYPlane[octantKey.octantPos >> (NUM_BITS_XZ + NUM_BITS_XZ)]--;
 					}
                     #ifdef _DEBUG
                     else
@@ -786,9 +795,11 @@ inline uint CSDBOctantOrderLooseOctTree::SearchOctants(QueryContext& context, co
 
 	gmtl::VecA3i minOctantPos;
 	GetOctantPosFromWorld(minBVOffset, minOctantPos);
+    VecVecMax(&minOctantPos, &minOctantPos, &gmtl::VecA3i(-EFFECTIVE_RANGE_XZ, -EFFECTIVE_RANGE_Y, -EFFECTIVE_RANGE_XZ));
 
 	gmtl::VecA3i maxOctantPos;
 	GetOctantPosFromWorld(maxBVOffset, maxOctantPos);
+    VecVecMin(&maxOctantPos, &maxOctantPos, &gmtl::VecA3i(EFFECTIVE_RANGE_XZ, EFFECTIVE_RANGE_Y, EFFECTIVE_RANGE_XZ));
 
 	int dx = maxOctantPos[0] - minOctantPos[0];
 	int dy = maxOctantPos[1] - minOctantPos[1];
@@ -799,46 +810,52 @@ inline uint CSDBOctantOrderLooseOctTree::SearchOctants(QueryContext& context, co
 	_DEBUG_ASSERT(dz >= 0);
 
 	uint octantHash = GetOctantHash(minOctantPos);
+    uint startYPlane = octantHash >> (NUM_BITS_XZ + NUM_BITS_XZ);
 
 	for(int i=0; i <= dy; i++)
 	{
-		uint dzOctantHash = octantHash;
+        // Turn the uniform grid sampling into a 2D problem if most
+        // octants are in 1 plane
+        if(m_NumOctantsYPlane[startYPlane + i] > 0)
+        {
+		    uint dzOctantHash = octantHash;
 
-		for(int j=0; j <= dz; j++)
-		{
-			uint dxOctantHash = dzOctantHash;
+		    for(int j=0; j <= dz; j++)
+		    {
+			    uint dxOctantHash = dzOctantHash;
 
-			for(int k=0; k <= dx; k++)
-			{
-				OctantKey octantKey;
-				octantKey.octantPos = dxOctantHash;
-				OctantData* pOctant = m_Octants.Get(octantKey);
-				if(pOctant)
-				{
-					// Set the current octant
-					context.octant = *pOctant;
+			    for(int k=0; k <= dx; k++)
+			    {
+				    OctantKey octantKey;
+				    octantKey.octantPos = dxOctantHash;
+				    OctantData* pOctant = m_Octants.Get(octantKey);
+				    if(pOctant)
+				    {
+					    // Set the current octant
+					    context.octant = *pOctant;
 
-					// Derive the current cell pos
-					gmtl::VecA3i curOctantPos;
-					VecVecAdd(&curOctantPos, &minOctantPos, &gmtl::VecA3i(k, i, j));
+					    // Derive the current cell pos
+					    gmtl::VecA3i curOctantPos;
+					    VecVecAdd(&curOctantPos, &minOctantPos, &gmtl::VecA3i(k, i, j));
 
-					gmtl::VecA3f curOctantPosFloat;
-					VecIntToFloat(&curOctantPosFloat, &curOctantPos);
-                    VecScalarMult(&curOctantPosFloat, &curOctantPosFloat, m_TopGridSize);
+					    gmtl::VecA3f curOctantPosFloat;
+					    VecIntToFloat(&curOctantPosFloat, &curOctantPos);
+                        VecScalarMult(&curOctantPosFloat, &curOctantPosFloat, m_TopGridSize);
 
-					OctantOrderCellKey cellKey;
-					cellKey.gridUniqueHash = 0;
-					OctantOrderCell* pCell = pOctant->pCellTable->Get(cellKey);
+					    OctantOrderCellKey cellKey;
+					    cellKey.gridUniqueHash = 0;
+					    OctantOrderCell* pCell = pOctant->pCellTable->Get(cellKey);
 
-					// Call query for the octant
-					curIndex = (this->*QueryFn)(context, pCell, curOctantPosFloat, m_TopGridSize, 0, m_TopLevel, curIndex);
-				}
+					    // Call query for the octant
+					    curIndex = (this->*QueryFn)(context, pCell, curOctantPosFloat, m_TopGridSize, 0, m_TopLevel, curIndex);
+				    }
 
-				dxOctantHash += 1;
-			}
+				    dxOctantHash += 1;
+			    }
 
-			dzOctantHash += (1 << NUM_BITS_XZ);
-		}
+			    dzOctantHash += (1 << NUM_BITS_XZ);
+		    }
+        }
 
 		octantHash += (1 << (NUM_BITS_XZ + NUM_BITS_XZ));
 	}
@@ -1163,16 +1180,14 @@ uint CSDBOctantOrderLooseOctTree::QueryInFrustumOrtho(void** ppToStore, AABox* p
 		{
 			_DEBUG_ASSERT(curIndex < bufferSize);
 			
-			AABox* pCurTransformed = pScreenSpaceRes+curIndex;
 			AABox temp;
-
-			if(!pScreenSpaceRes)
-				pCurTransformed = &temp;
-
-			TransformOOBoxToAABox(&viewProj, tooLargeData.pOOBB, pCurTransformed);
-			if(AABoxInAABox(&m_FrustumQueryLimits, pCurTransformed))
+			TransformOOBoxToAABox(&viewProj, tooLargeData.pOOBB, &temp);
+			if(AABoxInAABox(&m_FrustumQueryLimits, &temp))
 			{
 				ppToStore[curIndex] = tooLargeData.pData;
+                if(pScreenSpaceRes)
+                    pScreenSpaceRes[curIndex] = temp;
+
 				curIndex++;
 			}
 		}
@@ -1202,20 +1217,20 @@ uint CSDBOctantOrderLooseOctTree::QueryInFrustumPersp(void** ppToStore, AABox* p
 		{
 			_DEBUG_ASSERT(curIndex < bufferSize);
 			
-			AABox* pCurTransformed = pScreenSpaceRes+curIndex;
-			AABox temp;
-
-			if(!pScreenSpaceRes)
-				pCurTransformed = &temp;
-
 			//if(AABoxInAABox(pData->pBV, &frustumAA))
 			{
-				TransformAndProjectOOBoxToAABox(&viewProj, nearZ, farZ, tooLargeData.pOOBB, pCurTransformed);
-				if(AABoxInAABox(&m_FrustumQueryLimits, pCurTransformed))
-				{
-					ppToStore[curIndex] = tooLargeData.pData;
-					curIndex++;
-				}
+                gmtl::VecA4f pointsObj[8];
+                int planesObj[8];
+                TransformOOBoxToPoints(&viewProj, tooLargeData.pOOBB, pointsObj);
+                FrustumTestClipSpace(pointsObj, planesObj);
+                if(IntersectsClipSpacePlanes(planesObj))
+                {
+                    if(pScreenSpaceRes)
+                        ProjectPointsToAABox(nearZ, farZ, pointsObj, &(pScreenSpaceRes[curIndex]));
+
+                    ppToStore[curIndex] = tooLargeData.pData;
+                    curIndex++;
+                }
 			}
 		}
 
@@ -1378,7 +1393,7 @@ uint CSDBOctantOrderLooseOctTree::QuerySphereOctant(const QueryContext& context,
 	{
 		// TODO: We probably want a special case where we do not do these containment tests
 		float sphereRadius	= pQueryBV->center[3];
-		float looseGridSize = gridSize + 2.0f * looseOffset;
+		float looseGridSize = gridSize * 0.5f + looseOffset;
 		if(sphereRadius >= (looseGridSize * 1.4142136f) && SphereContainsAABox(pQueryBV, &cellBounds))
 		{
 			return QueryOctantContained(context, pCell, octantOrderHash, level, curIndex);
@@ -1484,13 +1499,13 @@ uint CSDBOctantOrderLooseOctTree::QueryInFrustumOrthoOctant(const QueryContext& 
 			{
                 _DEBUG_ASSERT(curIndex < context.bufferSize);
 
-                AABox* pTransformedAA = context.pScreenSpaceRes+curIndex;
-                if(!context.pScreenSpaceRes)
-                    pTransformedAA = &transformedAA;
-
-				TransformOOBoxToAABox(pQueryProj, pData->pOOBB, pTransformedAA);
-				if(AABoxInAABox(&m_FrustumQueryLimits, pTransformedAA))
+                AABox temp;
+				TransformOOBoxToAABox(pQueryProj, pData->pOOBB, &temp);
+				if(AABoxInAABox(&m_FrustumQueryLimits, &temp))
 				{
+                    if(context.pScreenSpaceRes)
+                        context.pScreenSpaceRes[curIndex] = temp;
+
 					context.ppToStore[curIndex] = pData->pData;
 					curIndex++;
 				}
@@ -1552,12 +1567,19 @@ uint CSDBOctantOrderLooseOctTree::QueryInFrustumPerspOctant(const QueryContext& 
 	VecScalarAdd((gmtl::VecA4f*) &cellBounds.min, (const gmtl::VecA4f*) &cellPos, -looseOffset);
 	VecScalarAdd((gmtl::VecA4f*) &cellBounds.max, (const gmtl::VecA4f*) &cellPos, looseOffset + gridSize);
 
-	AABox transformedAA;
-	TransformAndProjectAABoxToAABox(pQueryProj, context.nearZ, context.farZ, &cellBounds, &transformedAA);
+	//AABox transformedAA;
+	//TransformAndProjectAABoxToAABox(pQueryProj, context.nearZ, context.farZ, &cellBounds, &transformedAA);
 
-	if(AABoxInAABox(&m_FrustumQueryLimits, &transformedAA))
-	{
-		if(AABoxContainsAABox(&m_FrustumQueryLimits, &transformedAA))
+    gmtl::VecA4f points[8];
+    int insidePlaneMask[6];
+    TransformAABoxToPoints(pQueryProj, &cellBounds, points);
+    FrustumTestClipSpace(points, insidePlaneMask);
+    
+	//if(AABoxInAABox(&m_FrustumQueryLimits, &transformedAA))
+	if(IntersectsClipSpacePlanes(insidePlaneMask))
+    {
+		//if(AABoxContainsAABox(&m_FrustumQueryLimits, &transformedAA))
+        if(ContainsClipSpacePlanes(insidePlaneMask))
 		{
 			if(context.pScreenSpaceRes)
                 return QueryInFrustumPerspOctantContained(context, pCell, octantOrderHash, level, curIndex);
@@ -1578,16 +1600,29 @@ uint CSDBOctantOrderLooseOctTree::QueryInFrustumPerspOctant(const QueryContext& 
 			{
                 _DEBUG_ASSERT(curIndex < context.bufferSize);
 
-                AABox* pTransformedAA = context.pScreenSpaceRes+curIndex;
-                if(!context.pScreenSpaceRes)
-                    pTransformedAA = &transformedAA;
-
-                TransformAndProjectOOBoxToAABox(pQueryProj, context.nearZ, context.farZ, pData->pOOBB, pTransformedAA);
-                if(AABoxInAABox(&m_FrustumQueryLimits, pTransformedAA))
+                gmtl::VecA4f pointsObj[8];
+                int planesObj[8];
+                TransformOOBoxToPoints(pQueryProj, pData->pOOBB, pointsObj);
+                FrustumTestClipSpace(pointsObj, planesObj);
+                if(IntersectsClipSpacePlanes(planesObj))
                 {
+                    if(context.pScreenSpaceRes)
+                        ProjectPointsToAABox(context.nearZ, context.farZ, pointsObj, &(context.pScreenSpaceRes[curIndex]));
+
                     context.ppToStore[curIndex] = pData->pData;
                     curIndex++;
                 }
+
+                //AABox temp;
+                //TransformAndProjectOOBoxToAABox(pQueryProj, context.nearZ, context.farZ, pData->pOOBB, &temp);
+                //if(AABoxInAABox(&m_FrustumQueryLimits, &temp))
+                //{
+                //    context.ppToStore[curIndex] = pData->pData;
+                //    if(context.pScreenSpaceRes)
+                //        context.pScreenSpaceRes[curIndex] = temp;
+
+                //    curIndex++;
+                //}
 			}
 
 			dataID = pData->nextID;

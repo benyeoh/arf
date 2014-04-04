@@ -144,6 +144,12 @@ private:
 	std::vector<AppHandle>	m_AppHandles;
 	size_t		m_FreeAppHandleHeadID;
 
+    // Optimization for uniform grid sampling
+    // We quickly skip Y plane levels if no octant exists there
+    // (Typical scenario for a flat earth type worlds)
+    // Remember that an octant can easily cover over a kilometer in the Y direction
+    uint    m_NumOctantsYPlane[(1 << NUM_BITS_Y)];
+
 public:
 	CSDBOctantOrderLooseOctTree(uint numLevels, float size);
 	~CSDBOctantOrderLooseOctTree();

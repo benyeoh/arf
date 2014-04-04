@@ -138,10 +138,7 @@ void AHEntityManager::UpdateThreaded(int updatePhase)
 		m_pPhaseRunContext[numToDispatch].Run();
 		//m_pThreadPool->QueueJobUnsafe(m_pPhaseRunContext[numToDispatch]);
 
-		while(m_pThreadPool->GetNumJobsPending() > 0)
-		{
-			m_pThreadPool->ProcessJob();
-		}
+		m_pThreadPool->ProcessJobs();
 	}
 }
 

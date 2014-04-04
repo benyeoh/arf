@@ -13,8 +13,7 @@
 
 _NAMESPACE_BEGIN
 
-inline void
-BatchTransformAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pIn, OOBox* pOut, int length)
+_FORCE_INLINE void BatchTransformAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pIn, OOBox* pOut, int length)
 {
 	//__m128 mat[4];
 
@@ -28,7 +27,7 @@ BatchTransformAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pIn, OOBox
 	}
 }
 
-inline void
+_FORCE_INLINE void
 BatchTransformCenteredAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pIn, OOBox* pOut, int length)
 {
 	//__m128 mat[4];
@@ -43,7 +42,7 @@ BatchTransformCenteredAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pI
 	}
 }
 
-inline void
+_FORCE_INLINE void
 BatchTransformOOBoxToPoints(const gmtl::MatrixA44f* pMat, const OOBox* pIn, gmtl::VecA4f* pOut, int length)
 {
 	//__m128 mat[4];
@@ -52,7 +51,7 @@ BatchTransformOOBoxToPoints(const gmtl::MatrixA44f* pMat, const OOBox* pIn, gmtl
 
 	_LOOPi(length)
 	{	
-		_TransformOOBoxToPoints((__m128*) pMat, pIn, pOut);
+		_TransformOOBoxToPoints((__m128*) pMat, pIn, (__m128*) pOut);
 		pIn++;
 		pOut+=8;
 	}
@@ -73,7 +72,13 @@ BatchTransformOOBoxToPoints(const gmtl::MatrixA44f* pMat, const OOBox* pIn, gmtl
 //	}
 //}
 
-inline void
+_FORCE_INLINE void TransformAABoxToPoints(const gmtl::MatrixA44f* pMat, const AABox* pIn, gmtl::VecA4f* pOut)
+{
+    _TransformAABoxToPoints((__m128*) pMat, pIn, (__m128*) pOut);
+}
+
+
+_FORCE_INLINE void
 _TransformAABoxToOOBox(__m128* pMat, const AABox* pIn, OOBox* pOut)
 {
 	// Assumes w = 1.0f and pMat is NOT a projection matrix
@@ -127,7 +132,7 @@ _TransformAABoxToOOBox(__m128* pMat, const AABox* pIn, OOBox* pOut)
 	_mm_store_ps(pOut->zExtents.mData, xmm2);
 }
 
-inline void
+_FORCE_INLINE void
 TransformAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pIn, OOBox* pOut)
 {
 //	__m128 mat[4];
@@ -136,7 +141,7 @@ TransformAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pIn, OOBox* pOu
 	_TransformAABoxToOOBox((__m128*) pMat, pIn, pOut);
 }
 
-inline void
+_FORCE_INLINE void
 _TransformCenteredAABoxToOOBox(__m128* pMat, const AABox* pIn, OOBox* pOut)
 {
 	// Assumes w = 1.0f and pMat is NOT a projection matrix
@@ -166,7 +171,7 @@ _TransformCenteredAABoxToOOBox(__m128* pMat, const AABox* pIn, OOBox* pOut)
 	_mm_store_ps(pOut->zExtents.mData, xmm2);
 }
 
-inline void
+_FORCE_INLINE void
 TransformCenteredAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pIn, OOBox* pOut)
 {
 //	__m128 mat[4];
@@ -175,73 +180,27 @@ TransformCenteredAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pIn, OO
 	_TransformCenteredAABoxToOOBox((__m128*) pMat, pIn, pOut);
 }
 
-inline void
+_FORCE_INLINE void
 TransformOOBoxToAABox(const gmtl::MatrixA44f* pMat, const OOBox* pIn, AABox* pOut)
 {
 	_TransformOOBoxToAABox((__m128*) pMat, pIn, pOut);	
 }
 
-inline void
+_FORCE_INLINE void
 _TransformOOBoxToAABox(__m128* pMat, const OOBox* pIn, AABox* pOut)
 {
-	// Load the corner data
-	__m128& cornerXmm = *((__m128*)(pIn->corner.mData));
+    __m128 points[8];
+    _TransformOOBoxToPoints(pMat, pIn, points);
 
-	// Broadcast the corner x, y and z	
-	__m128 cornerX = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 cornerZ = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 cornerY = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(1, 1, 1, 1));
+    __m128 transformedCorner = points[0];
+    __m128 dx = points[1]; // dx
+    __m128 dy = points[2]; // dy
+    __m128 dxdy = points[3]; // dx + dy
 
-	// Transform the corner
-	cornerX = _mm_mul_ps(cornerX, pMat[0]);
-	cornerY = _mm_mul_ps(cornerY, pMat[1]);
-	cornerZ = _mm_mul_ps(cornerZ, pMat[2]);
-
-	__m128 temp1 = _mm_add_ps(cornerX, cornerY);
-	__m128 temp2 = _mm_add_ps(cornerZ, pMat[3]);
-	__m128 transformedCorner = _mm_add_ps(temp1, temp2);
-
-	// X, Y and Z-axis
-	__m128& extentsX = *((__m128*)(pIn->xExtents.mData));
-	__m128& extentsY = *((__m128*)(pIn->yExtents.mData));
-	__m128& extentsZ = *((__m128*)(pIn->zExtents.mData));
-
-	__m128 extentXx = _mm_shuffle_ps(extentsX, extentsX, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 extentYx = _mm_shuffle_ps(extentsY, extentsY, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 extentZx = _mm_shuffle_ps(extentsZ, extentsZ, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 extentXy = _mm_shuffle_ps(extentsX, extentsX, _MM_SHUFFLE(1, 1, 1, 1));
-	__m128 extentYy = _mm_shuffle_ps(extentsY, extentsY, _MM_SHUFFLE(1, 1, 1, 1));
-	__m128 extentZy = _mm_shuffle_ps(extentsZ, extentsZ, _MM_SHUFFLE(1, 1, 1, 1));
-	__m128 extentXz = _mm_shuffle_ps(extentsX, extentsX, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 extentYz = _mm_shuffle_ps(extentsY, extentsY, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 extentZz = _mm_shuffle_ps(extentsZ, extentsZ, _MM_SHUFFLE(2, 2, 2, 2));
-
-	extentXx = _mm_mul_ps(extentXx, pMat[0]);
-	extentYx = _mm_mul_ps(extentYx, pMat[0]);
-	extentZx = _mm_mul_ps(extentZx, pMat[0]);
-	extentXy = _mm_mul_ps(extentXy, pMat[1]);
-	extentYy = _mm_mul_ps(extentYy, pMat[1]);
-	extentZy = _mm_mul_ps(extentZy, pMat[1]);
-	extentXz = _mm_mul_ps(extentXz, pMat[2]);
-	extentYz = _mm_mul_ps(extentYz, pMat[2]);
-	extentZz = _mm_mul_ps(extentZz, pMat[2]);
-
-	__m128 transformedX = _mm_add_ps(extentXx, extentXy);
-	transformedX = _mm_add_ps(transformedX, extentXz);
-	__m128 transformedY = _mm_add_ps(extentYx, extentYy);
-	transformedY = _mm_add_ps(transformedY, extentYz);
-	__m128 transformedZ = _mm_add_ps(extentZx, extentZy);
-	transformedZ = _mm_add_ps(transformedZ, extentZz);
-
-	// Now we get the eight points of the OBB
-	__m128 dx = _mm_add_ps(transformedCorner, transformedX);	// dx
-	__m128 dy = _mm_add_ps(transformedCorner, transformedY);	// dy
-	__m128 dxdy = _mm_add_ps(dx, transformedY);	// dx + dy
-
-	__m128 dz = _mm_add_ps(transformedCorner, transformedZ);	// dz
-	__m128 dxdz = _mm_add_ps(dx, transformedZ);	// dx + dz
-	__m128 dydz = _mm_add_ps(dy, transformedZ);	// dy + dz
-	__m128 dxdydz = _mm_add_ps(dxdy, transformedZ);	// dx + dy + dz
+    __m128 dz = points[4]; // dz
+    __m128 dxdz = points[5]; // dx + dz
+    __m128 dydz = points[6]; // dy + dz
+    __m128 dxdydz = points[7]; // dx + dy + dz
 	
 	// Now find the AABox
 	__m128 min = _mm_min_ps(transformedCorner, dx);
@@ -263,74 +222,110 @@ _TransformOOBoxToAABox(__m128* pMat, const OOBox* pIn, AABox* pOut)
 	_mm_store_ps(pOut->max.mData, max);
 }
 
-inline void
+_FORCE_INLINE void ProjectPointsToAABox(float nearPlane, float farPlane, const gmtl::VecA4f* pIn, AABox* pOut)
+{
+    // Clamp to prevent reverse projection
+    __m128 clamper		= _mm_load_ss(&nearPlane);
+    __m128 negClamper	= _mm_set_ss(-999999999999.0f);
+    negClamper = _mm_movelh_ps(negClamper, clamper);
+    clamper = _mm_shuffle_ps(negClamper, negClamper, _MM_SHUFFLE(2, 0, 0, 0));
+
+    __m128 transformedCorner = _mm_load_ps((float*) pIn);
+    __m128 dx = _mm_load_ps((float*) &(pIn[1]));
+    __m128 dy = _mm_load_ps((float*) &(pIn[2]));
+    __m128 dxdy = _mm_load_ps((float*) &(pIn[3]));
+
+    __m128 dz = _mm_load_ps((float*) &(pIn[4]));
+    __m128 dxdz = _mm_load_ps((float*) &(pIn[5]));
+    __m128 dydz = _mm_load_ps((float*) &(pIn[6]));
+    __m128 dxdydz = _mm_load_ps((float*) &(pIn[7]));
+
+    transformedCorner = _mm_max_ps(clamper, transformedCorner);
+    dx = _mm_max_ps(clamper, dx);
+    dy = _mm_max_ps(clamper, dy);
+    dxdy = _mm_max_ps(clamper, dxdy);
+
+    dz = _mm_max_ps(clamper, dz);
+    dxdz = _mm_max_ps(clamper, dxdz);
+    dydz = _mm_max_ps(clamper, dydz);
+    dxdydz = _mm_max_ps(clamper, dxdydz);
+
+    // Do projection with linear Z
+    __m128 tempUnit = _mm_set_ss(farPlane);
+    __m128 wXmm = _mm_shuffle_ps(transformedCorner, tempUnit, _MM_SHUFFLE(0, 0, 3, 3)); 
+    wXmm = _mm_rcp_ps(wXmm);
+    transformedCorner = _mm_mul_ps(transformedCorner, wXmm);
+
+    wXmm = _mm_shuffle_ps(dx, tempUnit, _MM_SHUFFLE(0, 0, 3, 3)); 
+    wXmm = _mm_rcp_ps(wXmm);
+    dx = _mm_mul_ps(dx, wXmm);
+
+    wXmm = _mm_shuffle_ps(dy, tempUnit, _MM_SHUFFLE(0, 0, 3, 3)); 
+    wXmm = _mm_rcp_ps(wXmm);
+    dy = _mm_mul_ps(dy, wXmm);
+
+    wXmm = _mm_shuffle_ps(dxdy, tempUnit, _MM_SHUFFLE(0, 0, 3, 3)); 
+    wXmm = _mm_rcp_ps(wXmm);
+    dxdy = _mm_mul_ps(dxdy, wXmm);
+
+    wXmm = _mm_shuffle_ps(dz, tempUnit, _MM_SHUFFLE(0, 0, 3, 3)); 
+    wXmm = _mm_rcp_ps(wXmm);
+    dz = _mm_mul_ps(dz, wXmm);
+
+    wXmm = _mm_shuffle_ps(dxdz, tempUnit, _MM_SHUFFLE(0, 0, 3, 3)); 
+    wXmm = _mm_rcp_ps(wXmm);
+    dxdz = _mm_mul_ps(dxdz, wXmm);
+
+    wXmm = _mm_shuffle_ps(dydz, tempUnit, _MM_SHUFFLE(0, 0,  3, 3)); 
+    wXmm = _mm_rcp_ps(wXmm);
+    dydz = _mm_mul_ps(dydz, wXmm);
+
+    wXmm = _mm_shuffle_ps(dxdydz, tempUnit, _MM_SHUFFLE(0, 0, 3, 3)); 
+    wXmm = _mm_rcp_ps(wXmm);
+    dxdydz = _mm_mul_ps(dxdydz, wXmm);
+
+    // Now find the AABox
+    __m128 min = _mm_min_ps(transformedCorner, dx);
+    __m128 max = _mm_max_ps(transformedCorner, dx);
+    min = _mm_min_ps(min, dy);
+    max = _mm_max_ps(max, dy);
+    min = _mm_min_ps(min, dxdy);
+    max = _mm_max_ps(max, dxdy);
+    min = _mm_min_ps(min, dz);
+    max = _mm_max_ps(max, dz);
+    min = _mm_min_ps(min, dxdz);
+    max = _mm_max_ps(max, dxdz);
+    min = _mm_min_ps(min, dydz);
+    max = _mm_max_ps(max, dydz);
+    min = _mm_min_ps(min, dxdydz);
+    max = _mm_max_ps(max, dxdydz);
+
+    _mm_store_ps(pOut->min.mData, min);	
+    _mm_store_ps(pOut->max.mData, max);
+}
+
+_FORCE_INLINE void
 TransformAndProjectOOBoxToAABox(const gmtl::MatrixA44f* pMat, float nearPlane, float farPlane, const OOBox* pIn, AABox* pOut)
 {
 	_TransformAndProjectOOBoxToAABox((__m128*)pMat, nearPlane, farPlane, pIn, pOut);
 }
 
-inline void
+_FORCE_INLINE void
 _TransformAndProjectOOBoxToAABox(__m128* pMat, float nearPlane, float farPlane, const OOBox* pIn, AABox* pOut)
 {
-	// Load the corner data
-	__m128& cornerXmm = *((__m128*)(pIn->corner.mData));
+    __m128 points[8];
+    _TransformOOBoxToPoints(pMat, pIn, points);
 
-	// Broadcast the corner x, y and z	
-	__m128 cornerX = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 cornerZ = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 cornerY = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(1, 1, 1, 1));
+    __m128 transformedCorner = points[0];
+    __m128 dx = points[1]; // dx
+    __m128 dy = points[2]; // dy
+    __m128 dxdy = points[3]; // dx + dy
 
-	// Transform the corner
-	cornerX = _mm_mul_ps(cornerX, pMat[0]);
-	cornerY = _mm_mul_ps(cornerY, pMat[1]);
-	cornerZ = _mm_mul_ps(cornerZ, pMat[2]);
+    __m128 dz = points[4]; // dz
+    __m128 dxdz = points[5]; // dx + dz
+    __m128 dydz = points[6]; // dy + dz
+    __m128 dxdydz = points[7]; // dx + dy + dz
 
-	__m128 temp1 = _mm_add_ps(cornerX, cornerY);
-	__m128 temp2 = _mm_add_ps(cornerZ, pMat[3]);
-	__m128 transformedCorner = _mm_add_ps(temp1, temp2);
-
-	// X, Y and Z-axis
-	__m128& extentsX = *((__m128*)(pIn->xExtents.mData));
-	__m128& extentsY = *((__m128*)(pIn->yExtents.mData));
-	__m128& extentsZ = *((__m128*)(pIn->zExtents.mData));
-
-	__m128 extentXx = _mm_shuffle_ps(extentsX, extentsX, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 extentYx = _mm_shuffle_ps(extentsY, extentsY, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 extentZx = _mm_shuffle_ps(extentsZ, extentsZ, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 extentXy = _mm_shuffle_ps(extentsX, extentsX, _MM_SHUFFLE(1, 1, 1, 1));
-	__m128 extentYy = _mm_shuffle_ps(extentsY, extentsY, _MM_SHUFFLE(1, 1, 1, 1));
-	__m128 extentZy = _mm_shuffle_ps(extentsZ, extentsZ, _MM_SHUFFLE(1, 1, 1, 1));
-	__m128 extentXz = _mm_shuffle_ps(extentsX, extentsX, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 extentYz = _mm_shuffle_ps(extentsY, extentsY, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 extentZz = _mm_shuffle_ps(extentsZ, extentsZ, _MM_SHUFFLE(2, 2, 2, 2));
-
-	extentXx = _mm_mul_ps(extentXx, pMat[0]);
-	extentYx = _mm_mul_ps(extentYx, pMat[0]);
-	extentZx = _mm_mul_ps(extentZx, pMat[0]);
-	extentXy = _mm_mul_ps(extentXy, pMat[1]);
-	extentYy = _mm_mul_ps(extentYy, pMat[1]);
-	extentZy = _mm_mul_ps(extentZy, pMat[1]);
-	extentXz = _mm_mul_ps(extentXz, pMat[2]);
-	extentYz = _mm_mul_ps(extentYz, pMat[2]);
-	extentZz = _mm_mul_ps(extentZz, pMat[2]);
-
-	__m128 transformedX = _mm_add_ps(extentXx, extentXy);
-	transformedX = _mm_add_ps(transformedX, extentXz);
-	__m128 transformedY = _mm_add_ps(extentYx, extentYy);
-	transformedY = _mm_add_ps(transformedY, extentYz);
-	__m128 transformedZ = _mm_add_ps(extentZx, extentZy);
-	transformedZ = _mm_add_ps(transformedZ, extentZz);
-
-	// Now we get the eight points of the OBB
-	__m128 dx = _mm_add_ps(transformedCorner, transformedX);	// dx
-	__m128 dy = _mm_add_ps(transformedCorner, transformedY);	// dy
-	__m128 dxdy = _mm_add_ps(dx, transformedY);	// dx + dy
-
-	__m128 dz = _mm_add_ps(transformedCorner, transformedZ);	// dz
-	__m128 dxdz = _mm_add_ps(dx, transformedZ);	// dx + dz
-	__m128 dydz = _mm_add_ps(dy, transformedZ);	// dy + dz
-	__m128 dxdydz = _mm_add_ps(dxdy, transformedZ);	// dx + dy + dz
-	
 	// Clamp to prevent reverse projection
 	__m128 clamper		= _mm_load_ss(&nearPlane);
 	__m128 negClamper	= _mm_set_ss(-999999999999.0f);
@@ -401,54 +396,27 @@ _TransformAndProjectOOBoxToAABox(__m128* pMat, float nearPlane, float farPlane, 
 	_mm_store_ps(pOut->max.mData, max);
 }
 
-inline void
+_FORCE_INLINE void
 TransformAABoxToAABox(const gmtl::MatrixA44f* pMat, const AABox* pIn, AABox* pOut)
 {
 	_TransformAABoxToAABox((__m128*) pMat, pIn, pOut);
 }
 
-inline void
+_FORCE_INLINE void
 _TransformAABoxToAABox(__m128* pMat, const AABox* pIn, AABox* pOut)
 {
-	__m128& aaMax = *((__m128*)(pIn->max.mData));
-	__m128& aaMin = *((__m128*)(pIn->min.mData));
+    __m128 points[8];
+    _TransformAABoxToPoints(pMat, pIn, points);
 
-	// Get the extents 
-	__m128 extents = _mm_sub_ps(aaMax, aaMin);
+    __m128 transformedCorner = points[0];
+    __m128 dx = points[1]; // dx
+    __m128 dy = points[2]; // dy
+    __m128 dxdy = points[3]; // dx + dy
 
-	// Broadcast the corner point
-	__m128 cornerY = _mm_shuffle_ps(aaMin, aaMin, _MM_SHUFFLE(1, 1, 1, 1));
-	__m128 cornerZ = _mm_shuffle_ps(aaMin, aaMin, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 cornerX = _mm_shuffle_ps(aaMin, aaMin, _MM_SHUFFLE(0, 0, 0, 0));
-
-	// Transform the corner point
-	cornerX						= _mm_mul_ps(cornerX, pMat[0]);
-	cornerY						= _mm_mul_ps(cornerY, pMat[1]);
-	cornerZ						= _mm_mul_ps(cornerZ, pMat[2]);
-	cornerX						= _mm_add_ps(cornerX, cornerZ);
-	cornerY						= _mm_add_ps(cornerY, pMat[3]);
-	__m128 transformedCorner	= _mm_add_ps(cornerX, cornerY);
-
-	// Broadcast the extents
-	__m128 extentX	= _mm_shuffle_ps(extents, extents, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 extentZ	= _mm_shuffle_ps(extents, extents, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 extentY	= _mm_shuffle_ps(extents, extents, _MM_SHUFFLE(1, 1, 1, 1));
-
-	// Transform the extents
-	__m128 transformedX = _mm_mul_ps(extentX, pMat[0]);
-	//transformedX      = _mm_andnot_ps(transformedX, _mm_set1_ps(-0.0f));	// abs
-	__m128 transformedY = _mm_mul_ps(extentY, pMat[1]);
-	__m128 transformedZ = _mm_mul_ps(extentZ, pMat[2]);
-	
-	// Now we get the eight points of the OBB
-	__m128 dx = _mm_add_ps(transformedCorner, transformedX);	// dx
-	__m128 dy = _mm_add_ps(transformedCorner, transformedY);	// dy
-	__m128 dxdy = _mm_add_ps(dx, transformedY);	// dx + dy
-
-	__m128 dz = _mm_add_ps(transformedCorner, transformedZ);	// dz
-	__m128 dxdz = _mm_add_ps(dx, transformedZ);	// dx + dz
-	__m128 dydz = _mm_add_ps(dy, transformedZ);	// dy + dz
-	__m128 dxdydz = _mm_add_ps(dxdy, transformedZ);	// dx + dy + dz
+    __m128 dz = points[4]; // dz
+    __m128 dxdz = points[5]; // dx + dz
+    __m128 dydz = points[6]; // dy + dz
+    __m128 dxdydz = points[7]; // dx + dy + dz
 	
 	// Now find the AABox
 	__m128 min = _mm_min_ps(transformedCorner, dx);
@@ -476,57 +444,27 @@ _TransformAABoxToAABox(__m128* pMat, const AABox* pIn, AABox* pOut)
 	_mm_store_ps(pOut->max.mData, max);
 }
 
-inline void
+_FORCE_INLINE void
 TransformAndProjectAABoxToAABox(const gmtl::MatrixA44f* pMat, float nearPlane, float farPlane, const AABox* pIn, AABox* pOut)
 {
 	_TransformAndProjectAABoxToAABox((__m128*)pMat, nearPlane, farPlane, pIn, pOut);
 }
 
-inline void
+_FORCE_INLINE void
 _TransformAndProjectAABoxToAABox(__m128* pMat, float nearPlane, float farPlane, const AABox* pIn, AABox* pOut)
 {
-	// Assumes w = 1.0f and pMat is NOT a projection matrix
-	//float* pMinData = (float*) pIn->min.mData;
-	//float* pMaxData = (float*) pIn->max.mData;	
+    __m128 points[8];
+    _TransformAABoxToPoints(pMat, pIn, points);
 
-	__m128& aaMax = *((__m128*)(pIn->max.mData));
-	__m128& aaMin = *((__m128*)(pIn->min.mData));
-	
-	// Get the extents 
-	__m128 extents = _mm_sub_ps(aaMax, aaMin);
+    __m128 transformedCorner = points[0];
+    __m128 dx = points[1]; // dx
+    __m128 dy = points[2]; // dy
+    __m128 dxdy = points[3]; // dx + dy
 
-	// Broadcast the corner point
-	__m128 cornerY = _mm_shuffle_ps(aaMin, aaMin, _MM_SHUFFLE(1, 1, 1, 1));
-	__m128 cornerZ = _mm_shuffle_ps(aaMin, aaMin, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 cornerX = _mm_shuffle_ps(aaMin, aaMin, _MM_SHUFFLE(0, 0, 0, 0));
-
-	// Transform the corner point
-	cornerX						= _mm_mul_ps(cornerX, pMat[0]);
-	cornerY						= _mm_mul_ps(cornerY, pMat[1]);
-	cornerZ						= _mm_mul_ps(cornerZ, pMat[2]);
-	cornerX						= _mm_add_ps(cornerX, cornerZ);
-	cornerY						= _mm_add_ps(cornerY, pMat[3]);
-	__m128 transformedCorner	= _mm_add_ps(cornerX, cornerY);
-
-	// Broadcast the extents
-	__m128 extentX	= _mm_shuffle_ps(extents, extents, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 extentZ	= _mm_shuffle_ps(extents, extents, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 extentY	= _mm_shuffle_ps(extents, extents, _MM_SHUFFLE(1, 1, 1, 1));
-
-	// Transform the extents
-	__m128 transformedX = _mm_mul_ps(extentX, pMat[0]);
-	__m128 transformedY = _mm_mul_ps(extentY, pMat[1]);
-	__m128 transformedZ = _mm_mul_ps(extentZ, pMat[2]);
-	
-	// Now we get the eight points of the OBB
-	__m128 dx = _mm_add_ps(transformedCorner, transformedX);	// dx
-	__m128 dy = _mm_add_ps(transformedCorner, transformedY);	// dy
-	__m128 dxdy = _mm_add_ps(dx, transformedY);	// dx + dy
-
-	__m128 dz = _mm_add_ps(transformedCorner, transformedZ);	// dz
-	__m128 dxdz = _mm_add_ps(dx, transformedZ);	// dx + dz
-	__m128 dydz = _mm_add_ps(dy, transformedZ);	// dy + dz
-	__m128 dxdydz = _mm_add_ps(dxdy, transformedZ);	// dx + dy + dz
+    __m128 dz = points[4]; // dz
+    __m128 dxdz = points[5]; // dx + dz
+    __m128 dydz = points[6]; // dy + dz
+    __m128 dxdydz = points[7]; // dx + dy + dz
 	
 	// Clamp to prevent reverse projection
 	__m128 clamper		= _mm_load_ss(&nearPlane);
@@ -598,8 +536,7 @@ _TransformAndProjectAABoxToAABox(__m128* pMat, float nearPlane, float farPlane, 
 	_mm_store_ps(pOut->max.mData, max);
 }
 
-inline void
-_TransformOOBoxToPoints(__m128* pMat, const OOBox* pIn, gmtl::VecA4f* pOut)
+_FORCE_INLINE void _TransformOOBoxToPoints(__m128* pMat, const OOBox* pIn, __m128* pOut)
 {
 	//// Load the transform matrix	
 	//col0 = pMat[0];
@@ -612,8 +549,8 @@ _TransformOOBoxToPoints(__m128* pMat, const OOBox* pIn, gmtl::VecA4f* pOut)
 
 	// Broadcast the corner x, y and z	
 	__m128 cornerX = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(0, 0, 0, 0));
-	__m128 cornerY = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(2, 2, 2, 2));
-	__m128 cornerZ = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(1, 1, 1, 1));
+	__m128 cornerZ = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(2, 2, 2, 2));
+	__m128 cornerY = _mm_shuffle_ps(cornerXmm, cornerXmm, _MM_SHUFFLE(1, 1, 1, 1));
 
 	// Transform the corner
 	cornerX = _mm_mul_ps(cornerX, pMat[0]);
@@ -666,23 +603,74 @@ _TransformOOBoxToPoints(__m128* pMat, const OOBox* pIn, gmtl::VecA4f* pOut)
 	__m128 dydz = _mm_add_ps(dy, transformedZ);	// dy + dz
 	__m128 dxdydz = _mm_add_ps(dxdy, transformedZ);	// dx + dy + dz
 	
-	_mm_store_ps(pOut->mData, transformedCorner);
-	_mm_store_ps((pOut+1)->mData, dx);
-	_mm_store_ps((pOut+2)->mData, dy);
-	_mm_store_ps((pOut+3)->mData, dxdy);
+    pOut[0] = transformedCorner;
+    pOut[1] = dx;
+    pOut[2] = dy;
+    pOut[3] = dxdy;
 
-	_mm_store_ps((pOut+4)->mData, dz);
-	_mm_store_ps((pOut+5)->mData, dxdz);
-	_mm_store_ps((pOut+6)->mData, dydz);
-	_mm_store_ps((pOut+7)->mData, dxdydz);
+    pOut[4] = dz;
+    pOut[5] = dxdz;
+    pOut[6] = dydz;
+    pOut[7] = dxdydz;
 }
 
-inline void
+_FORCE_INLINE void _TransformAABoxToPoints(__m128* pMat, const AABox* pIn, __m128* pOut)
+{
+    __m128& aaMax = *((__m128*)(pIn->max.mData));
+    __m128& aaMin = *((__m128*)(pIn->min.mData));
+
+    // Get the extents 
+    __m128 extents = _mm_sub_ps(aaMax, aaMin);
+
+    // Broadcast the corner point
+    __m128 cornerY = _mm_shuffle_ps(aaMin, aaMin, _MM_SHUFFLE(1, 1, 1, 1));
+    __m128 cornerZ = _mm_shuffle_ps(aaMin, aaMin, _MM_SHUFFLE(2, 2, 2, 2));
+    __m128 cornerX = _mm_shuffle_ps(aaMin, aaMin, _MM_SHUFFLE(0, 0, 0, 0));
+
+    // Transform the corner point
+    cornerX						= _mm_mul_ps(cornerX, pMat[0]);
+    cornerY						= _mm_mul_ps(cornerY, pMat[1]);
+    cornerZ						= _mm_mul_ps(cornerZ, pMat[2]);
+    cornerX						= _mm_add_ps(cornerX, cornerZ);
+    cornerY						= _mm_add_ps(cornerY, pMat[3]);
+    __m128 transformedCorner	= _mm_add_ps(cornerX, cornerY);
+
+    // Broadcast the extents
+    __m128 extentX	= _mm_shuffle_ps(extents, extents, _MM_SHUFFLE(0, 0, 0, 0));
+    __m128 extentZ	= _mm_shuffle_ps(extents, extents, _MM_SHUFFLE(2, 2, 2, 2));
+    __m128 extentY	= _mm_shuffle_ps(extents, extents, _MM_SHUFFLE(1, 1, 1, 1));
+
+    // Transform the extents
+    __m128 transformedX = _mm_mul_ps(extentX, pMat[0]);
+    __m128 transformedY = _mm_mul_ps(extentY, pMat[1]);
+    __m128 transformedZ = _mm_mul_ps(extentZ, pMat[2]);
+
+    // Now we get the eight points of the OBB
+    __m128 dx = _mm_add_ps(transformedCorner, transformedX);	// dx
+    __m128 dy = _mm_add_ps(transformedCorner, transformedY);	// dy
+    __m128 dxdy = _mm_add_ps(dx, transformedY);	// dx + dy
+
+    __m128 dz = _mm_add_ps(transformedCorner, transformedZ);	// dz
+    __m128 dxdz = _mm_add_ps(dx, transformedZ);	// dx + dz
+    __m128 dydz = _mm_add_ps(dy, transformedZ);	// dy + dz
+    __m128 dxdydz = _mm_add_ps(dxdy, transformedZ);	// dx + dy + dz
+
+    pOut[0] = transformedCorner;
+    pOut[1] = dx;
+    pOut[2] = dy;
+    pOut[3] = dxdy;
+    pOut[4] = dz;
+    pOut[5] = dxdz;
+    pOut[6] = dydz;
+    pOut[7] = dxdydz;
+}
+
+_FORCE_INLINE void
 TransformOOBoxToPoints(const gmtl::MatrixA44f* pMat, const OOBox* pIn, gmtl::VecA4f* pOut)
 {
 //	__m128 mat[4];
 	//LoadMatrix44(pMat, mat);
-	_TransformOOBoxToPoints((__m128*) pMat, pIn, pOut);
+	_TransformOOBoxToPoints((__m128*) pMat, pIn, (__m128*) pOut);
 }
 
 //inline void
@@ -821,7 +809,7 @@ TransformOOBoxToPoints(const gmtl::MatrixA44f* pMat, const OOBox* pIn, gmtl::Vec
 //	_TransformAndProjectOOBoxToAABox(mat, pIn, pOut);
 //}
 
-inline void
+_FORCE_INLINE void
 OOBoxToPoints(const OOBox* pIn, gmtl::VecA3f* pOut)
 {
 	__m128 xmm0;
@@ -855,7 +843,7 @@ OOBoxToPoints(const OOBox* pIn, gmtl::VecA3f* pOut)
 	_mm_store_ps((pOut+7)->mData, col2);
 }
 
-inline void
+_FORCE_INLINE void
 OOBoxToAABox(const OOBox* pIn, AABox* pOut)
 {
 	__m128 xmm0, xmm1;
@@ -909,7 +897,7 @@ OOBoxToAABox(const OOBox* pIn, AABox* pOut)
 	_mm_store_ps(pOut->max.mData, xmm1);
 }
 
-inline void
+_FORCE_INLINE void
 OOBoxPointsToAABox(const gmtl::VecA3f* pIn, AABox* pOut)
 {
 	__m128 xmm6, xmm7;
@@ -944,7 +932,7 @@ OOBoxPointsToAABox(const gmtl::VecA3f* pIn, AABox* pOut)
 	_mm_store_ps((float*) &(pOut->max), xmm7);
 }
 
-inline void
+_FORCE_INLINE void
 PointsToAABox(const gmtl::VecA3f* pIn, int length, AABox* pOut)
 {
 	__m128 xmm0, xmm1, xmm2, xmm3;
@@ -997,7 +985,7 @@ PointsToAABox(const gmtl::VecA3f* pIn, int length, AABox* pOut)
 	_mm_store_ps((float*) &(pOut->max), xmm1);	
 }
 
-inline void
+_FORCE_INLINE void
 PointsToAABox(const gmtl::Vec4f* pIn, int length, int stride, AABox* pOut)
 {
 	__m128 xmm0, xmm1, xmm2, xmm3;
@@ -1056,13 +1044,13 @@ PointsToAABox(const gmtl::Vec4f* pIn, int length, int stride, AABox* pOut)
 }
 
 
-inline boolean
+_FORCE_INLINE boolean
 AABoxInAABox(const AABox* pBox1, const AABox* pBox2)
 {
 	return _AABoxInAABox(pBox1, pBox2);
 }
 
-inline boolean
+_FORCE_INLINE boolean
 _AABoxInAABox(const AABox* pBox1, const AABox* pBox2)
 {
 	__m128 isLessThan = _mm_cmplt_ps(*(__m128*) pBox1->min.mData, *(__m128*) pBox2->max.mData);
@@ -1073,7 +1061,7 @@ _AABoxInAABox(const AABox* pBox1, const AABox* pBox2)
 	return ((val & 0x7) == 0x7);
 }
 
-inline boolean
+_FORCE_INLINE boolean
 AABoxContainsAABox(const AABox* pContainer, const AABox* pContainee)
 {
 	__m128 isLessThan = _mm_cmplt_ps(*(__m128*) pContainee->max.mData, *(__m128*) pContainer->max.mData);
@@ -1084,7 +1072,7 @@ AABoxContainsAABox(const AABox* pContainer, const AABox* pContainee)
 	return ((val & 0x7) == 0x7);
 }
 
-inline void
+_FORCE_INLINE void
 AABoxMerge(AABox* pResult, const AABox* pBox1, const AABox* pBox2)
 {
 	__m128 max = _mm_max_ps(*(__m128*) pBox1->max.mData, *(__m128*) pBox2->max.mData);
@@ -1094,7 +1082,7 @@ AABoxMerge(AABox* pResult, const AABox* pBox1, const AABox* pBox2)
 	_mm_store_ps(pResult->min.mData, min);
 }
 
-inline boolean
+_FORCE_INLINE boolean
 AABoxInSphere(const AABox* pBox, const Sphere* pSphere)
 {
 	const static _ALIGN(16) float ZERO[4] = { 0.0f, 0.0f, 0.0f, 0.0f };	
@@ -1139,25 +1127,23 @@ AABoxInSphere(const AABox* pBox, const Sphere* pSphere)
 	radius				= _mm_mul_ss(radius, radius);
 	dist				= _mm_cmple_ss(dist, radius);
 	
-	uint isIntersect;
-	_mm_store_ss((float*) &isIntersect, dist);
-		
-	return isIntersect;
+    int isIntersect = _mm_movemask_ps(dist);
+    return (isIntersect & 1);
 }
 
-inline boolean SphereInAABox(const Sphere* pSphere, const AABox* pBox)
+_FORCE_INLINE boolean SphereInAABox(const Sphere* pSphere, const AABox* pBox)
 {
 	return AABoxInSphere(pBox, pSphere);
 }
 
-inline boolean SphereContainsAABox(const Sphere* pSphere, const AABox* pBox)
+_FORCE_INLINE boolean SphereContainsAABox(const Sphere* pSphere, const AABox* pBox)
 {
 	__m128& center	= *((__m128*)(pSphere->center.mData));
 	__m128& boxMin	= *((__m128*)(pBox->min.mData));
 	__m128& boxMax	= *((__m128*)(pBox->max.mData));
 
 	// Find the farthest point of the AABB from the center of the sphere
-	__m128 boxCenter			= _mm_mul_ps(_mm_sub_ps(boxMax, boxMin), _mm_set1_ps(0.5f));
+	__m128 boxCenter			= _mm_mul_ps(_mm_add_ps(boxMax, boxMin), _mm_set1_ps(0.5f));
 	__m128 isLessThanEqCenter	= _mm_cmple_ps(center, boxCenter);
 	__m128 isGreaterThanCenter	= _mm_cmpgt_ps(center, boxCenter);
 	__m128 maxDistPoint			= _mm_and_ps(boxMax, isLessThanEqCenter);
@@ -1180,13 +1166,11 @@ inline boolean SphereContainsAABox(const Sphere* pSphere, const AABox* pBox)
 	radius				= _mm_mul_ss(radius, radius);
 	dist				= _mm_cmple_ss(dist, radius);
 
-	uint isContained;
-	_mm_store_ss((float*) &isContained, dist);
-
-	return isContained;
+    int isContained = _mm_movemask_ps(dist);
+    return (isContained & 1);
 }
 
-inline float AABoxToPointDist(const AABox* pBox, const gmtl::VecA3f* pPoint)
+_FORCE_INLINE float AABoxToPointDist(const AABox* pBox, const gmtl::VecA3f* pPoint)
 {
 	//const static _ALIGN(16) float multiplier[4] = { 1.0f, 1.0f, 1.0f, 0.0f };	
 
@@ -1235,5 +1219,127 @@ inline float AABoxToPointDist(const AABox* pBox, const gmtl::VecA3f* pPoint)
 
 	return res;
 }
+
+_FORCE_INLINE float AABoxToPointDistCheckLessThan(const AABox* pBox, const gmtl::VecA3f* pPoint, float distToCheck, boolean& checkResult)
+{
+    //const static _ALIGN(16) float multiplier[4] = { 1.0f, 1.0f, 1.0f, 0.0f };	
+
+    //__m128& center	= *((__m128*)(pPoint->mData));
+    //__m128& boxMin	= *((__m128*)(pBox->min.mData));
+    //__m128& boxMax	= *((__m128*)(pBox->max.mData));
+
+    //__m128 isLessThan			= _mm_cmplt_ps(center, boxMin);
+    //__m128 isGreaterThan		= _mm_cmpgt_ps(center, boxMax);
+    ////__m128 multIsLessThan		= _mm_and_ps(isLessThan, *((__m128*)multiplier));
+    ////__m128 multIsGreaterThan	= _mm_and_ps(isGreaterThan, *((__m128*)multiplier));
+
+    //__m128 distFromMin	= _mm_sub_ps(center, boxMin);
+    //__m128 distFromMax	= _mm_sub_ps(center, boxMax);
+    //distFromMin			= _mm_and_ps(distFromMin, isLessThan);
+    //distFromMax			= _mm_and_ps(distFromMax, isGreaterThan);
+
+    const static _ALIGN(16) float ZERO[4] = { 0.0f, 0.0f, 0.0f, 0.0f };	
+
+    __m128& center	= *((__m128*)(pPoint->mData));
+    __m128& boxMin	= *((__m128*)(pBox->min.mData));
+    __m128& boxMax	= *((__m128*)(pBox->max.mData));
+
+    __m128 centerToMin	= _mm_sub_ps(boxMin, center);
+    centerToMin			= _mm_max_ps(centerToMin, *((__m128*)ZERO));
+
+    __m128 maxToCenter	= _mm_sub_ps(center, boxMax);
+    maxToCenter			= _mm_max_ps(maxToCenter, *((__m128*)ZERO));
+
+    __m128 dist			= _mm_add_ps(centerToMin , maxToCenter);
+
+    // Collapse to get the total distance
+    // SSE 4.1
+    dist				= _mm_dp_ps(dist, dist, 0x7F);
+    dist				= _mm_rcp_ss( _mm_rsqrt_ss(dist) );
+
+    //dist				= _mm_mul_ps(dist, dist);
+    //__m128 collapseDist	= _mm_movehl_ps(dist, dist);		// r0 = z;
+    //dist				= _mm_add_ss(dist, collapseDist);	// r0 = x + z;
+    //collapseDist		= _mm_shuffle_ps(dist, dist, _MM_SHUFFLE(0, 0, 0, 1));	// r0 = y;
+    //dist				= _mm_add_ss(dist, collapseDist);	// r0 = x + y + z;
+    //dist				= _mm_sqrt_ss(dist);
+
+    __m128 lessThan     = _mm_cmplt_ss(dist, _mm_set_ss(distToCheck));
+    int isLessThan = _mm_movemask_ps(lessThan);
+    checkResult = (boolean) (isLessThan & 1);
+
+    float res;
+    _mm_store_ss(&res, dist);
+    return res;
+}
+
+_FORCE_INLINE void FrustumTestClipSpace(const gmtl::VecA4f* pPoints, int* pInsidePlaneMask)
+{
+    __m128 xxxx1 = _mm_load_ps((float*) pPoints);
+    __m128 yyyy1 = _mm_load_ps((float*) &(pPoints[1]));
+    __m128 zzzz1 = _mm_load_ps((float*) &(pPoints[2]));
+    __m128 wwww1 = _mm_load_ps((float*) &(pPoints[3]));
+
+    __m128 xxxx2 = _mm_load_ps((float*) &(pPoints[4]));
+    __m128 yyyy2 = _mm_load_ps((float*) &(pPoints[5]));
+    __m128 zzzz2 = _mm_load_ps((float*) &(pPoints[6]));
+    __m128 wwww2 = _mm_load_ps((float*) &(pPoints[7]));
+
+    _MM_TRANSPOSE4_PS(xxxx1, yyyy1, zzzz1, wwww1);
+    _MM_TRANSPOSE4_PS(xxxx2, yyyy2, zzzz2, wwww2);
+
+    __m128 wwww1Neg = _mm_sub_ps(_mm_setzero_ps(), wwww1);
+    __m128 wwww2Neg = _mm_sub_ps(_mm_setzero_ps(), wwww2);
+
+    __m128 xInsideMax1 = _mm_cmple_ps(xxxx1, wwww1);
+    __m128 xInsideMin1 = _mm_cmpge_ps(xxxx1, wwww1Neg);                                            
+    __m128 yInsideMax1 = _mm_cmple_ps(yyyy1, wwww1);
+    __m128 yInsideMin1 = _mm_cmpge_ps(yyyy1, wwww1Neg);                                     
+    __m128 zInsideMax1 = _mm_cmple_ps(zzzz1, wwww1);
+    __m128 zInsideMin1 = _mm_cmpge_ps(zzzz1, _mm_setzero_ps());     
+
+    __m128 xInsideMax2 = _mm_cmple_ps(xxxx2, wwww2);
+    __m128 xInsideMin2 = _mm_cmpge_ps(xxxx2, wwww2Neg);                                             
+    __m128 yInsideMax2 = _mm_cmple_ps(yyyy2, wwww2);
+    __m128 yInsideMin2 = _mm_cmpge_ps(yyyy2, wwww2Neg);  
+    __m128 zInsideMax2 = _mm_cmple_ps(zzzz2, wwww2);
+    __m128 zInsideMin2 = _mm_cmpge_ps(zzzz2, _mm_setzero_ps());
+
+    // This part is platform specific
+    // We just want to end up with an integer per plane to
+    // show which point is inside the plane per bit
+    int inside = _mm_movemask_ps(xInsideMax1) << 4;
+    pInsidePlaneMask[0] = inside |_mm_movemask_ps(xInsideMax2);
+
+    inside = _mm_movemask_ps(xInsideMin1) << 4;
+    pInsidePlaneMask[1] = inside | _mm_movemask_ps(xInsideMin2);
+
+    inside = _mm_movemask_ps(yInsideMax1) << 4;
+    pInsidePlaneMask[2] = inside | _mm_movemask_ps(yInsideMax2);
+
+    inside = _mm_movemask_ps(yInsideMin1) << 4;
+    pInsidePlaneMask[3] = inside | _mm_movemask_ps(yInsideMin2);
+
+    inside = _mm_movemask_ps(zInsideMax1) << 4;
+    pInsidePlaneMask[4] = inside | _mm_movemask_ps(zInsideMax2);
+
+    inside = _mm_movemask_ps(zInsideMin1) << 4;
+    pInsidePlaneMask[5] = inside | _mm_movemask_ps(zInsideMin2);  
+}
+
+_FORCE_INLINE boolean IntersectsClipSpacePlanes(int* pInsidePlaneMask)
+{
+    return (pInsidePlaneMask[0] > 0) & (pInsidePlaneMask[1] > 0) &
+           (pInsidePlaneMask[2] > 0) & (pInsidePlaneMask[3] > 0) &
+           (pInsidePlaneMask[4] > 0) & (pInsidePlaneMask[5] > 0);
+}
+
+_FORCE_INLINE boolean ContainsClipSpacePlanes(int* pInsidePlaneMask)
+{
+    return (pInsidePlaneMask[0] & pInsidePlaneMask[1] &
+           pInsidePlaneMask[2] & pInsidePlaneMask[3] &
+           pInsidePlaneMask[4] & pInsidePlaneMask[5]) == 0xFF;
+}
+
 
 _NAMESPACE_END

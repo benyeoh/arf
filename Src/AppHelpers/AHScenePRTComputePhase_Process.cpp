@@ -38,10 +38,14 @@ int AHScenePRTComputePhase::SceneRenderPLShadowProcessComp::Run()
 		if(pRenderComp->IsMatTypeUsed(SHFX_MAT_CAST_CUBE_POINT_LIGHT_SHADOW))
 		{
 			const AABox& renderAABox = pRenderComp->GetWorldAABox();
-			float dist = AABoxToPointDist(&renderAABox, (gmtl::VecA3f*) &lightSphere.center);
 
-			if(dist < lightSphere.center[3])
-			{
+            boolean isLessThan;
+            float dist = AABoxToPointDistCheckLessThan(&renderAABox, (gmtl::VecA3f*) &lightSphere.center, lightSphere.center[3], isLessThan);
+			//float dist = AABoxToPointDist(&renderAABox, (gmtl::VecA3f*) &lightSphere.center);
+
+			//if(dist < lightSphere.center[3])
+            if(isLessThan)
+            {
 				pSHFXParamPool->SetZDistanceFromCamera(dist);//pBounds[i].min[2]);
 
 				AHSpatialComponent* pSpatial = (AHSpatialComponent*) pRenderComp->GetEntity()->GetComponent(COMP_SPATIAL);

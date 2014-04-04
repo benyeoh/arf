@@ -87,7 +87,7 @@
     <ClCompile Include="FastMath.cpp" />
     <ClCompile Include="FastMatInv.cpp" />
     <ClCompile Include="HelperFns.cpp" />
-    <ClCompile Include="MatMatMult.cpp" />
+    <ClCompile Include="MatOp.cpp" />
     <ClCompile Include="MatTranspose.cpp" />
     <ClCompile Include="TransformVec.cpp" />
     <ClCompile Include="TransformVecW1.cpp" />

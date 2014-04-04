@@ -40,10 +40,10 @@ struct IPThreadPool : public IRefCounted
 	_PURE( void Initialize(uint queueSizePow2, IPThread** pThreads, uint numThreads) )
 	_PURE( void Shutdown() )
 	
-	_PURE( void ProcessJob() )
+    _PURE( void ProcessJobs() )
 	_PURE( void QueueJob(IPRunnable& job) )
 	_PURE( void QueueJobUnsafe(IPRunnable& job) )
-	_PURE( void SetAlwaysActive(boolean isEnabled) )
+	//_PURE( void SetAlwaysActive(boolean isEnabled) )
 
 	_PURE( uint GetQueueSize() )	
 	_PURE( uint GetNumJobsPending() )
