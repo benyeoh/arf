@@ -284,10 +284,7 @@ void AHSceneRenderPhase::Update()
 		//GetThreadPool()->QueueJob(*pProcessComp);
 	}
 
-	while(m_pThreadPool->GetNumJobsPending() > 0)
-	{
-		m_pThreadPool->ProcessJob();
-	}
+	m_pThreadPool->ProcessJobs();
 }
 
 void AHSceneRenderPhase::Flush()

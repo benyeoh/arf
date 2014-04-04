@@ -109,6 +109,7 @@
     <ClInclude Include="gmtl\QuatOps.h" />
     <ClInclude Include="gmtl\Ray.h" />
     <ClInclude Include="gmtl\RayOps.h" />
+    <ClInclude Include="MatOp.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="gmtl\Sphere.h" />
     <ClInclude Include="gmtl\SphereOps.h" />
@@ -128,7 +129,6 @@
     <ClInclude Include="FastMath.h" />
     <ClInclude Include="FastMatInv.h" />
     <ClInclude Include="Interpolation.h" />
-    <ClInclude Include="MatMatMult.h" />
     <ClInclude Include="MonteCarloIntegrate.h" />
     <ClInclude Include="SphericalHarmonics.h" />
     <ClInclude Include="TransformVec.h" />

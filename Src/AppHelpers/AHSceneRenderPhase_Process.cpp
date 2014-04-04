@@ -38,11 +38,15 @@ int AHSceneRenderPhase::SceneRenderPLShadowProcessComp::Run()
 		if(pRenderComp->IsMatTypeUsed(SHFX_MAT_CAST_CUBE_POINT_LIGHT_SHADOW))
 		{
 			const AABox& renderAABox = pRenderComp->GetWorldAABox();
-			float dist = AABoxToPointDist(&renderAABox, (gmtl::VecA3f*) &lightSphere.center);
+			//float dist = AABoxToPointDist(&renderAABox, (gmtl::VecA3f*) &lightSphere.center);
+
+            boolean isLessThan;
+            float dist = AABoxToPointDistCheckLessThan(&renderAABox, (gmtl::VecA3f*) &lightSphere.center, lightSphere.center[3], isLessThan);
 			
-			if(dist < lightSphere.center[3])
 			//if(AABoxInSphere(&renderAABox, &lightSphere))
-			{
+            //if(dist < lightSphere.center[3])
+            if(isLessThan)
+            {
 				//float diffMinY = renderAABox.min[1] - lightSphere.center[1];
 				//float diffMaxY = renderAABox.max[1] - lightSphere.center[1];
 

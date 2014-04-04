@@ -17,4 +17,3 @@
 #include <intrin.h>
 #include "BoundsSSE.h"
 #include "HelperFns.h"
-

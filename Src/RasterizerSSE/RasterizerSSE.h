@@ -26,7 +26,7 @@
 //#include "RasterizeTiles.h"
 //#pragma optimize("", off)
 
-#define _RASTERIZER_SSE_INLINE	__forceinline
+#define _RASTERIZER_SSE_INLINE	_FORCE_INLINE
 
 //#undef _mm_rcp_ss
 //#undef _mm_rcp_ps

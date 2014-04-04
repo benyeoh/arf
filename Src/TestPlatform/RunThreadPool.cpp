@@ -143,11 +143,8 @@ void RunThreadPool()
 			pThreadPool->QueueJob(g_AddWorkRunnable[i]);
 		}
 
-		while(pThreadPool->GetNumJobsPending() > 0)
-		{
-			pThreadPool->ProcessJob();
-			//_TRACE(_W("ThreadPool: jobs %d, var %d\n"), pThreadPool->GetNumJobsInQueue(), g_SharedTestVar); 
-		}
+		pThreadPool->ProcessJobs();
+		//_TRACE(_W("ThreadPool: jobs %d, var %d\n"), pThreadPool->GetNumJobsInQueue(), g_SharedTestVar); 
 
 		_TRACE( _W("K: %d\n"), k );
 	}

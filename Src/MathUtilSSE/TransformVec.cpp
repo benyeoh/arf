@@ -13,7 +13,7 @@
 
 _NAMESPACE_BEGIN
 
-inline gmtl::VecA4f* 
+_FORCE_INLINE gmtl::VecA4f* 
 TransformVec(const gmtl::MatrixA44f* pMat, const gmtl::VecA4f* pVecIn, gmtl::VecA4f* pVecOut)
 {
 	__m128 xmm0, xmm1, xmm2, xmm3;

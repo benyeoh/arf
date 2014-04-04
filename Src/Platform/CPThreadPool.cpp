@@ -33,6 +33,7 @@ CPThreadPool::CPThreadPool()
 	, m_NumThreads(0)
 	, m_ppThreads(NULL)
 	, m_ThreadIndexCount(0)
+    , m_NumIdleThreads(0)
 	//, m_NumJobsPending(0)
 {
     m_ProcessData.jobIndexProcess = 0;
@@ -40,6 +41,7 @@ CPThreadPool::CPThreadPool()
     m_AddData.jobIndexAdd = 0;
     m_AddData.queueLock = SPIN_LOCK_RELEASED;
     m_JobData.numJobsInQueue = 0;
+    m_NumExternalThreads = 0;
 }
 
 CPThreadPool::~CPThreadPool()
@@ -107,10 +109,14 @@ void CPThreadPool::Initialize(uint queueSizePow2, IPThread** pThreads, uint numT
 
 void CPThreadPool::WorkerWait()
 {
-	if(!m_IsAlwaysActive)
+    AtomicInc(&m_NumIdleThreads);
+
+	//if(!m_IsAlwaysActive)
 		DoWaitThread();
-	else
-		DoYieldThread();
+	//else
+	//	DoYieldThread();
+
+    AtomicDec(&m_NumIdleThreads);
 }
 
 int CPThreadPool::Run()
@@ -146,42 +152,101 @@ void CPThreadPool::WorkerJobInit(int numJobs)
 }
 
 void CPThreadPool::WorkerProcessJobs()
-{
-	// Keep trying to get a lock as long as there are jobs
+{ 
+    //uint processIndex = AtomicInc((int*) &m_ProcessIndex) - 1;
+    //int jobIndexToProcess = (processIndex+1) & (m_QueueSize-1);
+
+    //IPRunnable* pRunnable = m_pJobQueue[jobIndexToProcess];
+    //_DEBUG_ASSERT(m_ReservedQueue[jobIndexProcess] != EMPTY);
+    //m_ReservedQueue[jobIndexToProcess] = EMPTY;
+
+    //pRunnable->Run();
+
+    //int numJobs;
+    //uint addIndex = m_AddIndex;
+    //if(addIndex >= processIndex)
+    //    numJobs = addIndex - processIndex;
+    //else
+    //    numJobs = (0xFFFFFFFF - processIndex + 1) + addIndex;
+ 
+    //// TODO: Need to sync here with main thread
+    //// Only the main thread may do AtomicAdd(&m_NumThreads)
+    //// and needs to sync here
+    //// ---------------------
+    //WorkerJobFinished(numJobs);
+    //// ---------------------
+
+
+    //// Just awoke so go to main loop
+    //return;
+
+    // Keep trying to get a lock as long as there are jobs
 	// This is to support threads not in the threadpool to also process jobs in the queue
 	while( m_JobData.numJobsInQueue > 0 )
 	{
-		if( AtomicCompareAndSwap(&m_ProcessData.processLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
-		{
-			int jobIndexProcess = m_ProcessData.jobIndexProcess;
-			if(m_ReservedQueue[jobIndexProcess] == RESERVED)
-			{
-				m_ReservedQueue[jobIndexProcess] = PROCESSING;
-				m_ProcessData.jobIndexProcess = (jobIndexProcess+1) & (m_QueueSize-1);
+        if( AtomicCompareAndSwap(&m_ProcessData.processLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
+        {
+            int jobIndexProcess = m_ProcessData.jobIndexProcess;
+            if(m_ReservedQueue[jobIndexProcess] == RESERVED)
+            {
+                m_ReservedQueue[jobIndexProcess] = PROCESSING;
+                m_ProcessData.jobIndexProcess = (jobIndexProcess+1) & (m_QueueSize-1);
 
-				// Release lock
-				//AtomicSwap(&m_ProcessData.processLock, SPIN_LOCK_RELEASED);
-				m_ProcessData.processLock = SPIN_LOCK_RELEASED;
+                // Release lock
+                //AtomicSwap(&m_ProcessData.processLock, SPIN_LOCK_RELEASED);
+                m_ProcessData.processLock = SPIN_LOCK_RELEASED;
 
-				// Run the process
-				IPRunnable* pRunnable = m_pJobQueue[jobIndexProcess];
-				m_ReservedQueue[jobIndexProcess] = EMPTY;
+                // Run the process
+                IPRunnable* pRunnable = m_pJobQueue[jobIndexProcess];
+                m_ReservedQueue[jobIndexProcess] = EMPTY;
 
-				pRunnable->Run();	
-				int numJobs = AtomicDec(&m_JobData.numJobsInQueue);
+                int numJobs = AtomicDec(&m_JobData.numJobsInQueue);
+                pRunnable->Run();	
+                
+                //AtomicDec(&m_NumJobsPending);
 
-				//AtomicDec(&m_NumJobsPending);
+                WorkerJobFinished(numJobs);
 
-				WorkerJobFinished(numJobs);
+                // Just awoke so go to main loop
+                return;
+            }
+            else
+            {
+                m_ProcessData.processLock = SPIN_LOCK_RELEASED;
+            }
+        }
 
-				// Just awoke so go to main loop
-				return;
-			}
-			else
-			{
-				m_ProcessData.processLock = SPIN_LOCK_RELEASED;
-			}
-		}
+		//if( AtomicCompareAndSwap(&m_ProcessData.processLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
+		//{
+		//	int jobIndexProcess = m_ProcessData.jobIndexProcess;
+		//	if(m_ReservedQueue[jobIndexProcess] == RESERVED)
+		//	{
+		//		m_ReservedQueue[jobIndexProcess] = PROCESSING;
+		//		m_ProcessData.jobIndexProcess = (jobIndexProcess+1) & (m_QueueSize-1);
+
+		//		// Release lock
+		//		//AtomicSwap(&m_ProcessData.processLock, SPIN_LOCK_RELEASED);
+		//		m_ProcessData.processLock = SPIN_LOCK_RELEASED;
+
+		//		// Run the process
+		//		IPRunnable* pRunnable = m_pJobQueue[jobIndexProcess];
+		//		m_ReservedQueue[jobIndexProcess] = EMPTY;
+
+		//		pRunnable->Run();	
+		//		int numJobs = AtomicDec(&m_JobData.numJobsInQueue);
+
+		//		//AtomicDec(&m_NumJobsPending);
+
+		//		WorkerJobFinished(numJobs);
+
+		//		// Just awoke so go to main loop
+		//		return;
+		//	}
+		//	else
+		//	{
+		//		m_ProcessData.processLock = SPIN_LOCK_RELEASED;
+		//	}
+		//}
 
 		//int jobIndexProcess = m_ProcessData.jobIndexProcess ;//(m_ProcessData.jobIndexProcess) & (m_QueueSize-1);//m_ProcessData.jobIndexProcess 
 
@@ -224,39 +289,46 @@ void CPThreadPool::WorkerProcessJobs()
 	WorkerWait();
 }
 
-void CPThreadPool::ProcessJob()
+void CPThreadPool::ProcessJobs()
 {
-	// NOTE: Called by external threads to also share in processing jobs in the queue
-
-	while( m_JobData.numJobsInQueue > 0 )
+	// NOTE: Called by external main thread to also share in processing jobs in the queue
+	while(true)
 	{
-		if( AtomicCompareAndSwap(&m_ProcessData.processLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
-		{
-			int jobIndexProcess = m_ProcessData.jobIndexProcess;
-			if(m_ReservedQueue[jobIndexProcess] == RESERVED)
-			{
-				m_ReservedQueue[jobIndexProcess] = PROCESSING;
-				m_ProcessData.jobIndexProcess = (jobIndexProcess+1) & (m_QueueSize-1);
+        if( m_JobData.numJobsInQueue > 0)
+        {
+		    if( AtomicCompareAndSwap(&m_ProcessData.processLock, SPIN_LOCK_ACQUIRED, SPIN_LOCK_RELEASED) == SPIN_LOCK_RELEASED )
+		    {
+			    int jobIndexProcess = m_ProcessData.jobIndexProcess;
+			    if(m_ReservedQueue[jobIndexProcess] == RESERVED)
+			    {
+				    m_ReservedQueue[jobIndexProcess] = PROCESSING;
+				    m_ProcessData.jobIndexProcess = (jobIndexProcess+1) & (m_QueueSize-1);
 
-				// Release lock
-				//AtomicSwap(&m_ProcessData.processLock, SPIN_LOCK_RELEASED);
-				m_ProcessData.processLock = SPIN_LOCK_RELEASED;
+				    // Release lock
+				    //AtomicSwap(&m_ProcessData.processLock, SPIN_LOCK_RELEASED);
+				    m_ProcessData.processLock = SPIN_LOCK_RELEASED;
 
-				// Run the process
-				IPRunnable* pRunnable = m_pJobQueue[jobIndexProcess];
-				m_ReservedQueue[jobIndexProcess] = EMPTY;
+				    // Run the process
+				    IPRunnable* pRunnable = m_pJobQueue[jobIndexProcess];
+				    m_ReservedQueue[jobIndexProcess] = EMPTY;
+                
+                    // Lock shared count
+                    AtomicDec(&m_JobData.numJobsInQueue);
 
-				pRunnable->Run();	
-				
-				// Lock shared count
-				AtomicDec(&m_JobData.numJobsInQueue);
-				return;
-			}
-			else
-			{
-				m_ProcessData.processLock = SPIN_LOCK_RELEASED;
-			}
-		}
+				    pRunnable->Run();								
+			    }
+			    else
+			    {
+				    m_ProcessData.processLock = SPIN_LOCK_RELEASED;
+			    }
+		    }
+        }
+        else if(m_NumIdleThreads != m_NumThreads)
+        {
+            DoYieldThread();
+        }
+        else
+            break;
 	}
 }
 
@@ -333,10 +405,10 @@ uint CPThreadPool::GetNumJobsPending()
 	return (uint) m_JobData.numJobsInQueue;
 }
 
-void CPThreadPool::SetAlwaysActive(boolean isEnabled)
-{
-	m_IsAlwaysActive = isEnabled;
-}
+//void CPThreadPool::SetAlwaysActive(boolean isEnabled)
+//{
+//	m_IsAlwaysActive = isEnabled;
+//}
 
 uint CPThreadPool::GetNumThreads()
 {
