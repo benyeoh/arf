@@ -175,9 +175,6 @@
     <ClInclude Include="Interpolation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MatMatMult.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MonteCarloIntegrate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -193,8 +190,9 @@
     <ClInclude Include="VecOp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MathUtil.h">
-      <Filter>gmtl</Filter>
+    <ClInclude Include="MathUtil.h" />
+    <ClInclude Include="MatOp.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

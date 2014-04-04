@@ -435,7 +435,7 @@ boolean Initialize()
 	m_LastNumOfFrames = 0;
 	m_NumFrames = 0;
 	m_LastTimeElapsed = 0.0f;
-
+    
 	// Get the application path	
 	wchar filePath[256];
 	GetModuleFileName(NULL, filePath, 256);

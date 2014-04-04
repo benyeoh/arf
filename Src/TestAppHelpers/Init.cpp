@@ -803,11 +803,12 @@ void InitAppHelpers()
 
 	pDirLight->SetShadowDirLight(pShadowDL, 1.8f, 700.0f, FALSE);
 	pDirLight->SetDeferredDirLight(pLightGroup, pRender);
-	pDirLight->SetScene(g_pSceneContainer);
 
+#ifdef USE_DIR_LIGHT
+    pDirLight->SetScene(g_pSceneContainer);
 	pEntity->AddComponent(pDirLight);
 	g_pEntityMgr->AddEntity(pEntity);
-
+#endif
 	g_pEntityMgr->UpdateComponentsTemp();
 
 #ifdef _USE_PRT_VERSION

@@ -13,7 +13,7 @@
 
 _NAMESPACE_BEGIN
 
-inline void
+_FORCE_INLINE void
 LoadUnalignedMatrix44(const gmtl::Matrix44f* pMat, __m128 pData[4]);
 
 _NAMESPACE_END

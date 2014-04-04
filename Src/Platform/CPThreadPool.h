@@ -52,8 +52,13 @@ private:
 	boolean m_IsAlwaysActive;
 
 	int		m_ThreadIndexCount;
-
+    int     m_NumExternalThreads;
+   
     uint m_QueueSize;
+    
+    _ALIGN(_CACHE_LINE_SIZE) uint m_ProcessIndex;
+    _ALIGN(_CACHE_LINE_SIZE) uint m_AddIndex;
+    _ALIGN(_CACHE_LINE_SIZE) int m_NumIdleThreads;
 
 public:
 	CPThreadPool();
@@ -83,8 +88,8 @@ public:
 
 	void QueueJobUnsafe(IPRunnable& job);
 	void QueueJob(IPRunnable& job);
-	void ProcessJob();
-	void SetAlwaysActive(boolean isEnabled);
+	void ProcessJobs();
+    //void SetAlwaysActive(boolean isEnabled);
 
 	uint GetQueueSize();
 	uint GetNumJobsPending();

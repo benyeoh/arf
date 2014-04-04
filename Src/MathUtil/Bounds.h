@@ -43,6 +43,9 @@ extern inline void
 TransformOOBoxToPoints(const gmtl::MatrixA44f* pMat, const OOBox* pIn, gmtl::VecA4f* pOut);
 
 extern inline void
+TransformAABoxToPoints(const gmtl::MatrixA44f* pMat, const AABox* pIn, gmtl::VecA4f* pOut);
+
+extern inline void
 TransformOOBoxToAABox(const gmtl::MatrixA44f* pMat, const OOBox* pIn, AABox* pOut);
 
 extern inline void
@@ -53,6 +56,8 @@ TransformAndProjectOOBoxToAABox(const gmtl::MatrixA44f* pMat, float nearPlane, f
 
 extern inline void
 TransformAndProjectAABoxToAABox(const gmtl::MatrixA44f* pMat, float nearPlane, float farPlane, const AABox* pIn, AABox* pOut);
+
+extern void ProjectPointsToAABox(float nearPlane, float farPlane, const gmtl::VecA4f* pIn, AABox* pOut);
 
 extern inline void
 BatchTransformAABoxToOOBox(const gmtl::MatrixA44f* pMat, const AABox* pIn, OOBox* pOut, int length);
@@ -100,5 +105,10 @@ extern inline boolean SphereInAABox(const Sphere* pSphere, const AABox* pBox);
 extern inline boolean SphereContainsAABox(const Sphere* pSphere, const AABox* pBox);
 
 extern inline float AABoxToPointDist(const AABox* pBox, const gmtl::VecA3f* pPoint);
+extern inline float AABoxToPointDistCheckLessThan(const AABox* pBox, const gmtl::VecA3f* pPoint, float distToCheck, boolean& checkResult);
+
+extern inline void FrustumTestClipSpace(const gmtl::VecA4f* pPoints, int* pInsidePlaneMask);
+extern inline boolean IntersectsClipSpacePlanes(int* pInsidePlaneMask);
+extern inline boolean ContainsClipSpacePlanes(int* pInsidePlaneMask);
 
 _NAMESPACE_END

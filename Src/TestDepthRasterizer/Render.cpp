@@ -534,7 +534,7 @@ void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 	//_DEBUG_COMPILE_ASSERT((CUBE_BATCH % 4) == 0);
 	double swStart = g_pPlatform->GetTimer().GetTime();
 
-	g_pThreadPool->SetAlwaysActive(TRUE);
+	//g_pThreadPool->SetAlwaysActive(TRUE);
 
 	_LOOPi(4)
 	{
@@ -547,22 +547,16 @@ void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 		g_pThreadPool->QueueJobUnsafe(g_TransformAndSetupJobs[i]);
 	}
 
-	while(g_pThreadPool->GetNumJobsPending() > 0)
-	{
-		g_pThreadPool->ProcessJob();
-	}
+	g_pThreadPool->ProcessJobs();
 
 	g_pThreadPool->QueueJobUnsafe(g_RenderJob1);
 	g_pThreadPool->QueueJobUnsafe(g_RenderJob2);
 	g_pThreadPool->QueueJobUnsafe(g_RenderJob3);
 	g_pThreadPool->QueueJobUnsafe(g_RenderJob4);
 
-	g_pThreadPool->SetAlwaysActive(FALSE);
+	//g_pThreadPool->SetAlwaysActive(FALSE);
 
-	while(g_pThreadPool->GetNumJobsPending() > 0)
-	{
-		g_pThreadPool->ProcessJob();
-	}
+	g_pThreadPool->ProcessJobs();
 
 	g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
     g_SWTimeElapsedPrevious[g_CurSWTimeIndex % NUM_AVG_TIMES] = g_SWTimeElapsed;
@@ -662,10 +656,7 @@ void RenderSWCubeInt()
         g_pThreadPool->QueueJobUnsafe(transformJobs[i]);
     }
 
-    while(g_pThreadPool->GetNumJobsPending() > 0)
-    {
-        g_pThreadPool->ProcessJob();
-    }
+    g_pThreadPool->ProcessJobs();
 
     // Sort bins in order of most triangles to least
     uint binIndices[NUM_BINS_X * NUM_BINS_Y];
@@ -702,10 +693,7 @@ void RenderSWCubeInt()
         g_pThreadPool->QueueJobUnsafe(rasterJobs[i]);        
     }
 
-    while(g_pThreadPool->GetNumJobsPending() > 0)
-    {
-        g_pThreadPool->ProcessJob();
-    }
+    g_pThreadPool->ProcessJobs();
 
     g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
     g_SWTimeElapsedPrevious[g_CurSWTimeIndex % NUM_AVG_TIMES] = g_SWTimeElapsed;

@@ -559,7 +559,7 @@ void BakedSMCompute::ComputeShadowMapSH(const BakedSMLocationEntry* pLocEntries,
                     ComputeSMTexToSHJob* pJob = pCompressJobPool->Get();
                     if(!pJob)
                     {
-                        pThreadPool->ProcessJob();
+                        pThreadPool->ProcessJobs();
                         pJob = pCompressJobPool->Get();
                         _DEBUG_ASSERT(pJob);
                     }
@@ -610,7 +610,7 @@ void BakedSMCompute::ComputeShadowMapSH(const BakedSMLocationEntry* pLocEntries,
                 ComputeSMTexToSHJob* pJob = pCompressJobPool->Get();
                 if(!pJob)
                 {
-                    pThreadPool->ProcessJob();
+                    pThreadPool->ProcessJobs();
                     pJob = pCompressJobPool->Get();
                     _DEBUG_ASSERT(pJob);
                 }
@@ -638,11 +638,7 @@ void BakedSMCompute::ComputeShadowMapSH(const BakedSMLocationEntry* pLocEntries,
     if(pThreadPool)
     {
         // Finish processing pending jobs if any
-        while(pThreadPool->GetNumJobsPending() > 0)
-        {
-            pThreadPool->ProcessJob();
-        }
-
+        pThreadPool->ProcessJobs();
         //_DELETE(pCompressJobPool);
     }
 }

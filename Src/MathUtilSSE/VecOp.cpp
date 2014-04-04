@@ -13,7 +13,7 @@
 
 _NAMESPACE_BEGIN
 
-inline void
+_FORCE_INLINE void
 VecScalarMult(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, float val)
 {
 	__m128 splat = _mm_set1_ps(val);
@@ -23,13 +23,13 @@ VecScalarMult(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, float val)
 	_mm_store_ps((float*) pResult, res);
 }
 
-inline void
+_FORCE_INLINE void
 VecScalarMult(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, float val)
 {
 	VecScalarMult(&_CAST_VECA4(*pResult), &_CAST_VECA4(*pV1), val);
 }
 
-inline void
+_FORCE_INLINE void
 VecVecMult(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, const gmtl::VecA4f* pV2)
 {
 	__m128& v1 = *((__m128*)(pV1));	// col 0
@@ -40,13 +40,13 @@ VecVecMult(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, const gmtl::VecA4f* p
 	_mm_store_ps((float*) pResult, res);
 }
 
-inline void
+_FORCE_INLINE void
 VecVecMult(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
 {
 	VecVecMult(&_CAST_VECA4(*pResult), &_CAST_VECA4(*pV1), &_CAST_VECA4(*pV2));
 }
 
-inline void VecVecMult(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
+_FORCE_INLINE void VecVecMult(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
 {
 	// SSE 4.1
 	__m128i& v1 = *((__m128i*)(pV1));	// col 0
@@ -58,7 +58,7 @@ inline void VecVecMult(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, const gmt
 }
 
 
-inline void
+_FORCE_INLINE void
 VecVecDiv(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, const gmtl::VecA4f* pV2)
 {
 	__m128& v1 = *((__m128*)(pV1));	// col 0
@@ -70,13 +70,13 @@ VecVecDiv(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, const gmtl::VecA4f* pV
 	_mm_store_ps((float*) pResult, res);
 }
 
-inline void
+_FORCE_INLINE void
 VecVecDiv(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
 {
 	VecVecDiv(&_CAST_VECA4(*pResult), &_CAST_VECA4(*pV1), &_CAST_VECA4(*pV2));
 }
 
-inline void VecScalarAdd(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, float val)
+_FORCE_INLINE void VecScalarAdd(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, float val)
 {
 	__m128 splat = _mm_set1_ps(val);
 	__m128& v1 = *((__m128*)(pV1));	// col 0
@@ -85,7 +85,7 @@ inline void VecScalarAdd(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, float v
 	_mm_store_ps((float*) pResult, res);
 }
 
-inline void
+_FORCE_INLINE void
 VecVecAdd(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, const gmtl::VecA4f* pV2)
 {
 	__m128& v1 = *((__m128*)(pV1));	// col 0
@@ -97,12 +97,12 @@ VecVecAdd(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, const gmtl::VecA4f* pV
 
 }
 
-inline void VecVecAdd(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
+_FORCE_INLINE void VecVecAdd(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
 {
 	VecVecAdd(&_CAST_VECA4(*pResult), &_CAST_VECA4(*pV1), &_CAST_VECA4(*pV2));
 }
 
-inline void VecVecAdd(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
+_FORCE_INLINE void VecVecAdd(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
 {
 	__m128i& v1 = *((__m128i*)(pV1));	// col 0
 	__m128i& v2 = *((__m128i*)(pV2));	// col 1
@@ -112,13 +112,13 @@ inline void VecVecAdd(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, const gmtl
 	_mm_store_si128((__m128i*) pResult, res);
 }
 
-inline void VecVecAdd(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
+_FORCE_INLINE void VecVecAdd(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
 {
 	VecVecAdd(&_CAST_VECA4I(*pResult), &_CAST_VECA4I(*pV1), &_CAST_VECA4I(*pV2));
 }
 
 
-inline void
+_FORCE_INLINE void
 VecVecSub(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, const gmtl::VecA4f* pV2)
 {
 	__m128& v1 = *((__m128*)(pV1));	// col 0
@@ -130,12 +130,12 @@ VecVecSub(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1, const gmtl::VecA4f* pV
 
 }
 
-inline void VecVecSub(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
+_FORCE_INLINE void VecVecSub(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
 {
 	VecVecSub(&_CAST_VECA4(*pResult), &_CAST_VECA4(*pV1), &_CAST_VECA4(*pV2));
 }
 
-inline void VecVecSub(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
+_FORCE_INLINE void VecVecSub(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
 {
 	__m128i& v1 = *((__m128i*)(pV1));	// col 0
 	__m128i& v2 = *((__m128i*)(pV2));	// col 1
@@ -144,12 +144,12 @@ inline void VecVecSub(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, const gmtl
 	_mm_store_si128((__m128i*) pResult, res);
 }
 
-inline void VecVecSub(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
+_FORCE_INLINE void VecVecSub(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
 {
 	VecVecSub(&_CAST_VECA4I(*pResult), &_CAST_VECA4I(*pV1), &_CAST_VECA4I(*pV2));
 }
 
-inline void
+_FORCE_INLINE void
 VecVecDot(float* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
 {
 	__m128& v1 = *((__m128*)(pV1));	// col 0
@@ -164,7 +164,7 @@ VecVecDot(float* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
 	_mm_store_ss(pResult, prod);
 }
 
-inline void
+_FORCE_INLINE void
 VecLength(float* pResult, const gmtl::VecA3f* pVec)
 {
 	__m128& v1 = *((__m128*)(pVec));	// col 0
@@ -183,7 +183,7 @@ VecLength(float* pResult, const gmtl::VecA3f* pVec)
 	_mm_store_ss(pResult, prod);
 }
 
-inline gmtl::VecA3f*
+_FORCE_INLINE gmtl::VecA3f*
 NormalizeVec(gmtl::VecA3f* pResult, const gmtl::VecA3f* pIn)
 {
 	__m128 vec	= _mm_load_ps((float*) pIn->mData);
@@ -203,7 +203,7 @@ NormalizeVec(gmtl::VecA3f* pResult, const gmtl::VecA3f* pIn)
 	return pResult;
 }
 
-inline void
+_FORCE_INLINE void
 NormalizeVecLength(float* pLength, gmtl::VecA3f* pResult, const gmtl::VecA3f* pIn)
 {
 	__m128 vec	= _mm_load_ps((float*) pIn->mData);
@@ -225,7 +225,7 @@ NormalizeVecLength(float* pLength, gmtl::VecA3f* pResult, const gmtl::VecA3f* pI
 	_mm_store_ps(pResult->mData, vec);
 }
 
-inline void
+_FORCE_INLINE void
 VecCrossNormalize(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
 {
 	__m128& v1 = *((__m128*)(pV1));	// col 0
@@ -254,7 +254,7 @@ VecCrossNormalize(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::Ve
 	_mm_store_ps((float*) pResult, temp1);
 }
 
-inline void
+_FORCE_INLINE void
 VecVecSlerp(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2, float t)
 {
 	gmtl::VecA3f basis;
@@ -305,7 +305,7 @@ VecVecSlerp(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* 
 	VecVecAdd((gmtl::VecA4f*)pResult, (gmtl::VecA4f*)&proj1, (gmtl::VecA4f*)&proj2);
 }
 
-inline void
+_FORCE_INLINE void
 VecVecMin(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
 {
 	__m128& v1 = *((__m128*)(pV1));	// col 0
@@ -315,7 +315,7 @@ VecVecMin(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV
 	_mm_store_ps((float*) pResult, res);
 }
 
-inline void VecVecMin(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
+_FORCE_INLINE void VecVecMin(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
 {
     __m128i& v1 = *((__m128i*)(pV1));	// col 0
     __m128i& v2 = *((__m128i*)(pV2));	// col 1
@@ -325,7 +325,7 @@ inline void VecVecMin(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl
     _mm_store_si128((__m128i*)pResult, res);
 }
 
-inline void VecVecMax(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
+_FORCE_INLINE void VecVecMax(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
 {
     __m128i& v1 = *((__m128i*)(pV1));	// col 0
     __m128i& v2 = *((__m128i*)(pV2));	// col 1
@@ -335,7 +335,7 @@ inline void VecVecMax(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, const gmtl
     _mm_store_si128((__m128i*)pResult, res);
 }
 
-inline void
+_FORCE_INLINE void
 VecVecMax(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV2)
 {
 	__m128& v1 = *((__m128*)(pV1));	// col 0
@@ -345,12 +345,12 @@ VecVecMax(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1, const gmtl::VecA3f* pV
 	_mm_store_ps((float*) pResult, res);
 }
 
-inline void VecFloor(gmtl::VecA3i* pResult, const gmtl::VecA3f* pV1)
+_FORCE_INLINE void VecFloor(gmtl::VecA3i* pResult, const gmtl::VecA3f* pV1)
 {
 	VecFloor((gmtl::VecA4i*) pResult, (const gmtl::VecA4f*) pV1);
 }
 
-inline void VecFloor(gmtl::VecA4i* pResult, const gmtl::VecA4f* pV1)
+_FORCE_INLINE void VecFloor(gmtl::VecA4i* pResult, const gmtl::VecA4f* pV1)
 {
     __m128& v =  *((__m128*)(pV1));
     __m128 v2x = _mm_add_ps(v, v);
@@ -372,12 +372,12 @@ inline void VecFloor(gmtl::VecA4i* pResult, const gmtl::VecA4f* pV1)
 	//_mm_store_si128((__m128i*)pResult, iv);
 }
 
-inline void VecFloor(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1)
+_FORCE_INLINE void VecFloor(gmtl::VecA3f* pResult, const gmtl::VecA3f* pV1)
 {
 	VecFloor((gmtl::VecA4f*) pResult, (const gmtl::VecA4f*) pV1);
 }
 
-inline void VecFloor(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1)
+_FORCE_INLINE void VecFloor(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1)
 {
     __m128& v =  *((__m128*)(pV1));
     __m128 v2x = _mm_add_ps(v, v);
@@ -399,34 +399,34 @@ inline void VecFloor(gmtl::VecA4f* pResult, const gmtl::VecA4f* pV1)
 	//_mm_store_ps((float*)pResult, res);
 }
 
-inline void VecIntToFloat(gmtl::VecA3f* pDest, const gmtl::VecA3i* pV1)
+_FORCE_INLINE void VecIntToFloat(gmtl::VecA3f* pDest, const gmtl::VecA3i* pV1)
 {
 	VecIntToFloat((gmtl::VecA4f*) pDest, (const gmtl::VecA4i*) pV1);
 }
 
-inline void VecIntToFloat(gmtl::VecA4f* pDest, const gmtl::VecA4i* pV1)
+_FORCE_INLINE void VecIntToFloat(gmtl::VecA4f* pDest, const gmtl::VecA4i* pV1)
 {
 	__m128 res = _mm_cvtepi32_ps(*((__m128i*)pV1));
 	_mm_store_ps((float*)pDest, res);
 }
 
-inline void VecFloatToInt(gmtl::VecA3i* pDest, const gmtl::VecA3f* pV1)
+_FORCE_INLINE void VecFloatToInt(gmtl::VecA3i* pDest, const gmtl::VecA3f* pV1)
 {
 	VecFloatToInt((gmtl::VecA4i*) pDest, (const gmtl::VecA4f*) pV1);
 }
 
-inline void VecFloatToInt(gmtl::VecA4i* pDest, const gmtl::VecA4f* pV1)
+_FORCE_INLINE void VecFloatToInt(gmtl::VecA4i* pDest, const gmtl::VecA4f* pV1)
 {
 	__m128i res = _mm_cvttps_epi32(*((__m128*)pV1));
 	_mm_store_si128((__m128i*)pDest, res);
 }
 
-inline void VecVecOr(gmtl::VecA3i* pDest, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
+_FORCE_INLINE void VecVecOr(gmtl::VecA3i* pDest, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
 {
 	VecVecOr((gmtl::VecA4i*) pDest, (const gmtl::VecA4i*) pV1, (const gmtl::VecA4i*) pV2);
 }
 
-inline void VecVecOr(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
+_FORCE_INLINE void VecVecOr(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
 {
 	__m128i& v1 = *((__m128i*)(pV1));
 	__m128i& v2 = *((__m128i*)(pV2));
@@ -435,12 +435,12 @@ inline void VecVecOr(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, const gmtl::V
 	_mm_store_si128((__m128i*)pDest, res);
 }
 
-inline void VecScalarAnd(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, uint scalar)
+_FORCE_INLINE void VecScalarAnd(gmtl::VecA3i* pResult, const gmtl::VecA3i* pV1, uint scalar)
 {
 	VecScalarAnd((gmtl::VecA4i*) pResult, (const gmtl::VecA4i*) pV1, scalar);
 }
 
-inline void VecScalarAnd(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, uint scalar)
+_FORCE_INLINE void VecScalarAnd(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, uint scalar)
 {
 	__m128i& v1 = *((__m128i*)(pV1));
 	__m128i v2 = _mm_set1_epi32((int) scalar);
@@ -449,12 +449,12 @@ inline void VecScalarAnd(gmtl::VecA4i* pResult, const gmtl::VecA4i* pV1, uint sc
 	_mm_store_si128((__m128i*)pResult, res);
 }
 
-inline void VecScalarShiftLL(gmtl::VecA3i* pDest, const gmtl::VecA3i* pV1, uint scalar)
+_FORCE_INLINE void VecScalarShiftLL(gmtl::VecA3i* pDest, const gmtl::VecA3i* pV1, uint scalar)
 {
 	VecScalarShiftLL((gmtl::VecA4i*) pDest, (const gmtl::VecA4i*) pV1, scalar);
 }
 
-inline void VecScalarShiftLL(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, uint scalar)
+_FORCE_INLINE void VecScalarShiftLL(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, uint scalar)
 {
 	__m128i& v1 = *((__m128i*)(pV1));
 	__m128i res = _mm_slli_epi32(v1, (int) scalar);
@@ -462,12 +462,12 @@ inline void VecScalarShiftLL(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, uint 
 	_mm_store_si128((__m128i*)pDest, res);
 }
 
-inline void VecScalarShiftRL(gmtl::VecA3i* pDest, const gmtl::VecA3i* pV1, uint scalar)
+_FORCE_INLINE void VecScalarShiftRL(gmtl::VecA3i* pDest, const gmtl::VecA3i* pV1, uint scalar)
 {
 	VecScalarShiftRL((gmtl::VecA4i*) pDest, (const gmtl::VecA4i*) pV1, scalar);
 }
 
-inline void VecScalarShiftRL(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, uint scalar)
+_FORCE_INLINE void VecScalarShiftRL(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, uint scalar)
 {
 	__m128i& v1 = *((__m128i*)(pV1));
 	__m128i res = _mm_srli_epi32(v1, (int) scalar);
@@ -475,12 +475,12 @@ inline void VecScalarShiftRL(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, uint 
 	_mm_store_si128((__m128i*)pDest, res);
 }
 
-inline void VecVecShiftRL(gmtl::VecA3i* pDest, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
+_FORCE_INLINE void VecVecShiftRL(gmtl::VecA3i* pDest, const gmtl::VecA3i* pV1, const gmtl::VecA3i* pV2)
 {
 	VecVecShiftRL((gmtl::VecA4i*) pDest, (const gmtl::VecA4i*) pV1, (const gmtl::VecA4i*) pV2);
 }
 
-inline void VecVecShiftRL(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
+_FORCE_INLINE void VecVecShiftRL(gmtl::VecA4i* pDest, const gmtl::VecA4i* pV1, const gmtl::VecA4i* pV2)
 {
     // TODO: Requires AVX
     _DEBUG_ASSERT(FALSE);
