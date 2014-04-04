@@ -17,7 +17,7 @@
 
 _NAMESPACE_BEGIN
 
-inline int 
+_FORCE_INLINE int 
 FastFloor(float val)
 {
     __m128 xScalar = _mm_load_ss(&val);
@@ -46,7 +46,7 @@ FastFloor(float val)
 	//return i;
 }
 
-inline int 
+_FORCE_INLINE int 
 FastCeiling(float val)
 {
 	const float ROUND_POSITIVE_INFINITY = -0.5f;
@@ -64,7 +64,7 @@ FastCeiling(float val)
 	return -i;
 }
 
-inline int
+_FORCE_INLINE int
 FastRound(float val)
 {
 	const float ROUND_NEAREST = 0.5f;
@@ -82,7 +82,7 @@ FastRound(float val)
 	return i;
 }
 
-inline int
+_FORCE_INLINE int
 FastTruncate(float val)
 {
 	const float ROUND_NEGATIVE_INFINITY = -0.5f;

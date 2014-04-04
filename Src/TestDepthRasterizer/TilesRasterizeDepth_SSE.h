@@ -58,7 +58,7 @@ const static __m128 zeroConstant = _mm_setzero_ps();
 #endif
 
 template<uint outTileSize>
-__forceinline void TilesRasterizeEdgeCheckDepth(const void* pRasterInfo, float* pDepthBuffer, __m128& depth, __m128& e1, __m128& e2, __m128& e3)
+_FORCE_INLINE void TilesRasterizeEdgeCheckDepth(const void* pRasterInfo, float* pDepthBuffer, __m128& depth, __m128& e1, __m128& e2, __m128& e3)
 {
     const RasterInfoDepth<1>* __restrict pRaster = ((RasterInfoDepth<1>*) pRasterInfo);
 
@@ -166,7 +166,7 @@ __forceinline void TilesRasterizeEdgeCheckDepth(const void* pRasterInfo, float* 
 }
 
 template<uint outTileSize>
-__forceinline void TilesRasterizeDepth(const void* pRasterInfo, float* pDepthBuffer, __m128& depth)
+_FORCE_INLINE void TilesRasterizeDepth(const void* pRasterInfo, float* pDepthBuffer, __m128& depth)
 {
     const RasterInfoDepth<1>* __restrict pRaster = ((RasterInfoDepth<1>*) pRasterInfo);
 
@@ -241,7 +241,7 @@ __forceinline void TilesRasterizeDepth(const void* pRasterInfo, float* pDepthBuf
 }
 
 template<uint outTileSize>
-__forceinline void QuadEdgeCheckDepth(const void* pRasterInfo, float* pDepthBuffer, __m128& depthTopBlock, __m128& e1TopBlock, __m128& e2TopBlock, __m128& e3TopBlock)
+_FORCE_INLINE void QuadEdgeCheckDepth(const void* pRasterInfo, float* pDepthBuffer, __m128& depthTopBlock, __m128& e1TopBlock, __m128& e2TopBlock, __m128& e3TopBlock)
 {
     const RasterInfoDepth<1>* __restrict pRaster = ((RasterInfoDepth<1>*) pRasterInfo);
 

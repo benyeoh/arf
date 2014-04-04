@@ -13,7 +13,7 @@
 
 _NAMESPACE_BEGIN
 
-inline gmtl::VecA4f* 
+_FORCE_INLINE gmtl::VecA4f* 
 TransformVecW1(const gmtl::MatrixA44f* pMat, const float* pVecIn, gmtl::VecA4f* pVecOut)
 {
 	__m128 xmm0, xmm1, xmm2;
@@ -43,7 +43,7 @@ TransformVecW1(const gmtl::MatrixA44f* pMat, const float* pVecIn, gmtl::VecA4f* 
 	return pVecOut;
 }
 
-inline gmtl::VecA4f* 
+_FORCE_INLINE gmtl::VecA4f* 
 TransformVecW1(const gmtl::MatrixA44f* pMat, const gmtl::VecA4f* pVecIn, gmtl::VecA4f* pVecOut)
 {
 	TransformVecW1(pMat, (const float*) pVecIn, pVecOut);
@@ -51,7 +51,7 @@ TransformVecW1(const gmtl::MatrixA44f* pMat, const gmtl::VecA4f* pVecIn, gmtl::V
 	return pVecOut;
 }
 
-inline gmtl::Vec4f* 
+_FORCE_INLINE gmtl::Vec4f* 
 TransformVecW1(const gmtl::Matrix44f* pMat, const gmtl::Vec4f* pVecIn, gmtl::Vec4f* pVecOut)
 {
 	__m128 xmm0, xmm1, xmm2;
@@ -83,7 +83,7 @@ TransformVecW1(const gmtl::Matrix44f* pMat, const gmtl::Vec4f* pVecIn, gmtl::Vec
 	return pVecOut;
 }
 
-inline gmtl::VecA3f* 
+_FORCE_INLINE gmtl::VecA3f* 
 TransformVecW1(const gmtl::MatrixA44f* pMat, const gmtl::VecA3f* pVecIn, gmtl::VecA3f* pVecOut)
 {
 	__m128 xmm0, xmm1, xmm2;
@@ -114,7 +114,7 @@ TransformVecW1(const gmtl::MatrixA44f* pMat, const gmtl::VecA3f* pVecIn, gmtl::V
 	return pVecOut;
 }
 
-inline gmtl::Vec3f* 
+_FORCE_INLINE gmtl::Vec3f* 
 TransformVecW1(const gmtl::Matrix44f* pMat, const gmtl::Vec3f* pVecIn, gmtl::Vec3f* pVecOut)
 {
 	__m128 xmm0, xmm1, xmm2;

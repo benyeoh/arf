@@ -23,7 +23,7 @@
 #include "Bounds.h"
 #include "BatchTransformVec.h"
 #include "BatchTransformVecW1.h"
-#include "MatMatMult.h"
+#include "MatOp.h"
 #include "TransformVec.h"
 #include "TransformVecW1.h"
 #include "VecOp.h"

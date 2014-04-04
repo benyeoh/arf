@@ -47,7 +47,7 @@ const static _ALIGN(16) uint OCTANT_ORDER_SECOND_QUAD[4] =
 };
 
 // Octant pos
-const int NUM_BITS_XZ			= 12;
+const int NUM_BITS_XZ			= 14;
 const int NUM_BITS_Y			= 32 - (NUM_BITS_XZ + NUM_BITS_XZ);
 const int EFFECTIVE_RANGE_XZ	= 1 << (NUM_BITS_XZ - 1);
 const int EFFECTIVE_RANGE_Y		= 1 << (NUM_BITS_Y - 1);

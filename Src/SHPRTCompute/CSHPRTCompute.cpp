@@ -625,7 +625,7 @@ void CSHPRTCompute::ComputeOccludedTransferDual(const SHPRTLocationEntry* pLocEn
 					CompressOcclTexDualToSHJob* pJob = pCompressJobPool->Get();
 					if(!pJob)
 					{
-						pThreadPool->ProcessJob();
+						pThreadPool->ProcessJobs();
 						pJob = pCompressJobPool->Get();
 						_DEBUG_ASSERT(pJob);
 					}
@@ -678,7 +678,7 @@ void CSHPRTCompute::ComputeOccludedTransferDual(const SHPRTLocationEntry* pLocEn
 				CompressOcclTexDualToSHJob* pJob = pCompressJobPool->Get();
 				if(!pJob)
 				{
-					pThreadPool->ProcessJob();
+					pThreadPool->ProcessJobs();
 					pJob = pCompressJobPool->Get();
 					_DEBUG_ASSERT(pJob);
 				}
@@ -711,10 +711,7 @@ void CSHPRTCompute::ComputeOccludedTransferDual(const SHPRTLocationEntry* pLocEn
 	if(pThreadPool)
 	{
 		// Finish processing pending jobs if any
-		while(pThreadPool->GetNumJobsPending() > 0)
-		{
-			pThreadPool->ProcessJob();
-		}
+		pThreadPool->ProcessJobs();
 
 		//_DELETE(pCompressJobPool);
 	}
@@ -852,7 +849,7 @@ void CSHPRTCompute::ComputeOccludedTransferSphere(const SHPRTLocationEntry* pLoc
 					CompressOcclTexDualToSHJob* pJob = pCompressJobPool->Get();
 					if(!pJob)
 					{
-						pThreadPool->ProcessJob();
+						pThreadPool->ProcessJobs();
 						pJob = pCompressJobPool->Get();
 						_DEBUG_ASSERT(pJob);
 					}
@@ -911,7 +908,7 @@ void CSHPRTCompute::ComputeOccludedTransferSphere(const SHPRTLocationEntry* pLoc
 				CompressOcclTexDualToSHJob* pJob = pCompressJobPool->Get();
 				if(!pJob)
 				{
-					pThreadPool->ProcessJob();
+					pThreadPool->ProcessJobs();
 					pJob = pCompressJobPool->Get();
 					_DEBUG_ASSERT(pJob);
 				}
@@ -945,11 +942,7 @@ void CSHPRTCompute::ComputeOccludedTransferSphere(const SHPRTLocationEntry* pLoc
 	if(pThreadPool)
 	{
 		// Finish processing pending jobs if any
-		while(pThreadPool->GetNumJobsPending() > 0)
-		{
-			pThreadPool->ProcessJob();
-		}
-
+		pThreadPool->ProcessJobs();
 		//_DELETE(pCompressJobPool);
 	}
 }
@@ -1132,7 +1125,7 @@ void CSHPRTCompute::ComputeOccludedTransfer(const SHPRTLocationEntry* pLocEntrie
 					CompressOcclTexToSHJob* pJob = pCompressJobPool->Get();
 					if(!pJob)
 					{
-						pThreadPool->ProcessJob();
+						pThreadPool->ProcessJobs();
 						pJob = pCompressJobPool->Get();
 						_DEBUG_ASSERT(pJob);
 					}
@@ -1273,7 +1266,7 @@ void CSHPRTCompute::ComputeOccludedTransfer(const SHPRTLocationEntry* pLocEntrie
 				CompressOcclTexToSHJob* pJob = pCompressJobPool->Get();
 				if(!pJob)
 				{
-					pThreadPool->ProcessJob();
+					pThreadPool->ProcessJobs();
 					pJob = pCompressJobPool->Get();
 					_DEBUG_ASSERT(pJob);
 				}
@@ -1303,10 +1296,7 @@ void CSHPRTCompute::ComputeOccludedTransfer(const SHPRTLocationEntry* pLocEntrie
 	if(pThreadPool)
 	{
 		// Finish processing pending jobs if any
-		while(pThreadPool->GetNumJobsPending() > 0)
-		{
-			pThreadPool->ProcessJob();
-		}
+		pThreadPool->ProcessJobs();
 
 		//_DELETE(pCompressJobPool);
 	}

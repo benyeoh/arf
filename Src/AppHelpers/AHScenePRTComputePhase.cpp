@@ -439,10 +439,7 @@ void AHScenePRTComputePhase::Update(const gmtl::VecA3f& loc, const gmtl::MatrixA
 		//GetThreadPool()->QueueJob(*pProcessComp);
 	}
 
-	while(m_pThreadPool->GetNumJobsPending() > 0)
-	{
-		m_pThreadPool->ProcessJob();
-	}
+	m_pThreadPool->ProcessJobs();
 }
 
 void AHScenePRTComputePhase::Flush()
