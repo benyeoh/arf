@@ -667,10 +667,10 @@ void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 		g_TransformAndSetupJobs[i].numCubes = numPerJob;
 	
 		//g_TransformAndSetupJobs[i].Run();
-		g_pThreadPool->QueueJobUnsafe(g_TransformAndSetupJobs[i]);
+		g_pThreadPool->QueueJob(g_TransformAndSetupJobs[i]);
 	}
 
-	g_pThreadPool->ProcessJobs();
+	g_pThreadPool->WaitUntilFinished();
 	
 	//g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
 
@@ -784,14 +784,17 @@ void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 	//double swStart = g_pPlatform->GetTimer().GetTime();
 	//while (g_RenderSync > 0);
 	//
-	g_pThreadPool->QueueJobUnsafe(g_RenderJob1);
-	g_pThreadPool->QueueJobUnsafe(g_RenderJob2);
-	g_pThreadPool->QueueJobUnsafe(g_RenderJob3);
-	g_pThreadPool->QueueJobUnsafe(g_RenderJob4);
+	IPRunnable* pRunnables[4];
+	pRunnables[0] = &g_RenderJob1;
+	pRunnables[1] = &g_RenderJob2;
+	pRunnables[2] = &g_RenderJob3;
+	pRunnables[3] = &g_RenderJob4;
+
+	g_pThreadPool->QueueJobs(pRunnables, 4);
 
 //	g_pThreadPool->SetAlwaysActive(FALSE);
 
-	g_pThreadPool->ProcessJobs();
+	g_pThreadPool->WaitUntilFinished();
 	
 	g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
 	//g_SWTimeElapsed += (g_RenderJob1.end - g_RenderJob1.start);

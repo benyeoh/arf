@@ -17,6 +17,7 @@ class CPThreadPoolWin32 : public CPThreadPool
 {
 private:
 	HANDLE m_Semaphore;
+	HANDLE m_Event;
 
 public:
 	CPThreadPoolWin32();
@@ -24,7 +25,7 @@ public:
 
 protected:
 	void DoWaitThread();
-	void DoSignalThread();
+	void DoSignalThreads(uint numThreads);
 	void DoSignalAllThreads();
 	void DoInitialize(uint queueSizePow2, IPThread** pThreads, uint numThreads);
 	void DoShutdown();
@@ -32,6 +33,10 @@ protected:
 
 	uint DoGetCurrentThreadIndex();
 	void DoSetCurrentThreadIndex(uint curIndex);
+
+	void DoWaitOnFinishedEvent();
+	void DoSignalOnFinishedEvent();
+	void DoResetOnFinishedEvent();
 };
 
 _NAMESPACE_END

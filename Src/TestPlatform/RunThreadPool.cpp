@@ -134,16 +134,20 @@ void RunThreadPool()
 	
 	g_pPlatform->GetTimer().BeginSample();
 
-	_LOOPk(32)
+	_LOOPk(16)
 	{
+		IPRunnable* pRunnables[NUM_JOBS];
 		_LOOPi(NUM_JOBS)
 		{
 			g_AddWorkRunnable[i].SetID(i);
 			g_AddWorkRunnable[i].SetPool(pThreadPool);
-			pThreadPool->QueueJob(g_AddWorkRunnable[i]);
+			pRunnables[i] = &g_AddWorkRunnable[i];
 		}
 
-		pThreadPool->ProcessJobs();
+		pThreadPool->QueueJobs(pRunnables, NUM_JOBS);
+		pThreadPool->WaitUntilFinished();
+
+		//pThreadPool->ProcessJobs();
 		//_TRACE(_W("ThreadPool: jobs %d, var %d\n"), pThreadPool->GetNumJobsInQueue(), g_SharedTestVar); 
 
 		_TRACE( _W("K: %d\n"), k );

@@ -460,8 +460,7 @@ boolean Initialize()
 	InitInput();
 	InitFontFX();
 	InitDebugFX();
-	InitManualJobDispatch();
-
+	
 	const RDisplayInfo& dispInfo = g_pRenderer->GetDisplayInfo();
 
 	gmtl::setPerspective(g_Proj, gmtl::Math::PI / 3.0f, ((float)dispInfo.backBufferWidth) / dispInfo.backBufferHeight, NEAR_PLANE, FAR_PLANE);
@@ -508,8 +507,6 @@ boolean Initialize()
 
 void Shutdown()
 {
-	ShutdownManualJobDispatch();
-
 	//_LOOPi(NUM_THREADS)
 	//{
 	//	g_pThreads[i]->Join();
