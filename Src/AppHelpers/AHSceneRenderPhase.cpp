@@ -278,13 +278,13 @@ void AHSceneRenderPhase::Update()
 		pProcessComp->numComp	= numCompLeft;
 		pProcessComp->pBounds	= &(m_FrustumStoreMain.ssbounds[numCompStart]);;
 		
-		__EXEC(pProcessComp);
+		__THREAD_EXEC(pProcessComp);
 
 		//pProcessComp->Run();
 		//GetThreadPool()->QueueJob(*pProcessComp);
 	}
 
-	m_pThreadPool->ProcessJobs();
+	m_pThreadPool->WaitUntilFinished();
 }
 
 void AHSceneRenderPhase::Flush()

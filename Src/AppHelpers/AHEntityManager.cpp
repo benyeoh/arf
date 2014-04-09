@@ -125,7 +125,7 @@ void AHEntityManager::UpdateThreaded(int updatePhase)
 			m_pPhaseRunContext[i].phaseNum	= updatePhase;
 			m_pPhaseRunContext[i].ppStart	= ppStart + (i * numEntitiesPerContext);
 
-			m_pThreadPool->QueueJobUnsafe(m_pPhaseRunContext[i]);
+			m_pThreadPool->QueueJob(m_pPhaseRunContext[i]);
 		}
 
 		uint numEntitiesStart = numEntitiesPerContext * numToDispatch;
@@ -138,7 +138,7 @@ void AHEntityManager::UpdateThreaded(int updatePhase)
 		m_pPhaseRunContext[numToDispatch].Run();
 		//m_pThreadPool->QueueJobUnsafe(m_pPhaseRunContext[numToDispatch]);
 
-		m_pThreadPool->ProcessJobs();
+		m_pThreadPool->WaitUntilFinished();
 	}
 }
 

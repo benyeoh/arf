@@ -105,7 +105,7 @@ extern double           g_SWTimeElapsedPrevious[NUM_AVG_TIMES];
 extern uint             g_CurSWTimeIndex;
 
 const static uint NUM_CUBES = 2048;
-const static int NUM_THREADS = 7;
+const static int NUM_THREADS = 8;
 
 extern IPThreadPoolPtr	g_pThreadPool;
 extern IPThreadPtr		g_pThreads[NUM_THREADS];
@@ -125,7 +125,7 @@ const static uint BIN_HEIGHT    = 32;
 const static uint NUM_BINS_X = RASTERIZE_BUFFER_W / BIN_WIDTH;
 const static uint NUM_BINS_Y = RASTERIZE_BUFFER_H / BIN_HEIGHT;
 
-const static uint       NUM_BIN_CONTEXTS = NUM_THREADS + 1;
+const static uint       NUM_BIN_CONTEXTS = NUM_THREADS;
 extern TriangleBin*     g_pTriBins;
 extern uint*            g_pNumTrisInBins;
 

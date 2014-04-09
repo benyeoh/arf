@@ -22,4 +22,20 @@ The VertexDesc->ID is derived from a global HashMap<VertexDescPackedKey, ID>. Th
 
 In the end we only have a relatively small number of VertexDesc so I think it's fine even if it there's some VertexDesc->ID to InputLayout mapping that is never removed.
 
-VertexBufferGroup for D3D11 should use SV_InstanceID for instancing. So, no need for creating a separate vertex buffer. Just pass all parameters via constant buffers.
+VertexBufferGroup for D3D11 should use SV_InstanceID for instancing. So, no need for creating a separate vertex buffer. Just pass all parameters via constant buffers
+
+
+ShaderGroup
+-----------
+
+shader s0
+{
+	Code
+	{
+	}
+
+	Annotations
+	{
+
+	}
+}

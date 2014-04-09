@@ -445,51 +445,6 @@ struct ManualRenderJobDispatch : public IPRunnable
 	}
 };
 
-ManualRenderJobDispatch g_Dispatch[NUM_THREADS];
-
-void InitManualJobDispatch()
-{
-	g_RenderJob1.startX = 0.5f;
-	g_RenderJob1.startY = 0.5f;
-//	g_RenderJob1.pRasterData = g_Raster;
-
-	g_RenderJob2.startX = HALF_RASTERIZE_BUFFER_W + 0.5f;
-	g_RenderJob2.startY = 0.5f;
-//	g_RenderJob2.pRasterData = g_Raster;
-
-	g_RenderJob3.startX = 0.5f;
-	g_RenderJob3.startY = HALF_RASTERIZE_BUFFER_H + 0.5f;
-//	g_RenderJob3.pRasterData = g_Raster;
-
-	g_RenderJob4.startX = HALF_RASTERIZE_BUFFER_W + 0.5f;
-	g_RenderJob4.startY = HALF_RASTERIZE_BUFFER_H + 0.5f;
-//	g_RenderJob4.pRasterData = g_Raster;
-
-	_LOOPi(NUM_THREADS)
-	{
-		g_Dispatch[i].isTerminating = FALSE;
-		g_Dispatch[i].pRenderJob = NULL;
-		g_Dispatch[i].id = i;
-	}
-
-	g_Dispatch[0].pRenderJob = &g_RenderJob1;
-	g_Dispatch[1].pRenderJob = &g_RenderJob2;
-	g_Dispatch[2].pRenderJob = &g_RenderJob3;
-
-	//_LOOPi(NUM_THREADS)
-	//{
-	//	g_pThreads[i]->Resume(&g_Dispatch[i]);
-	//}
-}
-
-void ShutdownManualJobDispatch()
-{
-	_LOOPi(NUM_THREADS)
-	{
-		g_Dispatch[i].isTerminating = TRUE;
-	}
-}
-
 void UntileDepthBuffer()
 {
     __m128 farPlane = _mm_set_ps1(FAR_PLANE);
@@ -544,19 +499,19 @@ void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 		g_TransformAndSetupJobs[i].numCubes = numPerJob;
 	
 		//g_TransformAndSetupJobs[i].Run();
-		g_pThreadPool->QueueJobUnsafe(g_TransformAndSetupJobs[i]);
+		g_pThreadPool->QueueJob(g_TransformAndSetupJobs[i]);
 	}
 
-	g_pThreadPool->ProcessJobs();
+	g_pThreadPool->WaitUntilFinished();
 
-	g_pThreadPool->QueueJobUnsafe(g_RenderJob1);
-	g_pThreadPool->QueueJobUnsafe(g_RenderJob2);
-	g_pThreadPool->QueueJobUnsafe(g_RenderJob3);
-	g_pThreadPool->QueueJobUnsafe(g_RenderJob4);
+	g_pThreadPool->QueueJob(g_RenderJob1);
+	g_pThreadPool->QueueJob(g_RenderJob2);
+	g_pThreadPool->QueueJob(g_RenderJob3);
+	g_pThreadPool->QueueJob(g_RenderJob4);
 
 	//g_pThreadPool->SetAlwaysActive(FALSE);
 
-	g_pThreadPool->ProcessJobs();
+	g_pThreadPool->WaitUntilFinished();
 
 	g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
     g_SWTimeElapsedPrevious[g_CurSWTimeIndex % NUM_AVG_TIMES] = g_SWTimeElapsed;
@@ -637,7 +592,7 @@ void RenderSWCubesST()
 
 void RenderSWCubeInt()
 {
-    _DEBUG_COMPILE_ASSERT((NUM_BIN_CONTEXTS >= (NUM_THREADS + 1)));
+    _DEBUG_COMPILE_ASSERT((NUM_BIN_CONTEXTS >= (NUM_THREADS)));
 
     int numPerJob = NUM_CUBES / NUM_BIN_CONTEXTS;
     _DEBUG_COMPILE_ASSERT((NUM_CUBES % NUM_BIN_CONTEXTS) == 0);
@@ -646,6 +601,7 @@ void RenderSWCubeInt()
     TransformAndSetupIntJob transformJobs[NUM_BIN_CONTEXTS];
 
     double swStart = g_pPlatform->GetTimer().GetTime();
+	IPRunnable* pRunnables[NUM_BIN_CONTEXTS];
     _LOOPi(NUM_BIN_CONTEXTS)
     {
         transformJobs[i].pCubeWVP = &(g_CubeWorldViewProj[i*numPerJob]);
@@ -653,10 +609,11 @@ void RenderSWCubeInt()
         transformJobs[i].pTriBins = g_pTriBins + i * NUM_BINS_X * NUM_BINS_Y;
         transformJobs[i].pNumTrisInBins = g_pNumTrisInBins + i * NUM_BINS_X * NUM_BINS_Y;
       
-        g_pThreadPool->QueueJobUnsafe(transformJobs[i]);
+		pRunnables[i] = &transformJobs[i];
     }
 
-    g_pThreadPool->ProcessJobs();
+	g_pThreadPool->QueueJobs(pRunnables, NUM_BIN_CONTEXTS);
+    g_pThreadPool->WaitUntilFinished();
 
     // Sort bins in order of most triangles to least
     uint binIndices[NUM_BINS_X * NUM_BINS_Y];
@@ -685,15 +642,18 @@ void RenderSWCubeInt()
     std::sort(binIndices, binIndices + NUM_BINS_X * NUM_BINS_Y, [&](const uint a, const uint b){ return totalNumTrianglesBins[a] > totalNumTrianglesBins[b]; });
 
     RenderJobInt rasterJobs[NUM_BINS_Y * NUM_BINS_X];
+	IPRunnable* pRasterRunnables[NUM_BINS_X * NUM_BINS_Y];
+	_DEBUG_ASSERT(numBins <= (NUM_BINS_Y * NUM_BINS_X));
 
     // Render all bins
     _LOOPi(numBins)
     {
         rasterJobs[i].binIndex = binIndices[i];
-        g_pThreadPool->QueueJobUnsafe(rasterJobs[i]);        
+		pRasterRunnables[i] = &rasterJobs[i];
     }
 
-    g_pThreadPool->ProcessJobs();
+	g_pThreadPool->QueueJobs(pRasterRunnables, numBins);
+    g_pThreadPool->WaitUntilFinished();
 
     g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
     g_SWTimeElapsedPrevious[g_CurSWTimeIndex % NUM_AVG_TIMES] = g_SWTimeElapsed;

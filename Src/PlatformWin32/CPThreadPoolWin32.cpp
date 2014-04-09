@@ -41,9 +41,9 @@ void CPThreadPoolWin32::DoWaitThread()
 	_DEBUG_ASSERT(ret == WAIT_OBJECT_0);
 }
 
-void CPThreadPoolWin32::DoSignalThread()
+void CPThreadPoolWin32::DoSignalThreads(uint numThreads)
 {
-	BOOL ret = ReleaseSemaphore(m_Semaphore, 1, NULL);
+	BOOL ret = ReleaseSemaphore(m_Semaphore, numThreads, NULL);
 	_DEBUG_ASSERT(ret);
 }
 
@@ -54,12 +54,33 @@ void CPThreadPoolWin32::DoSignalAllThreads()
 	BOOL ret = ReleaseSemaphore(m_Semaphore, MAX_RELEASE_COUNT, NULL);
 	_DEBUG_ASSERT(ret);
 }
-	
+
+void CPThreadPoolWin32::DoWaitOnFinishedEvent()
+{
+	DWORD ret = WaitForSingleObject(m_Event, INFINITE);
+	_DEBUG_ASSERT(ret != WAIT_FAILED);
+}
+
+void CPThreadPoolWin32::DoSignalOnFinishedEvent()
+{
+	BOOL ret = SetEvent(m_Event);
+	_DEBUG_ASSERT(ret);
+}
+
+void CPThreadPoolWin32::DoResetOnFinishedEvent()
+{
+	BOOL ret = ResetEvent(m_Event);
+	_DEBUG_ASSERT(ret);
+}
+
 void CPThreadPoolWin32::DoInitialize(uint queueSizePow2, IPThread** pThreads, uint numThreads)
 {
 	_DEBUG_ASSERT(numThreads < MAX_RELEASE_COUNT);
 	m_Semaphore = CreateSemaphore(NULL, 0, MAX_SEMAPHORE_COUNT, NULL);
 	_DEBUG_ASSERT(m_Semaphore);
+
+	m_Event = CreateEvent(NULL, TRUE, TRUE, NULL);
+	_DEBUG_ASSERT(m_Event);
 
 	if(s_ThreadLocalRef == 0)
 	{
@@ -78,6 +99,7 @@ void CPThreadPoolWin32::DoShutdown()
 	if(s_ThreadLocalRef == 0)
 		TlsFree(s_ThreadLocalIndex);
 
+	CloseHandle(m_Event);
 	CloseHandle(m_Semaphore);
 }
 

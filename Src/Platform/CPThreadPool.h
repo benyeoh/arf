@@ -15,33 +15,20 @@ _NAMESPACE_BEGIN
 
 class CPThreadPool : public CRefCounted<IPThreadPool>, public IPRunnable
 {
-    _ALIGN(_CACHE_LINE_SIZE) struct ProcessData
-    {
-        int jobIndexProcess;
-        int processLock;
-    };
-
-    _ALIGN(_CACHE_LINE_SIZE) struct AddData
-    {
-        int jobIndexAdd;
-        int queueLock;
-    };
-
-    _ALIGN(_CACHE_LINE_SIZE) struct JobData
-    {
-        int numJobsInQueue;
-    };
-
 private:
-    //_ALIGN(_CACHE_LINE_SIZE) struct  
-   // {
-        ProcessData m_ProcessData;
-        AddData m_AddData;
-        JobData m_JobData;
-   // }// m_SyncData;
+	_ALIGN(_CACHE_LINE_SIZE) uint m_ProcessIndex;
+	_ALIGN(_CACHE_LINE_SIZE) uint m_AddIndex;
+
+	_ALIGN(_CACHE_LINE_SIZE) struct
+	{
+		int	m_NumJobsInQueue;
+		boolean m_IsWaitingLock;
+	} m_AlignedVars;
+
+	//_ALIGN(_CACHE_LINE_SIZE) int	m_NumJobsInQueue;
+	//_ALIGN(_CACHE_LINE_SIZE) boolean m_IsWaitingLock;
 
     IPRunnable** m_pJobQueue;
-	int* m_ReservedQueue;
 	
 	//int m_NumJobsPending;
 	
@@ -52,13 +39,8 @@ private:
 	boolean m_IsAlwaysActive;
 
 	int		m_ThreadIndexCount;
-    int     m_NumExternalThreads;
    
     uint m_QueueSize;
-    
-    _ALIGN(_CACHE_LINE_SIZE) uint m_ProcessIndex;
-    _ALIGN(_CACHE_LINE_SIZE) uint m_AddIndex;
-    _ALIGN(_CACHE_LINE_SIZE) int m_NumIdleThreads;
 
 public:
 	CPThreadPool();
@@ -66,19 +48,22 @@ public:
 
 private:
 	void WorkerProcessJobs();
-	void WorkerJobInit(int numJobs);
+	void WorkerJobInit(int numJobs, int numJobsAdded);
 	void WorkerJobFinished(int numJobs);
 	void WorkerWait();
 
 protected:
 	_PURE( void DoWaitThread() )
-	_PURE( void DoSignalThread() )
+	_PURE( void DoSignalThreads(uint numThreads) )
 	_PURE( void DoSignalAllThreads() )
 	_PURE( void DoInitialize(uint queueSizePow2, IPThread** pThreads, uint numThreads) )
 	_PURE( void DoShutdown() )
 	_PURE( void DoYieldThread() )
 	_PURE( uint DoGetCurrentThreadIndex() )
 	_PURE( void DoSetCurrentThreadIndex(uint curIndex) )
+	_PURE( void DoWaitOnFinishedEvent() )
+	_PURE( void DoSignalOnFinishedEvent() )
+	_PURE( void DoResetOnFinishedEvent() )
 
 public:
 	void Initialize(uint queueSizePow2, IPThread** pThreads, uint numThreads);
@@ -86,9 +71,10 @@ public:
 
 	int Run();
 
-	void QueueJobUnsafe(IPRunnable& job);
+	void QueueJobs(IPRunnable** ppJobs, uint numJobs);
 	void QueueJob(IPRunnable& job);
-	void ProcessJobs();
+	void WaitUntilFinished();
+	//void ProcessJobs();
     //void SetAlwaysActive(boolean isEnabled);
 
 	uint GetQueueSize();

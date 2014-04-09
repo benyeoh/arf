@@ -23,9 +23,5 @@
 //void 
 //RenderDebugObjects();
 
-void InitManualJobDispatch();
-
-void ShutdownManualJobDispatch();
-
 void
 RenderAll();
