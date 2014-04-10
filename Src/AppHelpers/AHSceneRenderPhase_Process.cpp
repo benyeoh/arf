@@ -18,6 +18,10 @@ _NAMESPACE_BEGIN
 #define __EXEC(pComp)			pComp->Run()
 #define __THREAD_EXEC(pComp)	pOwner->GetThreadPool()->QueueJob(*pComp)
 
+#define _NUM_JOBS (pOwner->GetNumOfContexts() << 3)
+	
+const static uint MAX_NUM_JOBS = 256;
+
 // SceneRenderPLShadowProcessComp 
 int AHSceneRenderPhase::SceneRenderPLShadowProcessComp::Run()
 {
@@ -133,9 +137,12 @@ int AHSceneRenderPhase::SceneRenderDLShadowCullComp::Run()
 	// Split into dir light shadow process
 	if(numComp > 0)
 	{
-		uint numCompPerContext = numComp / pOwner->GetNumOfContexts();
+		uint numCompPerContext = numComp / _NUM_JOBS;
 		if(numCompPerContext < AHSceneRenderPhase::MIN_NUM_DL_OPS)
 			numCompPerContext = AHSceneRenderPhase::MIN_NUM_DL_OPS;
+
+		IPRunnable* pRunnable[MAX_NUM_JOBS];
+		_DEBUG_ASSERT(_NUM_JOBS < MAX_NUM_JOBS);
 
 		int numToDispatch = (numComp / numCompPerContext) - 1;
 		if(numToDispatch < 0)
@@ -151,10 +158,15 @@ int AHSceneRenderPhase::SceneRenderDLShadowCullComp::Run()
 			pDLShadowProcess->cascadeIndex = cascadeIndex;
 			pDLShadowProcess->pBounds	= &(pFrustumStore->ssbounds[i * numCompPerContext]);
 
+			pRunnable[i] = pDLShadowProcess;
+
 			//pDLShadowProcess->Run();
 			//pOwner->GetThreadPool()->QueueJob(*pDLShadowProcess);
-			__THREAD_EXEC(pDLShadowProcess);
+			//__THREAD_EXEC(pDLShadowProcess);
 		}
+
+		if(numToDispatch > 0)
+			pOwner->GetThreadPool()->QueueJobs(pRunnable, numToDispatch);
 
 		uint numCompStart = numCompPerContext * numToDispatch;
 		uint numCompLeft = numComp - numCompStart;
@@ -165,6 +177,10 @@ int AHSceneRenderPhase::SceneRenderDLShadowCullComp::Run()
 		pDLShadowProcess->pDL		= pDL;
 		pDLShadowProcess->cascadeIndex = cascadeIndex;
 		pDLShadowProcess->pBounds	= &(pFrustumStore->ssbounds[numCompStart]);
+
+
+		//pRunnable[numToDispatch] = pDLShadowProcess;
+		//pOwner->GetThreadPool()->QueueJobs(pRunnable, numToDispatch+1);
 
 		__EXEC(pDLShadowProcess);
 		//pDLShadowProcess->Run();
@@ -196,9 +212,12 @@ int AHSceneRenderPhase::SceneRenderPLShadowCullComp::Run()
 	// Split into point light shadow process
 	if(numComp > 0)
 	{
-		uint numCompPerContext = numComp / pOwner->GetNumOfContexts();
+		uint numCompPerContext = numComp / _NUM_JOBS;
 		if(numCompPerContext < AHSceneRenderPhase::MIN_NUM_PL_OPS)
 			numCompPerContext = AHSceneRenderPhase::MIN_NUM_PL_OPS;
+
+		IPRunnable* pRunnable[MAX_NUM_JOBS];
+		_DEBUG_ASSERT(_NUM_JOBS < MAX_NUM_JOBS);
 
 		int numToDispatch = (numComp / numCompPerContext) - 1;
 		if(numToDispatch < 0)
@@ -214,10 +233,14 @@ int AHSceneRenderPhase::SceneRenderPLShadowCullComp::Run()
 			pPLShadowProcess->face		= face;
 			pPLShadowProcess->pBounds	= &(pFrustumStore->ssbounds[i * numCompPerContext]);
 
+			pRunnable[i] = pPLShadowProcess;
 			//pPLShadowProcess->Run();
 			//pOwner->GetThreadPool()->QueueJob(*pPLShadowProcess);
-			__THREAD_EXEC(pPLShadowProcess);
+			//__THREAD_EXEC(pPLShadowProcess);
 		}
+
+		if(numToDispatch > 0)
+			pOwner->GetThreadPool()->QueueJobs(pRunnable, numToDispatch);
 
 		uint numCompStart = numCompPerContext * numToDispatch;
 		uint numCompLeft = numComp - numCompStart;
@@ -391,6 +414,7 @@ void AHSceneRenderPhase::SceneRenderProcessComp::ProcessPointLightComp(AHPointLi
 		float nearPlane = pShadowPL->GetViewProjNearPlane();
 		float farPlane = pShadowPL->GetViewProjFarPlane();
 
+		IPRunnable* pRunnable[CF_NUM_FACES];
 		_LOOPi(CF_NUM_FACES)
 		{
 			AHSceneRenderPhase::SceneRenderPLShadowCullComp* pPLCull = pOwner->GetPLShadowCullComp(context);
@@ -401,10 +425,13 @@ void AHSceneRenderPhase::SceneRenderProcessComp::ProcessPointLightComp(AHPointLi
 			pPLCull->nearPlane = nearPlane;
 			pPLCull->farPlane = farPlane;
 
+			pRunnable[i] = pPLCull;
 			//pPLCull->Run();
 			//pOwner->GetThreadPool()->QueueJob(*pPLCull);
-			__THREAD_EXEC(pPLCull);
+			//__THREAD_EXEC(pPLCull);
 		}
+
+		pOwner->GetThreadPool()->QueueJobs(pRunnable, (uint) CF_NUM_FACES);
 
 		//// Find culled objects
 		//AHSceneRenderPhase::FrustumCullStore* pFrustumStore = pOwner->GetFrustumStore(context);
@@ -496,6 +523,8 @@ void AHSceneRenderPhase::SceneRenderProcessComp::ProcessDirLightComp(AHDirLightC
 		// Update the bounds if it has not already been updated
 		pDirLightComp->UpdateCascadeShadow(_CAST_VECA3(pOwner->GetCamPos()), pOwner->GetView(), pOwner->GetCascadeShadowProj(), (size_t) &(pOwner->GetCascadeShadowProj()));
 
+		IPRunnable* pRunnable[4];
+
 		// Split into the 4 cascades
 		// We can't use the tighter bounding volume because we are selecting cascades based on the projection (and not the z-splits)
 		const SHFXCascadedProj& cascadeProj = pShadowDL->GetProj();//pShadowDL->GetProjCulling();
@@ -507,10 +536,13 @@ void AHSceneRenderPhase::SceneRenderProcessComp::ProcessDirLightComp(AHDirLightC
 			pDLCull->pCascadeFrustum = &(cascadeProj.cascadedViewProj[i]);
 			pDLCull->cascadeIndex = i;
 
+			pRunnable[i] = pDLCull;
 			//pDLCull->Run();
 			//pOwner->GetThreadPool()->QueueJob(*pDLCull);
-			__THREAD_EXEC(pDLCull);
+			//__THREAD_EXEC(pDLCull);
 		}
+
+		pOwner->GetThreadPool()->QueueJobs(pRunnable, 4);
 	}
 
 	AHRenderComponent* pRenderComp = pDirLightComp->GetRenderComponent();

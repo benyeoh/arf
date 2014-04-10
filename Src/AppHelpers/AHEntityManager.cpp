@@ -13,6 +13,9 @@
 
 _NAMESPACE_BEGIN
 
+#define _NUM_JOBS (m_NumContexts << 3)
+const static uint MAX_NUM_JOBS = 256;
+
 void AHEntityManager::SetThreadPool(IPThreadPool* pThreadPool)
 {
 	m_pThreadPool = pThreadPool;
@@ -44,7 +47,7 @@ void AHEntityManager::SetThreadPool(IPThreadPool* pThreadPool)
 			m_pCompTempUpdateContext[i] = _ALIGNED_NEW(_CACHE_LINE_SIZE, ComponentList) ComponentList;
 		}
 
-		m_pPhaseRunContext = _NEW PhaseRun[m_NumContexts];
+		m_pPhaseRunContext = _NEW PhaseRun[_NUM_JOBS];
 	}
 }
 
@@ -109,23 +112,25 @@ void AHEntityManager::UpdateThreaded(int updatePhase)
 	{
 		AHEntity** ppStart = &(m_pEntityUpdateLists[updatePhase][0]);
 
-		uint numEntitiesPerContext = numEntities / m_NumContexts;
+		uint numEntitiesPerContext = numEntities / _NUM_JOBS;
 		if(numEntitiesPerContext < MIN_NUM_OPS)
 			numEntitiesPerContext = MIN_NUM_OPS;
 
+		IPRunnable* pRunnables[MAX_NUM_JOBS];
 		int numToDispatch = (numEntities / numEntitiesPerContext) - 1;
 		if(numToDispatch < 0)
 			numToDispatch = 0;
 		
-		_DEBUG_ASSERT(numToDispatch < (int) m_NumContexts);
-
+		_DEBUG_ASSERT(numToDispatch < _NUM_JOBS);
+		
 		_LOOPi(numToDispatch)
 		{
 			m_pPhaseRunContext[i].numEntities = numEntitiesPerContext;
 			m_pPhaseRunContext[i].phaseNum	= updatePhase;
 			m_pPhaseRunContext[i].ppStart	= ppStart + (i * numEntitiesPerContext);
 
-			m_pThreadPool->QueueJob(m_pPhaseRunContext[i]);
+			pRunnables[i] = &m_pPhaseRunContext[i];
+			//m_pThreadPool->QueueJob(m_pPhaseRunContext[i]);
 		}
 
 		uint numEntitiesStart = numEntitiesPerContext * numToDispatch;
@@ -135,7 +140,9 @@ void AHEntityManager::UpdateThreaded(int updatePhase)
 		m_pPhaseRunContext[numToDispatch].phaseNum	= updatePhase;
 		m_pPhaseRunContext[numToDispatch].ppStart	= ppStart + numEntitiesStart;
 
-		m_pPhaseRunContext[numToDispatch].Run();
+		pRunnables[numToDispatch] = &m_pPhaseRunContext[numToDispatch];
+		m_pThreadPool->QueueJobs(pRunnables, numToDispatch + 1);
+		//m_pPhaseRunContext[numToDispatch].Run();
 		//m_pThreadPool->QueueJobUnsafe(m_pPhaseRunContext[numToDispatch]);
 
 		m_pThreadPool->WaitUntilFinished();

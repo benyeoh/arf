@@ -18,6 +18,9 @@ _NAMESPACE_BEGIN
 #define __EXEC(pComp)			pComp->Run()
 #define __THREAD_EXEC(pComp)	GetThreadPool()->QueueJob(*pComp)
 
+#define _NUM_JOBS (GetNumOfContexts() << 3)
+const static uint MAX_NUM_JOBS = 256;
+
 AHSceneRenderPhase::AHSceneRenderPhase(IRRenderer* pRenderer, IBFXBaseFX* pBaseFX, IDEFXDeferredFX* pDeferredFX, ISHFXShadowFX* pShadowFX, IPThreadPool* pThreadPool,
 										IBFXPipeline* pBFXPipeline, IDEFXPipeline* pDEFXPipeline, ISHFXPipeline* pSHFXPipeline, IBFXMaterialCreateCallback* pMatCreateCallback,
 										IRTexture2D* pZPos, IRTexture2D* pNormals, IRTexture2D* pAlbedo,
@@ -245,13 +248,12 @@ void AHSceneRenderPhase::Update()
 	// Split frustum culled results to multiple threads
 	if(numComp > 0)
 	{		
-		uint numCompPerContext = numComp / GetNumOfContexts();
+		uint numCompPerContext = numComp / _NUM_JOBS;
 		if(numCompPerContext < MIN_NUM_OPS)
 			numCompPerContext = MIN_NUM_OPS;
 
-		//uint numToDispatch = GetNumOfContexts() - 1;
-		//if(numComp < (numCompPerContext * GetNumOfContexts()))
-		//	numToDispatch = numComp / numCompPerContext;
+		IPRunnable* pRunnable[MAX_NUM_JOBS];
+		_DEBUG_ASSERT(_NUM_JOBS < MAX_NUM_JOBS);
 
 		int numToDispatch = (numComp / numCompPerContext) - 1;
 		if(numToDispatch < 0)
@@ -265,9 +267,10 @@ void AHSceneRenderPhase::Update()
 			pProcessComp->numComp	= numCompPerContext;
 			pProcessComp->pBounds	= &(m_FrustumStoreMain.ssbounds[i * numCompPerContext]);;
 			
+			pRunnable[i] = pProcessComp;
 			//pProcessComp->Run();
 			//GetThreadPool()->QueueJob(*pProcessComp);
-			__THREAD_EXEC(pProcessComp);
+			//__THREAD_EXEC(pProcessComp);
 		}
 
 		uint numCompStart = numCompPerContext * numToDispatch;
@@ -277,8 +280,12 @@ void AHSceneRenderPhase::Update()
 		pProcessComp->ppComp	= (AHComponent**) &(m_FrustumStoreMain.res[numCompStart]);
 		pProcessComp->numComp	= numCompLeft;
 		pProcessComp->pBounds	= &(m_FrustumStoreMain.ssbounds[numCompStart]);;
-		
-		__THREAD_EXEC(pProcessComp);
+
+		pRunnable[numToDispatch] = pProcessComp;
+
+		GetThreadPool()->QueueJobs(pRunnable, numToDispatch+1);
+
+		//__THREAD_EXEC(pProcessComp);
 
 		//pProcessComp->Run();
 		//GetThreadPool()->QueueJob(*pProcessComp);
