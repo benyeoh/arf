@@ -203,7 +203,7 @@ boolean InitPlatform()
 		pThreads[i]->Initialize();
 	}
 
-	g_pThreadPool->Initialize(8, pThreads, NUM_THREADS);
+	g_pThreadPool->Initialize(12, pThreads, NUM_THREADS);
 
 	return TRUE;
 }

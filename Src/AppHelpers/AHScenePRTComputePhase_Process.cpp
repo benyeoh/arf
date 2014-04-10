@@ -18,6 +18,8 @@ _NAMESPACE_BEGIN
 #define __EXEC(pComp)			pComp->Run()
 #define __THREAD_EXEC(pComp)	pOwner->GetThreadPool()->QueueJob(*pComp)
 
+const static uint MAX_NUM_JOBS = 256;
+
 // SceneRenderPLShadowProcessComp 
 int AHScenePRTComputePhase::SceneRenderPLShadowProcessComp::Run()
 {
