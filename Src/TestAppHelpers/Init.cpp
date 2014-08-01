@@ -764,9 +764,9 @@ void InitAppHelpers()
 	AHDirLightComponent* pDirLight = _NEW AHDirLightComponent();
 	pDirLight->SetLocalAABox(lightBounds);
 
-	float r = 0.99f;
-	float g = 0.9f;
-	float b = 0.83f;
+	float r = 0.77f;
+	float g = 0.73f;
+	float b = 0.68f;
 	//float r = 0.14f;
 	//float g = 0.145f;
 	//float b = 0.2f;
