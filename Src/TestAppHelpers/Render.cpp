@@ -142,7 +142,7 @@ void RenderAll()
 
 	gmtl::VecA3f eyeDir;
 	NormalizeVec(&eyeDir, &g_EyeDir);
-	//IRTexture2D* pPRTRes = g_pAHPRTCompute->ComputeDebug(g_pSceneContainer, g_EyePos, eyeDir, 100.0f, 30.0f);
+	IRTexture2D* pPRTRes = g_pAHPRTCompute->ComputeDebug(g_pSceneContainer, g_EyePos, eyeDir, 100.0f, 30.0f);
 
 	if(g_pRenderer->BeginRender())
 	{	
@@ -158,12 +158,12 @@ void RenderAll()
 
 		g_pSceneRenderPhase->Flush();
 
-		//gmtl::Matrix44f identity;
-		//gmtl::identity(identity);
-		//g_pDebugFX->GetParams().SetViewMatrix(identity);
-		//g_pDebugFX->GetParams().SetProjMatrix(identity);
-		//g_pDebugFX->RenderQuad(gmtl::Vec3f(-0.6f, -0.6f, 0.0f), gmtl::Vec2f(0.5f, 0.5f), gmtl::Vec2f(0.0f, 0.0f), gmtl::Vec2f(1.0f, 1.0f), pPRTRes);
-		//g_pDebugFX->Flush();
+		gmtl::Matrix44f identity;
+		gmtl::identity(identity);
+		g_pDebugFX->GetParams().SetViewMatrix(identity);
+		g_pDebugFX->GetParams().SetProjMatrix(identity);
+		g_pDebugFX->RenderQuad(gmtl::Vec3f(-0.6f, -0.6f, 0.0f), gmtl::Vec2f(0.5f, 0.5f), gmtl::Vec2f(0.0f, 0.0f), gmtl::Vec2f(1.0f, 1.0f), pPRTRes);
+		g_pDebugFX->Flush();
 
 		RenderDebugObjects();
 		

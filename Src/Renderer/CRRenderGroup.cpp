@@ -738,9 +738,16 @@ CRRenderGroup::Flush()
 	const gmtl::Vec4f* pClearColor = NULL;
 	const float* pClearDepth = NULL;
 	if(m_IsUseClearColor)
+	{
+		_DEBUG_ASSERT(m_RenderTargets.size() > 0);
 		pClearColor = &(m_ClearColor);
+	}
+
 	if(m_IsUseClearDepth)
+	{
+		_DEBUG_ASSERT(m_pDepthBuffer);
 		pClearDepth = &(m_ClearDepth);
+	}
 
 	m_pRenderer->ClearBackBuffer(pClearColor, pClearDepth);
 
