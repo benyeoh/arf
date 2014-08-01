@@ -41,29 +41,43 @@ enum
 #include "BRDFDirs.h"
 #include "BRDFCallback.h"
 
+#define _USE_PRT_VERSION
+
+const static float AREA_ROOT = 7000.0f;
+enum
+{
+	USE_ARRAY,
+	USE_SPARSE_LOOSE_OCTREE,
+	USE_OCTANT_ORDER_LOOSE_OCTREE,
+};
+
+const static uint DB_USAGE = USE_OCTANT_ORDER_LOOSE_OCTREE;
+
 #ifdef _USE_PRT_VERSION
+
+#define USE_DIR_LIGHT
+const static float FAR_PLANE = 800.0f;
+const static float NEAR_PLANE = 0.1f;
+const static float DIR_LIGHT_POS_OFFSET = 100.0f;
+
 const static uint NUM_POINT_LIGHTS = 0;
 const static uint NUM_THREADS = 3;
 const static uint NUM_PRTCOMPUTE_PHASE_THREADS = 1;
 const static uint NUM_PRTCOMPUTE_PROCESS_THREADS = 3;
 const static uint NUM_ENTITIES = 6;
+
 #else
+
 #define USE_DIR_LIGHT
+const static float FAR_PLANE = 1500.0f;
+const static float NEAR_PLANE = 0.1f;
+const static float DIR_LIGHT_POS_OFFSET = 600.0f;
+
 const static uint NUM_POINT_LIGHTS = 0;
 const static uint NUM_THREADS = 8;
 const static uint NUM_PRTCOMPUTE_PHASE_THREADS = 1;
 const static uint NUM_PRTCOMPUTE_PROCESS_THREADS = 1;
 const static uint NUM_ENTITIES = 200000;
-const static float AREA_ROOT = 7000.0f;
-
-enum
-{
-    USE_ARRAY,
-    USE_SPARSE_LOOSE_OCTREE,
-    USE_OCTANT_ORDER_LOOSE_OCTREE,
-};
-
-const static uint DB_USAGE = USE_OCTANT_ORDER_LOOSE_OCTREE;
 #endif
 
 const static uint MAX_GRID_DEBUG = 64000;
@@ -178,6 +192,3 @@ extern void*				g_pD3DDevice;
 
 extern gmtl::VecA3f		g_CameraFarCornerVecs[4];
 extern gmtl::VecA3f		g_ViewFarCornerVecs[4];
-
-const static float FAR_PLANE = 1500.0f;
-const static float NEAR_PLANE = 0.1f;

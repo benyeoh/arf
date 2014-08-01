@@ -764,9 +764,9 @@ void InitAppHelpers()
 	AHDirLightComponent* pDirLight = _NEW AHDirLightComponent();
 	pDirLight->SetLocalAABox(lightBounds);
 
-	float r = 0.6f;
-	float g = 0.5f;
-	float b = 0.4f;
+	float r = 0.99f;
+	float g = 0.9f;
+	float b = 0.83f;
 	//float r = 0.14f;
 	//float g = 0.145f;
 	//float b = 0.2f;
@@ -801,7 +801,7 @@ void InitAppHelpers()
 		pShadowDL->AddContext();
 	}
 
-	pDirLight->SetShadowDirLight(pShadowDL, 1.8f, 700.0f, FALSE);
+	pDirLight->SetShadowDirLight(pShadowDL, 1.8f, DIR_LIGHT_POS_OFFSET, FALSE);
 	pDirLight->SetDeferredDirLight(pLightGroup, pRender);
 
 #ifdef USE_DIR_LIGHT

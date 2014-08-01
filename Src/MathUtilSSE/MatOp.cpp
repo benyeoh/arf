@@ -200,6 +200,8 @@ _FORCE_INLINE gmtl::MatrixA44f* MatTranspose(const gmtl::MatrixA44f* pSrc, gmtl:
     _mm_store_ps(&(pDest->mData[1]), col1);
     _mm_store_ps(&(pDest->mData[2]), col2);
     _mm_store_ps(&(pDest->mData[3]), col3);
+
+	return pDest;
 }
 
 

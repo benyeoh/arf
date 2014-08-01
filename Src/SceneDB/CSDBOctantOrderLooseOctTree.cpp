@@ -1272,6 +1272,21 @@ uint CSDBOctantOrderLooseOctTree::QueryAll(void** ppToStore, uint bufferSize, ui
 		octantItr.Next();
 	}
 
+	size_t curHead = m_TooLargeDataHeadID;
+	while(curHead != __INVALID)
+	{	
+		OctantOrderData& tooLargeData = m_TooLargeData[curHead];		
+		if(filterType & tooLargeData.filterType)
+		{
+			_DEBUG_ASSERT(curIndex < bufferSize);
+
+			ppToStore[curIndex] = tooLargeData.pData;
+			curIndex++;
+		}
+
+		curHead = tooLargeData.nextID;
+	}
+
 	return curIndex;
 }
 

@@ -150,6 +150,17 @@ void SHRadianceCallback::Compute()
 					//	memcpy(pBData[k].sh, unitSH, sizeof(float) * 9);
 					//}
 
+					//_LOOPk(numVertices)
+					//{
+					//	pLocEntries[k].pos[0] = 1000.0f;
+					//	pLocEntries[k].pos[1] = 1000.0f;
+					//	pLocEntries[k].pos[2] = 1000.0f;
+					//	pLocEntries[k].normal[0] = 0.0f;
+					//	pLocEntries[k].normal[1] = 0.0f;
+					//	pLocEntries[k].normal[2] = 1.0f;
+					//}
+
+
 					g_pPlatform->GetTimer().BeginSample(); 
 					g_pSHPRTCompute->ComputeOccludedTransferSphere(pLocEntries, pRData, pGData, pBData, numVertices, 1.0f, *this, g_pThreadPool);
 					g_pPlatform->GetTimer().EndSample(); 
