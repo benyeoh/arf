@@ -240,6 +240,7 @@ void InitLights()
 	spreadScales[3] = 0.0001f;
 
 	g_pShadowDirLight->SetShadowMapParamsPoissonFilter(pDirLightSM1, pDirLightSMFinal, pDirLightDB, blurSamples, spreadScales, FALSE);
+	//g_pShadowDirLight->SetShadowMapParams(pDirLightSMFinal, pDirLightDB);
 
 	//g_pShadowPointLight = g_pShadowFX->GetResourceMgr().CreatePointLight();
 	//IRTexture2DPtr pPLSM1 = g_pRenderer->GetRResourceMgr().CreateTexture2DRT(256, 256, smFormat);//g_pShadowFX->GetResourceMgr().CreatePointLightExpShadowMap(256);

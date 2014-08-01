@@ -672,7 +672,7 @@ CRResourceMgrD3D::DoCreateDepthBuffer(uint width,
 													DepthFormatToD3D(format), 
 													(D3DMULTISAMPLE_TYPE) multiSampleQuality,
 													0,
-													TRUE,
+													FALSE,
 													&pDepth,
 													NULL);
 													

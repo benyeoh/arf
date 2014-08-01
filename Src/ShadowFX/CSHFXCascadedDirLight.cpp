@@ -626,6 +626,8 @@ void CSHFXCascadedDirLight::SetShadowMapParams(IRTexture2D* pFinal, IRDepthBuffe
 		m_pCasterGroups[i]->ClearRenderTargets();
 		m_pCasterGroups[i]->AddRenderTarget(pRT);
 		m_pCasterGroups[i]->SetDepthBuffer(pDepth);
+		//m_pCasterGroups[i]->SetClearDepth(1.0f);
+		//m_pCasterGroups[i]->SetClearColor(gmtl::Vec4f(0.5f, 0.5f, 1.0f, 1.0f));
 
 		m_pCasterGroups[i]->SetViewport((pRT->GetWidth() >> 1) * (i & 1), (pRT->GetHeight() >> 1) * (i >> 1), pRT->GetWidth() >> 1, pRT->GetHeight() >> 1);
 
@@ -635,6 +637,7 @@ void CSHFXCascadedDirLight::SetShadowMapParams(IRTexture2D* pFinal, IRDepthBuffe
 
 	m_pClearFinal->ClearRenderTargets();
 	m_pClearFinal->AddRenderTarget(pFinal->GetTextureRT(0));
+	m_pClearFinal->SetDepthBuffer(pDepth);
 	m_pClearFinal->SetViewport(0, 0, pFinal->GetWidth(0), pFinal->GetHeight(0));
 	m_pClearFinal->SetClearColor(gmtl::Vec4f(1.0f, 1.0f, 1.0f, 1.0f));
 	m_pClearFinal->SetClearDepth(1.0f);
