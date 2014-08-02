@@ -41,7 +41,7 @@ enum
 #include "BRDFDirs.h"
 #include "BRDFCallback.h"
 
-#define _USE_PRT_VERSION
+//#define _USE_PRT_VERSION
 
 const static float AREA_ROOT = 7000.0f;
 enum
@@ -71,7 +71,7 @@ const static uint NUM_ENTITIES = 6;
 #define USE_DIR_LIGHT
 const static float FAR_PLANE = 1500.0f;
 const static float NEAR_PLANE = 0.1f;
-const static float DIR_LIGHT_POS_OFFSET = 600.0f;
+const static float DIR_LIGHT_POS_OFFSET = 400.0f;
 
 const static uint NUM_POINT_LIGHTS = 0;
 const static uint NUM_THREADS = 8;

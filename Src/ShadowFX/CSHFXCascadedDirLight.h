@@ -89,10 +89,10 @@ private:
 							gmtl::VecA3f& outLightViewPos);
 	
 	void ComputeMinimalBoundingSphere(gmtl::VecA4f& dest, const gmtl::VecA4f* pPoints, uint numPoints);
-	void UpdateZSplits(float nearBiasExponent, float nearViewZ, float farViewZ);
+	void UpdateZSplits(float nearBiasExponent, float nearViewZ, float farViewZ, float farNearRatio);
 
 public:
-	void UpdateCascadedFrustumBounds(SHFXCascadedFrustumBounds& dest, float nearBiasExponent, const gmtl::Matrix44f& proj);
+	void UpdateCascadedFrustumBounds(SHFXCascadedFrustumBounds& dest, float nearBiasExponent, const gmtl::Matrix44f& proj, float expSteepNess);
 	//void UpdateCascadedProj(const gmtl::Vec3f& lightDir, 
 	//						const gmtl::Vec3f& lightPos, 
 	//						const gmtl::Matrix44f& view, 
