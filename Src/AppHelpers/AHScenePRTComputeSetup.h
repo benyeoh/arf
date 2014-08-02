@@ -30,6 +30,7 @@ class AHScenePRTComputeSetup : public CRefCounted<IRefCounted>
 
 		float origPosOffset;
 		float origCascadeExp;
+		float origCascadeFarNearSteepness;
 		boolean origIsShadowMapShared;
 		BFXUMeshList* pOrigMeshList;
 		IDEFXLightGroup* pOrigLG;

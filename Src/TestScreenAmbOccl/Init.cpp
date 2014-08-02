@@ -773,7 +773,7 @@ boolean Initialize()
 	InitMesh();
 	InitSSAO();
 
-	g_pShadowDirLight->UpdateCascadedFrustumBounds(g_CascadeFrustum, 2.0f, _CAST_MAT44(g_Proj));
+	g_pShadowDirLight->UpdateCascadedFrustumBounds(g_CascadeFrustum, 0.9f, _CAST_MAT44(g_Proj), 1.0f);
 
 	return TRUE;
 }	
