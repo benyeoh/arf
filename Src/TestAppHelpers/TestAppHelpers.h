@@ -54,7 +54,7 @@ enum
 const static uint DB_USAGE = USE_OCTANT_ORDER_LOOSE_OCTREE;
 
 #ifdef _USE_PRT_VERSION
-
+//#define _USE_PARABOLOID_DEBUG
 #define USE_DIR_LIGHT
 const static float FAR_PLANE = 800.0f;
 const static float NEAR_PLANE = 0.1f;

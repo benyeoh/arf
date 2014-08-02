@@ -96,6 +96,19 @@ void GetFrustumAA(const gmtl::MatrixA44f& viewProj, AABox& dest)
 
 void RenderDebugObjects()
 {
+#ifdef _USE_PARABOLOID_DEBUG
+	gmtl::VecA3f eyeDir;
+	NormalizeVec(&eyeDir, &g_EyeDir);
+	IRTexture2D* pPRTRes = g_pAHPRTCompute->ComputeDebug(g_pSceneContainer, g_EyePos, eyeDir, 100.0f, 30.0f);
+
+	gmtl::Matrix44f identity;
+	gmtl::identity(identity);
+	g_pDebugFX->GetParams().SetViewMatrix(identity);
+	g_pDebugFX->GetParams().SetProjMatrix(identity);
+	g_pDebugFX->RenderQuad(gmtl::Vec3f(-0.6f, -0.6f, 0.0f), gmtl::Vec2f(0.5f, 0.5f), gmtl::Vec2f(0.0f, 0.0f), gmtl::Vec2f(1.0f, 1.0f), pPRTRes);
+	g_pDebugFX->Flush();
+#endif
+
 	g_pDebugFX->GetParams().SetViewMatrix(*((const gmtl::Matrix44f*)&g_View));
 	g_pDebugFX->GetParams().SetProjMatrix(*((const gmtl::Matrix44f*)&g_Proj));
 
@@ -140,10 +153,6 @@ void RenderAll()
 	if(g_CurIndex >= 4.0f)
 		g_CurIndex -= 4.0f;
 
-	gmtl::VecA3f eyeDir;
-	NormalizeVec(&eyeDir, &g_EyeDir);
-	IRTexture2D* pPRTRes = g_pAHPRTCompute->ComputeDebug(g_pSceneContainer, g_EyePos, eyeDir, 100.0f, 30.0f);
-
 	if(g_pRenderer->BeginRender())
 	{	
 		g_pMainClearGroup->Flush();
@@ -158,12 +167,6 @@ void RenderAll()
 
 		g_pSceneRenderPhase->Flush();
 
-		gmtl::Matrix44f identity;
-		gmtl::identity(identity);
-		g_pDebugFX->GetParams().SetViewMatrix(identity);
-		g_pDebugFX->GetParams().SetProjMatrix(identity);
-		g_pDebugFX->RenderQuad(gmtl::Vec3f(-0.6f, -0.6f, 0.0f), gmtl::Vec2f(0.5f, 0.5f), gmtl::Vec2f(0.0f, 0.0f), gmtl::Vec2f(1.0f, 1.0f), pPRTRes);
-		g_pDebugFX->Flush();
 
 		RenderDebugObjects();
 		
