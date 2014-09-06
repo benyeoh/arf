@@ -44,7 +44,9 @@ protected:
 	_PURE( void DoClose() )
 	_PURE( boolean DoCheckFileExists(const wchar* pFileName) )
 	_PURE( IFFileEnumerator* DoGetFiles(const wchar* pHierarchyPath, const wchar* pFileFilter, boolean isIncludeSubHierachies) )
-	
+
+	_PURE( void DoResolvePath(wstring& srcDest) )
+
 public:
 	boolean Initialize();
 	
@@ -54,6 +56,7 @@ public:
 	
 	// TODO: Move this to a file utility project
 	uint NormalizePath(const wchar* pFullPath, wchar* pNormPath, uint length);
+	uint ResolvePath(const wchar* pResourcePath, wchar* pFullPath, uint length);
 
 	const wchar * GetResourcePath() const;
 

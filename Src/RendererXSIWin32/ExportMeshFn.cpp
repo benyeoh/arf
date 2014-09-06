@@ -591,12 +591,12 @@ ExtractVertices(XSI::X3DObject& obj, const RVertexDesc* pDesc, RVertexDesc* pMod
 	pVertexData->SetDataLength(numNodes * vertexSize);
 	
 	wchar buffer[256];
-	wsprintf(buffer, _W("Num Vertices - Before Weld: %d"), numNodes);
+	swprintf(buffer, _W("Num Vertices - Before Weld: %d"), numNodes);
 	app.LogMessage(buffer);
 
 	uint numVertices = WeldSimilarVertices(pVertexData, vertexSize, pIB);
 	
-	wsprintf(buffer, _W("Num Vertices - After Weld: %d"), numVertices);
+	swprintf(buffer, _W("Num Vertices - After Weld: %d"), numVertices);
 	app.LogMessage(buffer);
 	
 	if(generateTangents || generateBinormals)
@@ -692,9 +692,9 @@ ExportMesh(XSI::X3DObject& obj,
 					}
 
 					wchar buffer[256];
-					wsprintf(buffer, _W("Num Vertices: %d"), pVB->GetNumVertices());
+					swprintf(buffer, _W("Num Vertices: %d"), pVB->GetNumVertices());
 					app.LogMessage(buffer);
-					wsprintf(buffer, _W("Num Indices: %d"), pIB->GetNumIndices());
+					swprintf(buffer, _W("Num Indices: %d"), pIB->GetNumIndices());
 					app.LogMessage(buffer);
 									
 					// Save to buffers
@@ -706,15 +706,15 @@ ExportMesh(XSI::X3DObject& obj,
 					if(pVBGroup->GetNumOfVertexBuffers() == 0)
 						pVBGroup->AddVertexBuffer(pVB);
 					else
-						wsprintf(buffer, _W("Found duplicate VB Group!!!!"));
+						swprintf(buffer, _W("Found duplicate VB Group!!!!"));
 					
 					// Optimize pre/post transform vertex cache
-					wsprintf(buffer, _W("Optimizing post transform cache"));
+					swprintf(buffer, _W("Optimizing post transform cache"));
 					app.LogMessage(buffer);
 					RUPostTransVertCacheOpt postTrans;
 					postTrans.Optimize(pIB, pVB->GetNumVertices());
 	
-					wsprintf(buffer, _W("Optimizing pre transform cache"));
+					swprintf(buffer, _W("Optimizing pre transform cache"));
 					app.LogMessage(buffer);
 					RUPreTransVertCacheOpt preTrans;
 					preTrans.Optimize(pVBGroup, pIB);

@@ -57,7 +57,8 @@ struct IFFileSystem : public IRefCounted
 	_PURE( void RemoveMnemonic(const wchar* pMnemonic) )
 	_PURE( void ClearMnemonics() )
 	_PURE( uint NormalizePath(const wchar* pFullPath, wchar* pNormPath, uint length) )
-	
+	_PURE( uint ResolvePath(const wchar* pResourcePath, wchar* pFullPath, uint length) )
+
 	_PURE( const wchar * GetResourcePath() const );
 	
 	_PURE( IFFile* GetFile(const wchar* pFileName) )

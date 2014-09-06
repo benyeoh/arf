@@ -69,9 +69,9 @@ BFXComExportBFXMesh_Execute(XSI::CRef& in_ctxt)
 		return status;
 		
 	XSI::CValueArray valArray;
-	valArray.Add( (ULONG) pMatGroup );
-	valArray.Add( (ULONG) pVBGroup );
-	valArray.Add( (ULONG) pIB );
+	valArray.Add( (XSI::CValue::siPtrType) pMatGroup );
+	valArray.Add( (XSI::CValue::siPtrType) pVBGroup );
+	valArray.Add( (XSI::CValue::siPtrType) pIB );
 
 	XSI::CValue toReturn(valArray);	
 	ctxt.PutAttribute(_W("ReturnValue"), toReturn);

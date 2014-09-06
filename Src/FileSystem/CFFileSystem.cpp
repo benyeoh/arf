@@ -60,8 +60,7 @@ CFFileSystem::ResolveMnemonics(const wchar* pPath, wstring& toStore)
 				currentMnemonic.append(1, c);
 			}
 		}
-		else
-		if(c == MNEMONIC_START)
+		else if(c == MNEMONIC_START)
 			startDelimiter = TRUE;
 		else
 			toStore.append(1, c);
@@ -181,6 +180,26 @@ CFFileSystem::Open(const wchar* pResourcePath)
 	}
 
 	return m_IsOpen;
+}
+
+uint CFFileSystem::ResolvePath(const wchar* pResourcePath, wchar* pFullPath, uint length)
+{
+	wstring dest;
+	ResolveMnemonics(pResourcePath, dest);
+	DoResolvePath(dest);
+
+	_DEBUG_ASSERT(dest.size() < (length-1));
+
+	uint i = 0;
+	while( (i < dest.size()) && (i < (length-1)) )
+	{
+		pFullPath[i] = dest.c_str()[i];
+		i++;
+	}
+
+	pFullPath[i] = 0;
+
+	return dest.size();
 }
 
 IFFile* 
