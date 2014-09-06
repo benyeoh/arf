@@ -227,8 +227,11 @@ template<uint numInterpolants, uint numLayers, uint outTileSize, uint layer, Cus
 	const float IN_TILE_X_F = (float) bufferWidth - 1.0f;
 	const float IN_TILE_Y_F = (float) bufferHeight - 1.0f;
 
-	_DEBUG_ASSERT( ((bufferWidth / (OUT_TILE_SIZE << 1)) & 0x1) == 0 );
-	_DEBUG_ASSERT( ((bufferHeight / (OUT_TILE_SIZE << 1)) & 0x1) == 0 );
+	_DEBUG_ASSERT( (bufferWidth % (OUT_TILE_SIZE << 1)) == 0 );
+	_DEBUG_ASSERT( (bufferHeight % (OUT_TILE_SIZE << 1)) == 0 );
+
+	//_DEBUG_ASSERT( ((bufferWidth / (OUT_TILE_SIZE << 1)) & 0x1) == 0 );
+	//_DEBUG_ASSERT( ((bufferHeight / (OUT_TILE_SIZE << 1)) & 0x1) == 0 );
 	//const uint NUM_OUT_TILE_XY = inTileSize / (OUT_TILE_SIZE << 1);
 	//const uint NUM_OUT_TILE_WIDTH = bufferWidth / (OUT_TILE_SIZE << 1);
 	//const uint NUM_OUT_TILE_HEIGHT = bufferHeight / (OUT_TILE_SIZE << 1);
