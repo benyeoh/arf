@@ -159,7 +159,7 @@ InitializeFileSystem()
 		if(status == XSI::CStatus::OK)
 		{
 			// TODO: FileSystem will not be valid if the plugins are not cached
-			g_pFileSystem = (IFFileSystem*) ((ULONG)returnVal);
+			g_pFileSystem = (IFFileSystem*) ((XSI::CValue::siPtrType)returnVal);
 			_DEBUG_ASSERT(g_pFileSystem);
 		}
 	}
@@ -186,7 +186,7 @@ InitializeBaseFX()
 		if(status == XSI::CStatus::OK)
 		{
 			// TODO: Renderer will not be valid if the plugins are not cached
-			g_pRenderer = (IRRenderer*) ((ULONG)returnVal);
+			g_pRenderer = (IRRenderer*) ((XSI::CValue::siPtrType)returnVal);
 			_DEBUG_ASSERT(g_pRenderer);
 		}
 

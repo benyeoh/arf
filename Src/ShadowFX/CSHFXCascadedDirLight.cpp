@@ -44,26 +44,34 @@ IRRenderGroup* CSHFXCascadedDirLight::GetCasterGroup(uint cascade)
 }
 
 void 
-CSHFXCascadedDirLight::UpdateZSplits(float nearBiasExponent, float nearViewZ, float farViewZ)
+CSHFXCascadedDirLight::UpdateZSplits(float nearBias, float nearViewZ, float farViewZ, float farNearRatio)
 {
 	float lastFarDist = 0.0f;
 	float lastFarDistView = nearViewZ;
-	float diff = farViewZ - nearViewZ;
+	
+	// This value changes the shape of the exponential curve
+	// The larger the farNearRatio, the more steep the curve
+	float nearStart = farViewZ / farNearRatio;
 
 	_LOOPi(4)
 	{
-		float ratio = (i+1.0f) / 4;				
-		float expDist = nearViewZ + diff * gmtl::Math::pow(ratio, nearBiasExponent);
-		//float expDist = nearViewZ * gmtl::Math::pow(farViewZ / nearViewZ, ratio);
-		//float linearDist = nearViewZ + ratio * (farViewZ - nearViewZ);
+		float ratio = (i+1.0f) / 4;	
+
+		//float diff = farViewZ - nearViewZ;
+		//float expDist = nearViewZ + diff * gmtl::Math::pow(ratio, nearBias);
+		float expDist = nearStart * gmtl::Math::pow(farNearRatio, ratio);
+		float linearDist = nearViewZ + ratio * (farViewZ - nearViewZ);
 		
-		float zDist = expDist;
-		//float zDist = (1.0f - linearCorrection) * expDist + (linearCorrection) * linearDist;
+		//float zDist = expDist;
+		float zDist = (nearBias) * expDist + (1.0f - nearBias) * linearDist;
+		
+		// 0 to 1
 		m_Split.splitFar[i] = (zDist - nearViewZ) / (farViewZ - nearViewZ);
 		m_Split.splitNear[i] = lastFarDist;
 		lastFarDist = m_Split.splitFar[i];
 
-		m_SplitView.splitFar[i] = abs(expDist);
+		// nearZ to farZ
+		m_SplitView.splitFar[i] = abs(zDist);
 		m_SplitView.splitNear[i] = abs(lastFarDistView);
 		lastFarDistView = m_SplitView.splitFar[i];
 	}	
@@ -124,7 +132,7 @@ void CSHFXCascadedDirLight::ComputeMinimalBoundingSphere(gmtl::VecA4f& dest, con
 	dest[3] = radius;
 }
 
-void CSHFXCascadedDirLight::UpdateCascadedFrustumBounds(SHFXCascadedFrustumBounds& dest, float nearBiasExponent, const gmtl::Matrix44f& proj)
+void CSHFXCascadedDirLight::UpdateCascadedFrustumBounds(SHFXCascadedFrustumBounds& dest, float nearBias, const gmtl::Matrix44f& proj, float expSteepNess)
 {
 	// Find view frustum points
 	gmtl::MatrixA44f invProj;
@@ -142,8 +150,10 @@ void CSHFXCascadedDirLight::UpdateCascadedFrustumBounds(SHFXCascadedFrustumBound
 	screenSpaceBounds[7][0] = 1.0f; screenSpaceBounds[7][1] = 1.0f; screenSpaceBounds[7][2] = 1.0f; screenSpaceBounds[7][3] = 1.0f; // far top right
 
 	gmtl::VecA4f frustumPtsViewSpace[8];
-	BatchTransformAndProjectVecW1(&invProj, screenSpaceBounds, frustumPtsViewSpace, 8);	
-	UpdateZSplits(nearBiasExponent, frustumPtsViewSpace[0][2], frustumPtsViewSpace[4][2]);
+	BatchTransformAndProjectVecW1(&invProj, screenSpaceBounds, frustumPtsViewSpace, 8);
+
+	float farNearRatio = expSteepNess * frustumPtsViewSpace[4][2] / frustumPtsViewSpace[0][2];
+	UpdateZSplits(nearBias, frustumPtsViewSpace[0][2], frustumPtsViewSpace[4][2], farNearRatio);
 
 	// Alloc stack space for temp vectors (bypasses a compiler bug in VS 2010)
 	gmtl::VecA4f vData[4];

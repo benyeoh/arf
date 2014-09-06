@@ -22,7 +22,7 @@ void AHScenePRTComputeSetup::ResetLightsNoDestroy()
 	{
 		// Reset each directional light component with the original shadow light
 		CascadeDirLightEntry* pEntry = dirLightItr.GetValue();
-		pEntry->pComp->SetShadowDirLight( pEntry->pOrig, pEntry->origCascadeExp, pEntry->origPosOffset, pEntry->origIsShadowMapShared);
+		pEntry->pComp->SetShadowDirLight( pEntry->pOrig, pEntry->origCascadeExp, pEntry->origCascadeFarNearSteepness, pEntry->origPosOffset, pEntry->origIsShadowMapShared);
 		pEntry->pComp->GetRenderComponent()->SetMeshList( pEntry->pOrigMeshList );
 		pEntry->pComp->SetDeferredDirLight(pEntry->pOrigLG, pEntry->pComp->GetRenderComponent());
 
@@ -48,7 +48,7 @@ void AHScenePRTComputeSetup::ResetLights()
 	{
 		// Reset each directional light component with the original shadow light
 		CascadeDirLightEntry* pEntry = dirLightItr.GetValue();
-		pEntry->pComp->SetShadowDirLight( pEntry->pOrig, pEntry->origCascadeExp, pEntry->origPosOffset, pEntry->origIsShadowMapShared);
+		pEntry->pComp->SetShadowDirLight( pEntry->pOrig, pEntry->origCascadeExp, pEntry->origCascadeFarNearSteepness, pEntry->origPosOffset, pEntry->origIsShadowMapShared);
 		pEntry->pComp->GetRenderComponent()->SetMeshList( pEntry->pOrigMeshList );
 		pEntry->pComp->SetDeferredDirLight(pEntry->pOrigLG, pEntry->pComp->GetRenderComponent());
 
@@ -97,7 +97,7 @@ void AHScenePRTComputeSetup::SetupDirLight(AHDirLightComponent* pComp, uint numC
 		if(pCurEntry)
 		{
 			_DEBUG_ASSERT(pCurEntry->pComp == pComp);
-			pComp->SetShadowDirLight(pCurEntry->pSubst, 0.0f, pCurEntry->pComp->GetShadowPosOffset(), pCurEntry->pComp->IsShadowMapShared());
+			pComp->SetShadowDirLight(pCurEntry->pSubst, 0.0f, 1.0f, pCurEntry->pComp->GetShadowPosOffset(), pCurEntry->pComp->IsShadowMapShared());
 			pComp->SetDeferredDirLight(pCurEntry->pSubstLG, pComp->GetRenderComponent());
 
 			// Not initialized
@@ -112,6 +112,7 @@ void AHScenePRTComputeSetup::SetupDirLight(AHDirLightComponent* pComp, uint numC
 			entry.pOrig = pComp->GetShadowDirLight();
 			entry.pOrig->AddRef();
 			entry.origCascadeExp		= entry.pComp->GetShadowCascadeSplitExp();
+			entry.origCascadeFarNearSteepness = entry.pComp->GetShadowCascadeFarNearSteepness();
 			entry.origIsShadowMapShared	= entry.pComp->IsShadowMapShared();
 			entry.origPosOffset			= entry.pComp->GetShadowPosOffset();
 			entry.pOrigMeshList			= entry.pComp->GetRenderComponent()->GetMeshList();
@@ -152,7 +153,7 @@ void AHScenePRTComputeSetup::SetupDirLight(AHDirLightComponent* pComp, uint numC
 			entry.pSubst = pClone;
 			entry.pSubst->AddRef();
 
-			pComp->SetShadowDirLight(entry.pSubst, 0.0f, entry.pComp->GetShadowPosOffset(), entry.pComp->IsShadowMapShared());
+			pComp->SetShadowDirLight(entry.pSubst, 0.0f, 1.0f, entry.pComp->GetShadowPosOffset(), entry.pComp->IsShadowMapShared());
 
 			// Not initialized
 			entry.lastShadowPos.set(-99999999999.0f, -99999999999.0f, -99999999999.0f);

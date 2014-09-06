@@ -67,7 +67,7 @@ BFXComExportBFXMaterial_Execute(XSI::CRef& in_ctxt)
 	
 	if(pMatGroup )
 	{
-		toReturn = (ULONG) pMatGroup ;
+		toReturn = (XSI::CValue::siPtrType) pMatGroup ;
 		ctxt.PutAttribute(_W("ReturnValue"), toReturn);
 		return XSI::CStatus::OK;		
 	}

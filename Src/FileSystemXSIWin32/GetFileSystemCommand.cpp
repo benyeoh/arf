@@ -56,7 +56,7 @@ AppComGetFileSystem_Execute(XSI::CRef& in_ctxt)
 
 	InitializeFileSystem();
 
-	XSI::CValue toReturn((ULONG) (g_pFileSystem.GetPtr()));	
+	XSI::CValue toReturn((XSI::CValue::siPtrType) (g_pFileSystem.GetPtr()));	
 	XSI::CStatus status = g_pFileSystem ? XSI::CStatus::OK : XSI::CStatus::Fail;
 	ctxt.PutAttribute(_W("ReturnValue"), toReturn);
 

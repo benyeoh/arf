@@ -248,9 +248,9 @@ LoadGlobal(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGGlobal** 
 		
 		_LOOPi(*pNumInputs)
 		{
-			uint defVal = 0;
-			uint* pBindVal = &defVal;
-			uint* pAltBindVal = &defVal;
+			uint64 defVal = 0L;
+			uint64* pBindVal = &defVal;
+			uint64* pAltBindVal = &defVal;
 			
 			uint tag = _MAKE_ID('b','i',0x00,0x00);
 			tag |= i;
@@ -262,12 +262,12 @@ LoadGlobal(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGGlobal** 
 				pInputs->push_back(InputLink(*pBindVal, *pAltBindVal, &pGlobal->GetInput(i)));
 		}
 		
-		uint* pOutVal = NULL;
+		uint64* pOutVal = NULL;
 		isFound = GetDataRaw(&store, _MAKE_ID('o','u','t',' '), (void**) &pOutVal);
 		_DEBUG_ASSERT(pOutVal);
 		
 		if(pOutputs)
-			pOutputs->insert(std::pair<uint, IMGOutputResource*>(*pOutVal, &pGlobal->GetOutput()));
+			pOutputs->insert(std::pair<uint64, IMGOutputResource*>(*pOutVal, &pGlobal->GetOutput()));
 		
 		uint* pNumDesc = NULL;
 		isFound = GetDataRaw(&store, _MAKE_ID('n','d','e','s'), (void**) &pNumDesc);
@@ -328,7 +328,7 @@ LoadFunction(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGFunctio
 		GetDataRaw(&store, _MAKE_ID('n','i','n','s'), (void**) &pNumInputs);
 		_DEBUG_ASSERT(pNumInputs);
 		
-		uint* pFnVal = NULL;
+		uint64* pFnVal = NULL;
 		GetDataRaw(&store, _MAKE_ID('f','n','v','a'), (void**) &pFnVal);
 		_DEBUG_ASSERT(pFnVal);
 		
@@ -357,7 +357,7 @@ LoadFunction(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGFunctio
 		*ppFunction = pFunc;
 
 		if(pFunctions)
-			pFunctions->insert(std::pair<uint, IMGFunction*>(*pFnVal, pFunc));
+			pFunctions->insert(std::pair<uint64, IMGFunction*>(*pFnVal, pFunc));
 			
 		byte endHeader = 0;
 		totalBytesRead += ReadData(pBuffer, offset + totalBytesRead, &endHeader);
@@ -403,7 +403,7 @@ LoadVertexShader(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGVer
 		GetDataRaw(&store, _MAKE_ID('n','o','p','s'), (void**) &pNumOps);
 		_DEBUG_ASSERT(pNumOps);
 
-		uint* pShaderVal = NULL;
+		uint64* pShaderVal = NULL;
 		GetDataRaw(&store, _MAKE_ID('s','h','v','a'), (void**) &pShaderVal);
 		_DEBUG_ASSERT(pShaderVal);
 		
@@ -435,7 +435,7 @@ LoadVertexShader(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGVer
 		}
 		
 		if(pVertexShaders)
-			pVertexShaders->insert(std::pair<uint, IMGVertexShader*>(*pShaderVal, pVS));
+			pVertexShaders->insert(std::pair<uint64, IMGVertexShader*>(*pShaderVal, pVS));
 			
 		*ppShader = pVS;
 		
@@ -466,7 +466,7 @@ LoadVertexIn(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGVertexI
 		const wchar* pType = NULL;
 		GetDataRaw(&store, _MAKE_ID('t','y','p','e'), (void**) &pType);
 		
-		uint* pOutVal = NULL;
+		uint64* pOutVal = NULL;
 		GetDataRaw(&store, _MAKE_ID('o','u','t',' '), (void**) &pOutVal);
 		_DEBUG_ASSERT(pOutVal);
 
@@ -476,7 +476,7 @@ LoadVertexIn(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGVertexI
 		
 		IMGVertexIn* pVIn = pGen->GetResourceMgr().CreateVertexIn(&sig);
 		if(pOutputs)
-			pOutputs->insert(std::pair<uint, IMGOutputResource*>(*pOutVal, &pVIn->GetOutput()));
+			pOutputs->insert(std::pair<uint64, IMGOutputResource*>(*pOutVal, &pVIn->GetOutput()));
 		
 		*ppVIn = pVIn;
 		
@@ -507,9 +507,9 @@ LoadVertexOut(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGVertex
 		const wchar* pType = NULL;
 		GetDataRaw(&store, _MAKE_ID('t','y','p','e'), (void**) &pType);
 	
-		uint defVal = 0;
-		uint* pBindVal = &defVal;
-		uint* pAltBindVal = &defVal;
+		uint64 defVal = 0;
+		uint64* pBindVal = &defVal;
+		uint64* pAltBindVal = &defVal;
 		GetDataRaw(&store, _MAKE_ID('b','i','n','d'), (void**) &pBindVal);
 		GetDataRaw(&store, _MAKE_ID('a','l','t','b'), (void**) &pAltBindVal);
 		_DEBUG_ASSERT(pBindVal);
@@ -550,7 +550,7 @@ LoadFunctionOp(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGFunct
 		DataMap store;
 		totalBytesRead += LoadAllData(pBuffer, &store, offset + totalBytesRead);
 
-		uint* pFnVal = NULL;
+		uint64* pFnVal = NULL;
 		GetDataRaw(&store, _MAKE_ID('f','n','v','a'), (void**) &pFnVal);
 		_DEBUG_ASSERT(pFnVal);
 		
@@ -565,20 +565,20 @@ LoadFunctionOp(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGFunct
 		
 		_LOOPi(*pNumIns)
 		{
-			uint defVal = 0;
-			uint* pBindVal = &defVal;
-			uint* pAltBindVal = &defVal;
+			uint64 defVal = 0L;
+			uint64* pBindVal = &defVal;
+			uint64* pAltBindVal = &defVal;
 			GetDataRaw(&store, _MAKE_ID('i','b',0x00,0x00) | i, (void**) &pBindVal);
 			GetDataRaw(&store, _MAKE_ID('i','a,',0x00,0x00) | i, (void**) &pAltBindVal);
 			if(pInputs)
 				pInputs->push_back(InputLink(*pBindVal, *pAltBindVal, &pOp->GetInput(i)));
 		}
 
-		uint* pOutVal = NULL;
+		uint64* pOutVal = NULL;
 		GetDataRaw(&store, _MAKE_ID('o','u','t',' '), (void**) &pOutVal);
 		_DEBUG_ASSERT(pOutVal);
 		if(pOutputs)
-			pOutputs->insert(std::pair<uint, IMGOutputResource*>(*pOutVal, &pOp->GetOutput()));
+			pOutputs->insert(std::pair<uint64, IMGOutputResource*>(*pOutVal, &pOp->GetOutput()));
 
 		*ppOp = pOp;
 
@@ -626,7 +626,7 @@ LoadPixelShader(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGPixe
 		GetDataRaw(&store, _MAKE_ID('n','o','p','s'), (void**) &pNumOps);
 		_DEBUG_ASSERT(pNumOps);
 
-		uint* pShaderVal = NULL;
+		uint64* pShaderVal = NULL;
 		GetDataRaw(&store, _MAKE_ID('s','h','v','a'), (void**) &pShaderVal);
 		_DEBUG_ASSERT(pShaderVal);
 
@@ -658,7 +658,7 @@ LoadPixelShader(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGPixe
 		}
 
 		if(pPixelShaders)
-			pPixelShaders->insert(std::pair<uint, IMGPixelShader*>(*pShaderVal, pPS));
+			pPixelShaders->insert(std::pair<uint64, IMGPixelShader*>(*pShaderVal, pPS));
 
 		*ppShader = pPS;
 
@@ -689,7 +689,7 @@ LoadPixelIn(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGPixelIn*
 		const wchar* pType = NULL;
 		GetDataRaw(&store, _MAKE_ID('t','y','p','e'), (void**) &pType);
 
-		uint* pOutVal = NULL;
+		uint64* pOutVal = NULL;
 		GetDataRaw(&store, _MAKE_ID('o','u','t',' '), (void**) &pOutVal);
 		_DEBUG_ASSERT(pOutVal);
 
@@ -699,7 +699,7 @@ LoadPixelIn(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGPixelIn*
 
 		IMGPixelIn* pPIn = pGen->GetResourceMgr().CreatePixelIn(&sig);
 		if(pOutputs)
-			pOutputs->insert(std::pair<uint, IMGOutputResource*>(*pOutVal, &pPIn->GetOutput()));
+			pOutputs->insert(std::pair<uint64, IMGOutputResource*>(*pOutVal, &pPIn->GetOutput()));
 
 		*ppPIn = pPIn;
 
@@ -730,9 +730,9 @@ LoadPixelOut(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGPixelOu
 		const wchar* pType = NULL;
 		GetDataRaw(&store, _MAKE_ID('t','y','p','e'), (void**) &pType);
 
-		uint defVal = 0;
-		uint* pAltBindVal = &defVal;
-		uint* pBindVal = &defVal;
+		uint64 defVal = 0L;
+		uint64* pAltBindVal = &defVal;
+		uint64* pBindVal = &defVal;
 		GetDataRaw(&store, _MAKE_ID('b','i','n','d'), (void**) &pBindVal);
 		GetDataRaw(&store, _MAKE_ID('a','l','t','b'), (void**) &pAltBindVal);
 		_DEBUG_ASSERT(pBindVal);
@@ -811,10 +811,10 @@ LoadPass(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGPass** ppPa
 		DataMap store;
 		totalBytesRead += LoadAllData(pBuffer, &store, offset + totalBytesRead);
 
-		uint *pVsVal = NULL;
+		uint64 *pVsVal = NULL;
 		GetDataRaw(&store, _MAKE_ID('v','s','v','a'), (void**) &pVsVal);
 		_DEBUG_ASSERT(pVsVal);
-		uint* pPsVal = NULL;
+		uint64* pPsVal = NULL;
 		GetDataRaw(&store, _MAKE_ID('p','s','v','a'), (void**) &pPsVal);
 		_DEBUG_ASSERT(pPsVal);
 		uint* pNumStates = NULL;
@@ -906,9 +906,9 @@ LoadRenderState(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGRend
 
 		_LOOPi(*pNumInputs)
 		{
-			uint defVal = 0;
-			uint* pAltBindVal = &defVal;
-			uint* pBindVal = &defVal;
+			uint64 defVal = 0L;
+			uint64* pAltBindVal = &defVal;
+			uint64* pBindVal = &defVal;
 			GetDataRaw(&store, _MAKE_ID('i','b',0x00,0x00) | i, (void**) &pBindVal);
 			GetDataRaw(&store, _MAKE_ID('i','a',0x00,0x00) | i, (void**) &pAltBindVal);
 			if(pInputs)

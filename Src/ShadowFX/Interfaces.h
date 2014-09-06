@@ -92,7 +92,7 @@ struct ISHFXCascadedDirLight : public IRefCounted
 	//				const gmtl::Matrix44f& view, 
 	//				const gmtl::Matrix44f& proj) )
 
-	_PURE( void UpdateCascadedFrustumBounds(SHFXCascadedFrustumBounds& dest, float nearBiasExponent, const gmtl::Matrix44f& proj) )
+	_PURE( void UpdateCascadedFrustumBounds(SHFXCascadedFrustumBounds& dest, float nearBiasExponent, const gmtl::Matrix44f& proj, float expSteepNess) )
 	_PURE( void Update(const SHFXCascadedFrustumBounds& frustum, const gmtl::Vec3f& lightDir, const gmtl::Vec3f& lightPos, const gmtl::Matrix44f& view) )
 
 	_PURE( const SHFXCascadedSplitZ& GetSplitZ() )
