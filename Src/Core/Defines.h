@@ -15,6 +15,8 @@ typedef unsigned int	uint;
 typedef unsigned long	ulong;
 typedef	unsigned char	byte;
 typedef unsigned short	ushort;
+typedef int64_t			int64;
+typedef uint64_t		uint64;
 
 typedef ushort	wchar;
 typedef byte	boolean;

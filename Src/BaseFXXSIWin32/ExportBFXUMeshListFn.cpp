@@ -35,9 +35,9 @@ ExportBFXUMeshList(const wchar* pPath)
 				return status;		
 			
 			XSI::CValueArray retArray = retVal;
-			IBFXMaterialGroup* pMatGroup = (IBFXMaterialGroup*)((ULONG)retArray[0]);
-			IRVertexBufferGroup* pVBGroup = (IRVertexBufferGroup*)((ULONG)retArray[1]);
-			IRIndexBuffer* pIB = (IRIndexBuffer*)((ULONG)retArray[2]);
+			IBFXMaterialGroup* pMatGroup = (IBFXMaterialGroup*)((XSI::CValue::siPtrType)retArray[0]);
+			IRVertexBufferGroup* pVBGroup = (IRVertexBufferGroup*)((XSI::CValue::siPtrType)retArray[1]);
+			IRIndexBuffer* pIB = (IRIndexBuffer*)((XSI::CValue::siPtrType)retArray[2]);
 			
 			BFXMesh mesh;
 			mesh.pMatGroup = pMatGroup;

@@ -69,7 +69,7 @@ ExportMeshes()
 		XSI::CValueArray args(2);
 		//args[0] = meshOutDir;
 		//args[1] = curObj.GetName();
-		args[0] = (ULONG)(desc);
+		args[0] = (XSI::CValue::siPtrType)(desc);
 		args[1] = curObj;
 
 		XSI::CStatus status = app.ExecuteCommand(_W("RComExportMeshData"), args, retVal);
@@ -78,8 +78,8 @@ ExportMeshes()
 		if(status == XSI::CStatus::OK)
 		{
 			XSI::CValueArray meshData = retVal;
-			IByteBufferPtr pVBGroupData = (IByteBuffer*) ((ULONG) meshData[0]);
-			IByteBufferPtr pIBData = (IByteBuffer*) ((ULONG) meshData[1]);
+			IByteBufferPtr pVBGroupData = (IByteBuffer*) ((XSI::CValue::siPtrType) meshData[0]);
+			IByteBufferPtr pIBData = (IByteBuffer*) ((XSI::CValue::siPtrType) meshData[1]);
 
 			wstring fileName = meshOutDir.GetWideString();
 			fileName += _W("\\");

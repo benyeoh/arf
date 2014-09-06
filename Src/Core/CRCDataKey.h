@@ -47,10 +47,52 @@ struct CRCDataKey
 	}
 };
 
+struct CRCDataPtrKey
+{
+	uint hashVal;
+	const void* pHashData;
+	uint length;
+
+	inline bool operator==(const CRCDataPtrKey& other) const
+	{
+		if(IsValid() && other.IsValid())
+			if(hashVal == other.hashVal && length == other.length)
+				return memcmp(pHashData, other.pHashData, length) == 0;
+
+		return false;
+	}
+
+	inline bool operator !=(const CRCDataPtrKey& rhs) const
+	{
+		return !(operator==(rhs));
+	}
+
+	inline bool IsValid() const
+	{
+		return pHashData != NULL;
+	}
+
+	inline void Set(const void* pData, uint length)
+	{
+		this->pHashData = pData;
+		this->length = length;
+		this->hashVal = CRCCalcCharLength((char*)pData, length);
+	}
+};
+
+
 // Useful for dense hash map
 struct HashCRCDataKey
 {
 	inline uint operator()(const CRCDataKey& resKey) const
+	{
+		return resKey.hashVal;
+	}
+};
+
+struct HashCRCDataPtrKey
+{
+	inline uint operator()(const CRCDataPtrKey& resKey) const
 	{
 		return resKey.hashVal;
 	}

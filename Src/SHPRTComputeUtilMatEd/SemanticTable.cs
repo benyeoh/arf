@@ -35,16 +35,9 @@ namespace MaterialEditorPlugins.SHPRTComputeUtilMatEd
         {
             ResolveSemanticEventArgs resArgs = (ResolveSemanticEventArgs)args;
 
-            try
-            {
-                ParamSemantic resVal = (ParamSemantic)Enum.Parse(typeof(ParamSemantic), resArgs.SemanticName);
+            ParamSemantic resVal;
+            if (Enum.TryParse(resArgs.SemanticName, out resVal))
                 resArgs.Result = (int)resVal;
-            }
-            catch (ArgumentException)
-            {
-                // Semantic is not within param range
-                // Do nothing
-            }
         }
 
         public void HandleGetAllSemanticNames(object sender, EventArgs args)
