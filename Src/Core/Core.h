@@ -16,6 +16,7 @@
 #pragma warning(disable:4530)
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "Defines.h"
 #include "MemoryBindings.h"

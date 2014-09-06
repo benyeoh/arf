@@ -34,7 +34,7 @@ AHDirLightComponent::AHDirLightComponent()
 	m_CascadeBoundsMap.Initialize(4, 0.67f);
 
 	m_PosOffset = 100.0f;
-
+	
     m_SceneHandle.Invalidate();
 }
 
@@ -102,11 +102,12 @@ void AHDirLightComponent::SetLocalAABox(const AABox& bounds)
 	}
 }
 
-void AHDirLightComponent::SetShadowDirLight(ISHFXCascadedDirLight* pShadowDL, float cascadeExp, float posOffset, boolean isShadowMapShared)
+void AHDirLightComponent::SetShadowDirLight(ISHFXCascadedDirLight* pShadowDL, float cascadeExp, float cascadeFarNearSteepness, float posOffset, boolean isShadowMapShared)
 {
 	m_pShadowDL = pShadowDL;
 	m_IsShadowMapShared = isShadowMapShared;
 	m_CascadeSplitExp = cascadeExp;
+	m_CascadeFarNearSteepness = cascadeFarNearSteepness;
 	m_PosOffset = posOffset;
 
 	ClearCascadeBounds();
@@ -123,7 +124,7 @@ void AHDirLightComponent::UpdateCascadeBounds(const gmtl::MatrixA44f& proj, size
 		_DEBUG_ASSERT(ppBounds);
 	}
 
-	m_pShadowDL->UpdateCascadedFrustumBounds(**ppBounds, m_CascadeSplitExp, _CAST_MAT44(proj));
+	m_pShadowDL->UpdateCascadedFrustumBounds(**ppBounds, m_CascadeSplitExp, _CAST_MAT44(proj), m_CascadeFarNearSteepness);
 }
 
 void AHDirLightComponent::UpdateCascadeShadow(const gmtl::VecA3f& camPos, const gmtl::MatrixA44f& view, gmtl::MatrixA44f& proj, size_t boundsID)

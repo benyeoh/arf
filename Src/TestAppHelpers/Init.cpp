@@ -801,7 +801,7 @@ void InitAppHelpers()
 		pShadowDL->AddContext();
 	}
 
-	pDirLight->SetShadowDirLight(pShadowDL, 1.8f, DIR_LIGHT_POS_OFFSET, FALSE);
+	pDirLight->SetShadowDirLight(pShadowDL, 0.8f, 0.15f, DIR_LIGHT_POS_OFFSET, FALSE);
 	pDirLight->SetDeferredDirLight(pLightGroup, pRender);
 
 #ifdef USE_DIR_LIGHT

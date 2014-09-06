@@ -65,7 +65,7 @@ void CPThreadPool::Shutdown()
 	DoShutdown();
 
 	_DELETE_ARRAY(m_ppThreads);
-	_DELETE_ARRAY(m_pJobQueue);
+	_ALIGNED_FREE(m_pJobQueue);
 }
 
 void CPThreadPool::Initialize(uint queueSizePow2, IPThread** pThreads, uint numThreads)
@@ -78,9 +78,9 @@ void CPThreadPool::Initialize(uint queueSizePow2, IPThread** pThreads, uint numT
 	InternalGetWaitingLock() = FALSE;
 
 	m_QueueSize			= 1 << queueSizePow2;
-	m_pJobQueue			= _NEW IPRunnable*[m_QueueSize];
+	m_pJobQueue			= (JobEntry*) _ALIGNED_MALLOC(_CACHE_LINE_SIZE, sizeof(JobEntry) * m_QueueSize);
 
-	memset(m_pJobQueue, 0, sizeof(IPRunnable*) * m_QueueSize);
+	memset(m_pJobQueue, 0, sizeof(JobEntry) * m_QueueSize);
 
 	DoInitialize(queueSizePow2, pThreads, numThreads);
 
@@ -203,9 +203,9 @@ void CPThreadPool::WorkerProcessJobs()
     uint processIndex = AtomicInc((int*) &m_ProcessIndex) - 1;
     int jobIndexToProcess = processIndex & (m_QueueSize-1);
 
-    IPRunnable* pRunnable = m_pJobQueue[jobIndexToProcess];
+    IPRunnable* pRunnable = m_pJobQueue[jobIndexToProcess].pRunnable;
     _DEBUG_ASSERT(pRunnable);
-    m_pJobQueue[jobIndexToProcess] = NULL;
+    m_pJobQueue[jobIndexToProcess].pRunnable = NULL;
 
     pRunnable->Run();
 
@@ -227,11 +227,11 @@ void CPThreadPool::QueueJobs(IPRunnable** ppJobs, uint numJobs)
 	_LOOPi(numJobs)
 	{
 		int jobIndexToAdd = (int) (addIndex & (m_QueueSize-1));
-		IPRunnable** ppState = m_pJobQueue + jobIndexToAdd;
+		IPRunnable** ppState = &(m_pJobQueue[jobIndexToAdd].pRunnable);
 		while (*ppState)
 			DoYieldThread();
 
-		m_pJobQueue[jobIndexToAdd] = ppJobs[i];
+		m_pJobQueue[jobIndexToAdd].pRunnable = ppJobs[i];
 		addIndex++;
 	}
 

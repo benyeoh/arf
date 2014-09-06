@@ -37,6 +37,7 @@ syntax: glob
 *.DLL.bi
 *UpgradeLog.XML
 *.opensdf
+*.orig
 
 re:^Profiling/
 re:^__Junk/

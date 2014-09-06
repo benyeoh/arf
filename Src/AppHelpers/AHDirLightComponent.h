@@ -37,6 +37,7 @@ private:
 	ISHFXCascadedDirLightPtr	m_pShadowDL;
 	boolean						m_IsShadowMapShared;
 	float						m_CascadeSplitExp;
+	float						m_CascadeFarNearSteepness;
 	float						m_PosOffset;
 
 	DenseChainedHashMap<size_t, SHFXCascadedFrustumBounds*, MurmurHashSizeTObj> m_CascadeBoundsMap;
@@ -66,8 +67,9 @@ public:
 
 	void	SetColor(const gmtl::Vec3f& color);
 	void	SetLocalAABox(const AABox& bounds);
-	void	SetShadowDirLight(ISHFXCascadedDirLight* pShadowDL, float cascadeExp, float posOffset, boolean isShadowMapShared);
+	void	SetShadowDirLight(ISHFXCascadedDirLight* pShadowDL, float cascadeExp, float cascadeFarNearSteepness, float posOffset, boolean isShadowMapShared);
 
+	float					GetShadowCascadeFarNearSteepness() { return m_CascadeFarNearSteepness; }
 	float					GetShadowCascadeSplitExp()	{ return m_CascadeSplitExp; }
 	float					GetShadowPosOffset()	{ return m_PosOffset; } 
 	ISHFXCascadedDirLight*	GetShadowDirLight()		{ return m_pShadowDL; }

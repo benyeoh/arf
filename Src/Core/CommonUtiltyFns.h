@@ -24,10 +24,10 @@ IsAlignedToXBytes(void* p, uint x)
 // String Fns
 
 uint 
-ASCIIToUnicode(const char* pSrc, wchar* pDest);
+ASCIIToUnicode(const char* pSrc, wchar* pDest, uint bufLen=0xFFFFFFFF);
 
 uint
-UnicodeToASCII(const wchar* pSrc, char* pDest);
+UnicodeToASCII(const wchar* pSrc, char* pDest, uint bufLen=0xFFFFFFFF);
 
 const wchar*
 ASCIIToUnicodeAuto(const char* pSrc, uint* pLength=NULL);

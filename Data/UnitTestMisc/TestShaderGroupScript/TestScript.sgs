@@ -1,0 +1,167 @@
+shader s0
+{
+	code 
+	{
+		//=============================== Locals ==========================================
+
+		//=============================== Globals ==========================================
+
+		float4x4 g_World <int semantic = 0; int usage = 0;>;
+		float4x4 g_ViewProj <int semantic = 3; int usage = 0;>;
+		int g_kAlphaMode <int semantic = 133; int usage = 1; string name = "Alpha Mode"; string combo = "Opaque, Alpha-Tested, Translucent-Alpha, Additive-Alpha"; bool isInit = true; int discardVal = 0;> = 0;
+		texture g_kDiffuseTex <int semantic = 128; int usage = 1; string name = "Diffuse Texture";>;
+		sampler g_kSampDiffuse = sampler_state
+		{   
+			Texture = <g_kDiffuseTex>;
+				MipFilter = LINEAR;
+				MinFilter = LINEAR;
+				MagFilter = LINEAR;
+			//MaxAnisotropy = 8;
+				ADDRESSU  = WRAP;
+				ADDRESSV  = WRAP;	
+		};
+		float3 g_kEnvMapTint <int semantic = 135; int usage = 1; float min = 0.0f; float max = 5.0f; string name = "Environment Map Tint"; bool isInit = true;> = float3(1.0f, 1.0f, 1.0f);
+
+		//=============================== Functions ==========================================
+
+		float4 VecMatMult4(float4 vec4, float4x4 mat44)
+		{
+			return mul(vec4, mat44);
+		}
+
+		float3x3 CastMat44ToMat33(float4x4 mat44)
+		{
+			return (float3x3)mat44;
+		}
+
+		float3 VecMatMult3(float3 vec3, float3x3 mat33)
+		{
+			return mul(vec3, mat33);
+		}
+
+		float3 Normalize3(float3 vec3)
+		{
+			return normalize(vec3);
+		}
+
+		float4 Tex2D(sampler samp, float2 uv)
+		{
+			return tex2D(samp, uv);
+		}
+
+		float4 ConditionalAlphaTest(int alphaMode, float4 color)
+		{
+			if(alphaMode > 0)
+			{
+				clip(color.a - 2.0f / 256.0f);
+			}
+			
+			return color;
+		}
+
+		float4 DefaultUnitVec4(float4 vec)
+		{
+			return vec;
+		}
+
+		float4 GetUnitVec4()
+		{
+			return float4(1.0f, 1.0f, 1.0f, 1.0f);
+		}
+
+		float4 MergeVec3ToVec4XYZ(float3 v3, float4 v4)
+		{
+			return float4(v3.xyz, v4.w);
+		}
+
+		float4 VecVecMult4(float4 v1, float4 v2)
+		{
+			return v1 * v2;
+		}
+
+
+
+		//=============================== Vertex Shaders ==========================================
+
+		struct VS_INSimpleVS
+		{
+			float4 vsinput_0 : POSITION;
+			float2 vsinput_1 : TEXCOORD0;
+			float3 vsinput_2 : NORMAL;
+		};
+
+		struct VS_OUTSimpleVS
+		{
+			float4 vsoutput_0 : POSITION0;
+			float2 vsoutput_1 : TEXCOORD0;
+			float3 vsoutput_2 : TEXCOORD1;
+		};
+
+		VS_OUTSimpleVS SimpleVS(VS_INSimpleVS input)
+		{
+			VS_OUTSimpleVS output;
+
+			float4 VecMatMult4_3__fn = VecMatMult4(input.vsinput_0, g_World);
+
+			float4 VecMatMult4_4__fn = VecMatMult4(VecMatMult4_3__fn, g_ViewProj);
+
+			float3x3 CastMat44ToMat33_0__fn = CastMat44ToMat33(g_World);
+
+			float3 VecMatMult3_1__fn = VecMatMult3(input.vsinput_2, CastMat44ToMat33_0__fn);
+
+			float3 Normalize3_2__fn = Normalize3(VecMatMult3_1__fn);
+
+
+			output.vsoutput_0 = VecMatMult4_4__fn;
+			output.vsoutput_1 = input.vsinput_1;
+			output.vsoutput_2 = Normalize3_2__fn;
+			return output;
+		}
+
+
+		//=============================== Pixel Shaders ==========================================
+
+		struct PS_INSelfIllumPS
+		{
+			float2 psinput_0 : TEXCOORD0;
+		};
+
+		struct PS_OUTSelfIllumPS
+		{
+			float4 psoutput_0 : COLOR0;
+		};
+
+		PS_OUTSelfIllumPS SelfIllumPS(PS_INSelfIllumPS input)
+		{
+			PS_OUTSelfIllumPS output;
+
+			float4 Tex2D_1__fn = Tex2D(g_kSampDiffuse, input.psinput_0);
+
+			float4 ConditionalAlphaTest_0__fn = ConditionalAlphaTest(g_kAlphaMode, Tex2D_1__fn);
+
+			float4 DefaultUnitVec4_2__fn = DefaultUnitVec4(ConditionalAlphaTest_0__fn);
+
+			float4 GetUnitVec4_4__fn = GetUnitVec4();
+
+			float4 MergeVec3ToVec4XYZ_5__fn = MergeVec3ToVec4XYZ(g_kEnvMapTint, GetUnitVec4_4__fn);
+
+			float4 VecVecMult4_6__fn = VecVecMult4(DefaultUnitVec4_2__fn, MergeVec3ToVec4XYZ_5__fn);
+
+
+			output.psoutput_0 = VecVecMult4_6__fn;
+			return output;
+		}
+	}
+}
+
+annotation a0
+{	
+	parameter g_WorldProjMat
+	{
+		int semantic = 0; float min = 5 * 0.0f + 1; float max = 1.0f;
+		bool isInit = true;
+		string s = "World Projection";
+	}
+
+	parameter g_ProjMat { int semantic = 1; float min = 0.0f; float max = 1.0f; bool isInit = true; string s = "Projection"; }
+}

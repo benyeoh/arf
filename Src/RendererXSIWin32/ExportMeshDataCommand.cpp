@@ -39,7 +39,7 @@ RComExportMeshData_Init(XSI::CRef& in_ctxt)
 	args = cmd.GetArguments();
 
 	// Pointer to the RVertexDesc array
-	args.Add(_W("arg0"), (ULONG)(NULL));	
+	args.Add(_W("arg0"), (XSI::CValue::siPtrType)(NULL));	
 	// Pointer to a X3DObject to export
 	args.Add(_W("arg1"), XSI::CRef());		
 
@@ -64,7 +64,7 @@ RComExportMeshData_Execute(XSI::CRef& in_ctxt)
 
 	//XSI::CString outDir = args[0].GetAsText();
 	//XSI::CString meshName = args[1].GetAsText();
-	RVertexDesc* pDesc = (RVertexDesc*)((ULONG)args[0]);
+	RVertexDesc* pDesc = (RVertexDesc*)((XSI::CValue::siPtrType)args[0]);
 	XSI::X3DObject obj((XSI::CRef)(args[1]));
 
 	//XSI::CString vbPath = outDir + _W("\\") + meshName + _W(".vbg");	
@@ -85,8 +85,8 @@ RComExportMeshData_Execute(XSI::CRef& in_ctxt)
 		return XSI::CStatus::Fail;
 		
 	XSI::CValueArray meshData;
-	meshData.Add( (ULONG) pVBGroup );
-	meshData.Add( (ULONG) pIB );
+	meshData.Add( (XSI::CValue::siPtrType) pVBGroup );
+	meshData.Add( (XSI::CValue::siPtrType) pIB );
 
 	toReturn = meshData;
 	

@@ -33,7 +33,7 @@ ExportBFXMesh(XSI::X3DObject& obj, IRVertexBufferGroup** ppVBGroup, IRIndexBuffe
 	//IByteBufferPtr pMatBuffer = (IByteBuffer*)((ULONG)retVal);
 	
 	// Load the effect group
-	*ppMatGroup = (IBFXMaterialGroup*)((ULONG)retVal); //LoadEffectGroup(g_pRenderer, g_pRenderFX, pMatBuffer, 0);
+	*ppMatGroup = (IBFXMaterialGroup*)((XSI::CValue::siPtrType)retVal); //LoadEffectGroup(g_pRenderer, g_pRenderFX, pMatBuffer, 0);
 	
 	// Determine the vertex data that we need from the effect
 	RVertexDesc desc[256];
@@ -51,7 +51,7 @@ ExportBFXMesh(XSI::X3DObject& obj, IRVertexBufferGroup** ppVBGroup, IRIndexBuffe
 	
 	// Export the topology	
 	XSI::CValueArray args2(2);
-	args2[0] = (ULONG)(desc);
+	args2[0] = (XSI::CValue::siPtrType)(desc);
 	args2[1] = obj;
 
 	status = app.ExecuteCommand(_W("RComExportMeshData"), args2, retVal);
@@ -62,8 +62,8 @@ ExportBFXMesh(XSI::X3DObject& obj, IRVertexBufferGroup** ppVBGroup, IRIndexBuffe
 	//IRVertexBufferGroup* pVBGroupBuffer = (IRVertexBufferGroup*)((ULONG)retArray[0]);
 	//IRIndexBuffer* pIBBuffer = (IRIndexBuffer*)((ULONG)retArray[1]);
 	
-	*ppVBGroup = (IRVertexBufferGroup*)((ULONG)retArray[0]); //LoadVBGroup(g_pRenderer, pVBGroupBuffer, 0);
-	*ppIB = (IRIndexBuffer*)((ULONG)retArray[1]); //LoadIB(g_pRenderer, pIBBuffer, 0);
+	*ppVBGroup = (IRVertexBufferGroup*)((XSI::CValue::siPtrType)retArray[0]); //LoadVBGroup(g_pRenderer, pVBGroupBuffer, 0);
+	*ppIB = (IRIndexBuffer*)((XSI::CValue::siPtrType)retArray[1]); //LoadIB(g_pRenderer, pIBBuffer, 0);
 	
 	return XSI::CStatus::OK;
 }

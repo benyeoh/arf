@@ -34,17 +34,10 @@ namespace MaterialEditorPlugins.BFXUtilMatEd
         public void HandleResolveSemantic(object sender, EventArgs args)
         {
             ResolveSemanticEventArgs resArgs = (ResolveSemanticEventArgs)args;
-            
-            try
-            {
-                ParamSemantic resVal = (ParamSemantic) Enum.Parse(typeof(ParamSemantic), resArgs.SemanticName);
-                resArgs.Result = (int) resVal;
-            }
-            catch (ArgumentException)
-            {
-                // Semantic is not within param range
-                // Do nothing
-            }
+
+            ParamSemantic resVal;
+            if(Enum.TryParse(resArgs.SemanticName, out resVal))
+                resArgs.Result = (int)resVal;
         }
 
         public void HandleGetAllSemanticNames(object sender, EventArgs args)
