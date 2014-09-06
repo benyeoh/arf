@@ -148,14 +148,14 @@ SaveGlobal(IMGGlobal* pGlobal, IByteBuffer* pBuffer)
 		if(pInVal)
 			totalBytesWritten += SaveDataString(pBuffer, tag, pInVal);
 		IMGOutputResource* pOut = in.GetBinding();
-		uint outVal = (uint)(size_t) pOut;
+		uint64 outVal = (uint64) pOut;
 		tag =  _MAKE_ID('b','i',0x00,0x00);
 		tag |= i;
 		if(pOut)
 			totalBytesWritten += SaveData(pBuffer, tag, &outVal);
 			
 		IMGOutputResource* pAltOut = in.GetAltBinding();
-		uint altOutVal = (uint)(size_t) pAltOut;
+		uint64 altOutVal = (uint64) pAltOut;
 		tag =  _MAKE_ID('a','l',0x00,0x00);
 		tag |= i;
 		if(pAltOut)
@@ -163,7 +163,7 @@ SaveGlobal(IMGGlobal* pGlobal, IByteBuffer* pBuffer)
 	}
 
 	IMGOutputResource* pOut = &(pGlobal->GetOutput());
-	uint outVal = (uint)(size_t) pOut;
+	uint64 outVal = (uint64)pOut;
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('o','u','t',' '), &outVal);
 	
 	uint numDescs = pGlobal->GetNumOfDesc();
@@ -221,11 +221,11 @@ SavePass(IMGPass* pPass, IByteBuffer* pBuffer)
 	totalBytesWritten += AppendData(pBuffer, MGU_PASS_CHUNK_H);
 
 	IMGVertexShader* pVS = pPass->GetVertexShaderOp()->GetShader();
-	uint vsVal = (uint)(size_t)(pVS);
+	uint64 vsVal = (uint64)(pVS);
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('v','s','v','a'), &vsVal);
 
 	IMGPixelShader* pPS = pPass->GetPixelShaderOp()->GetShader();
-	uint psVal = (uint)(size_t)(pPS);
+	uint64 psVal = (uint64)(pPS);
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('p','s','v','a'), &psVal);
 
 	const wchar* pName = pPass->GetName();
@@ -265,7 +265,7 @@ SaveVertexShader(IMGVertexShader* pShader, IByteBuffer* pBuffer)
 	uint numOps = pShader->GetNumOfFunctionOp();
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('n','o','p','s'), &numOps);
 	
-	uint shaderVal = (uint)(size_t)pShader;
+	uint64 shaderVal = (uint64)pShader;
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('s','h','v','a'), &shaderVal);
 	
 	_LOOPi(numVIns)
@@ -311,7 +311,7 @@ SavePixelShader(IMGPixelShader* pShader, IByteBuffer* pBuffer)
 	uint numOps = pShader->GetNumOfFunctionOp();
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('n','o','p','s'), &numOps);
 
-	uint shaderVal = (uint)(size_t)pShader;
+	uint64 shaderVal = (uint64)pShader;
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('s','h','v','a'), &shaderVal);
 
 	_LOOPi(numPIns)
@@ -374,14 +374,14 @@ SaveRenderState(IMGRenderState* pRenderState, IByteBuffer* pBuffer)
 		if(pInValue)
 			totalBytesWritten += SaveDataString(pBuffer, tag, pInValue);	
 		IMGOutputResource* pOut = pIn->GetBinding();
-		uint outVal = (uint)(size_t) pOut;
+		uint64 outVal = (uint64) pOut;
 		tag = _MAKE_ID('i','b',0x00,0x00);
 		tag |= i;
 		if(pOut)
 			totalBytesWritten += SaveData(pBuffer, tag, &outVal);	
 			
 		IMGOutputResource* pAltOut = pIn->GetAltBinding();
-		uint altOutVal = (uint)(size_t) pAltOut;
+		uint64 altOutVal = (uint64) pAltOut;
 		tag = _MAKE_ID('i','a',0x00,0x00);
 		tag |= i;
 		if(pAltOut)
@@ -408,7 +408,7 @@ SaveFunction(IMGFunction* pFunction, IByteBuffer* pBuffer)
 	const wchar* pValue = pFunction->GetValue();
 	totalBytesWritten += SaveDataString(pBuffer, _MAKE_ID('v','a','l','u'), pValue);
 	
-	uint fnVal = (uint)(size_t) pFunction;
+	uint64 fnVal = (uint64) pFunction;
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('f','n','v','a'), &fnVal);
 	
 	uint numInputs = pFunction->GetNumOfInputs();
@@ -445,7 +445,7 @@ SaveFunctionOp(IMGFunctionOp* pOp, IByteBuffer* pBuffer)
 	totalBytesWritten += AppendData(pBuffer, MGU_FUNCTION_OP_CHUNK_H);
 
 	IMGFunction* pFn = pOp->GetFunction();
-	uint fnVal = (uint) (size_t) pFn;
+	uint64 fnVal = (uint64) pFn;
 	_DEBUG_ASSERT(pFn);
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('f','n','v','a'), &fnVal);
 
@@ -456,14 +456,14 @@ SaveFunctionOp(IMGFunctionOp* pOp, IByteBuffer* pBuffer)
 	{
 		IMGInputResource* pIn = &pOp->GetInput(i);
 		IMGOutputResource* pBinding = pIn->GetBinding();
-		uint bindVal = (uint)(size_t)pBinding;
+		uint64 bindVal = (uint64)pBinding;
 		uint tag = _MAKE_ID('i','b',0x00,0x00);
 		tag |= i;
 		if(pBinding)
 			totalBytesWritten += SaveData(pBuffer, tag, &bindVal);
 			
 		IMGOutputResource* pAltBinding = pIn->GetAltBinding();
-		uint altBindVal = (uint)(size_t) pAltBinding;
+		uint64 altBindVal = (uint64) pAltBinding;
 		tag = _MAKE_ID('i','a,',0x00,0x00);
 		tag |= i;
 		if(pAltBinding)
@@ -471,7 +471,7 @@ SaveFunctionOp(IMGFunctionOp* pOp, IByteBuffer* pBuffer)
 	}
 
 	IMGOutputResource* pOut = &pOp->GetOutput();
-	uint outVal = (uint)(size_t)pOut;
+	uint64 outVal = (uint64)pOut;
 	_DEBUG_ASSERT(pOut);
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('o','u','t',' '), &outVal);
 		
@@ -492,7 +492,7 @@ SaveVertexIn(IMGVertexIn* pIn, IByteBuffer* pBuffer)
 	totalBytesWritten += SaveDataString(pBuffer, _MAKE_ID('t','y','p','e'), pType);
 	
 	IMGOutputResource* pOut = &pIn->GetOutput();
-	uint outVal = (uint)(size_t)pOut;
+	uint64 outVal = (uint64)pOut;
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('o','u','t',' '), &outVal);
 	_DEBUG_ASSERT(pOut);
 	
@@ -514,11 +514,11 @@ SaveVertexOut(IMGVertexOut* pOut, IByteBuffer* pBuffer)
 
 	IMGInputResource* pIn = &pOut->GetInput();
 	IMGOutputResource* pBinding =  pIn->GetBinding();
-	uint bindVal = (uint)(size_t)pBinding;
+	uint64 bindVal = (uint64)pBinding;
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('b','i','n','d'), &bindVal);
 
 	IMGOutputResource* pAltBinding = pIn->GetAltBinding();
-	uint altBindVal = (uint)(size_t) pAltBinding;
+	uint64 altBindVal = (uint64)pAltBinding;
 	if(pAltBinding)
 		totalBytesWritten += SaveData(pBuffer, _MAKE_ID('a','l','t','b'), &altBindVal);	
 			
@@ -540,7 +540,7 @@ SavePixelIn(IMGPixelIn* pIn, IByteBuffer* pBuffer)
 	totalBytesWritten += SaveDataString(pBuffer, _MAKE_ID('t','y','p','e'), pType);
 
 	IMGOutputResource* pOut = &pIn->GetOutput();
-	uint outVal = (uint)(size_t)pOut;
+	uint64 outVal = (uint64)pOut;
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('o','u','t',' '), &outVal);
 	_DEBUG_ASSERT(pOut);
 
@@ -562,11 +562,11 @@ SavePixelOut(IMGPixelOut* pOut, IByteBuffer* pBuffer)
 
 	IMGInputResource* pIn = &pOut->GetInput();
 	IMGOutputResource* pBinding =  pIn->GetBinding();
-	uint bindVal = (uint)(size_t)pBinding;
+	uint64 bindVal = (uint64)pBinding;
 	totalBytesWritten += SaveData(pBuffer, _MAKE_ID('b','i','n','d'), &bindVal);
 
 	IMGOutputResource* pAltBinding = pIn->GetAltBinding();
-	uint altBindVal = (uint)(size_t) pAltBinding;
+	uint64 altBindVal = (uint64) pAltBinding;
 	if(pAltBinding)
 		totalBytesWritten += SaveData(pBuffer, _MAKE_ID('a','l','t','b'), &altBindVal);	
 	

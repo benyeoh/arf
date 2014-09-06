@@ -28,7 +28,12 @@ private:
 	//_ALIGN(_CACHE_LINE_SIZE) int	m_NumJobsInQueue;
 	//_ALIGN(_CACHE_LINE_SIZE) boolean m_IsWaitingLock;
 
-    IPRunnable** m_pJobQueue;
+	struct JobEntry
+	{
+		IPRunnable* pRunnable;
+	};
+
+    JobEntry* m_pJobQueue;
 	
 	//int m_NumJobsPending;
 	

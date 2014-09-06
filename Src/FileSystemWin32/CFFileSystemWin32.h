@@ -35,6 +35,8 @@ protected:
 	void DoClose();
 	boolean DoCheckFileExists(const wchar* pFileName);
 	IFFileEnumerator* DoGetFiles(const wchar* pHierarchyPath, const wchar* pFileFilter, boolean isIncludeSubHierachies);
+
+	void DoResolvePath(wstring& srcDest);
 };
 
 _NAMESPACE_END

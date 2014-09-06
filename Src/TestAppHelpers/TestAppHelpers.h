@@ -41,7 +41,7 @@ enum
 #include "BRDFDirs.h"
 #include "BRDFCallback.h"
 
-//#define _USE_PRT_VERSION
+#define _USE_PRT_VERSION
 
 const static float AREA_ROOT = 7000.0f;
 enum

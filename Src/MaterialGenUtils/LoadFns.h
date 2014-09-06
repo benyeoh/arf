@@ -15,11 +15,11 @@ _NAMESPACE_BEGIN
 
 struct InputLink
 {
-	uint bindVal;
-	uint altBindVal;
+	uint64 bindVal;
+	uint64 altBindVal;
 	IMGInputResource* pIn;
 	
-	InputLink(uint val, uint altVal, IMGInputResource* pInput)
+	InputLink(uint64 val, uint64 altVal, IMGInputResource* pInput)
 		: bindVal(val)
 		, altBindVal(altVal)
 		, pIn(pInput)
@@ -32,10 +32,10 @@ struct InputLink
 };
 
 typedef std::vector<InputLink> InputList;
-typedef std::map<uint, IMGOutputResource*> OutputMap;
-typedef std::map<uint, IMGFunction*> FunctionMap;
-typedef std::map<uint, IMGVertexShader*> VertexShaderMap;
-typedef std::map<uint, IMGPixelShader*> PixelShaderMap;
+typedef std::map<uint64, IMGOutputResource*> OutputMap;
+typedef std::map<uint64, IMGFunction*> FunctionMap;
+typedef std::map<uint64, IMGVertexShader*> VertexShaderMap;
+typedef std::map<uint64, IMGPixelShader*> PixelShaderMap;
 
 uint
 LoadMaterialTemplate(IMGMaterialGen* pGen, IByteBuffer* pBuffer, uint offset, IMGMaterialTemplate** ppTemplate);

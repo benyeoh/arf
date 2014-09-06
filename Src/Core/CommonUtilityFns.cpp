@@ -16,7 +16,7 @@ _NAMESPACE_BEGIN
 // String Fns
 
 uint 
-ASCIIToUnicode(const char* pSrc, wchar* pDest)
+ASCIIToUnicode(const char* pSrc, wchar* pDest, uint bufLen)
 {
 	_DEBUG_ASSERT(pSrc);
 	_DEBUG_ASSERT(pDest);
@@ -24,6 +24,7 @@ ASCIIToUnicode(const char* pSrc, wchar* pDest)
 	uint i = 0;
 	while( pSrc[i] != 0 )
 	{
+		_DEBUG_ASSERT(i < (bufLen-1));
 		pDest[i] = pSrc[i];
 		++i;
 	}
@@ -34,7 +35,7 @@ ASCIIToUnicode(const char* pSrc, wchar* pDest)
 }
 
 uint
-UnicodeToASCII(const wchar* pSrc, char* pDest)
+UnicodeToASCII(const wchar* pSrc, char* pDest, uint bufLen)
 {
 	_DEBUG_ASSERT(pSrc);
 	_DEBUG_ASSERT(pDest);
@@ -42,6 +43,7 @@ UnicodeToASCII(const wchar* pSrc, char* pDest)
 	uint i = 0;
 	while( pSrc[i] != 0 )
 	{
+		_DEBUG_ASSERT(i < (bufLen-1));
 		pDest[i] = (char)(pSrc[i]);	// Truncate wchar
 		++i;
 	}
@@ -55,7 +57,7 @@ const wchar*
 ASCIIToUnicodeAuto(const char* pSrc, uint* pLength)
 {
 	static wchar tempWCharBuffer[1024];
-	uint length = ASCIIToUnicode(pSrc, tempWCharBuffer); _DEBUG_ASSERT(length < 1024);
+	uint length = ASCIIToUnicode(pSrc, tempWCharBuffer, 1024); _DEBUG_ASSERT(length < 1024);
 	if(pLength)	
 		*pLength = length;
 
@@ -66,7 +68,7 @@ const char*
 UnicodeToASCIIAuto(const wchar* pSrc, uint* pLength)
 {
 	static char tempWCharBuffer[1024];
-	uint length = UnicodeToASCII(pSrc, tempWCharBuffer); _DEBUG_ASSERT(length < 1024);
+	uint length = UnicodeToASCII(pSrc, tempWCharBuffer, 1024); _DEBUG_ASSERT(length < 1024);
 	if(pLength)	
 		*pLength = length;
 

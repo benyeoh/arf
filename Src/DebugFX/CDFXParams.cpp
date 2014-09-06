@@ -247,7 +247,7 @@ CDFXParams::GetNumOfBatchedPoint()
 }
 
 void
-CDFXParams::AddBatchedQuadVertexParams(uint index, const gmtl::Vec3f& pos, const gmtl::Vec2f& size,
+CDFXParams::AddBatchedQuadVertexParams(size_t index, const gmtl::Vec3f& pos, const gmtl::Vec2f& size,
 								const gmtl::Vec2f& texPos, const gmtl::Vec2f& texSize)
 {
 	BatchedQuadParams* pBatchedQuad = NULL;
@@ -284,7 +284,7 @@ CDFXParams::AddBatchedQuadParams(const gmtl::Vec3f& pos, const gmtl::Vec2f& size
 								const gmtl::Vec2f& texPos, const gmtl::Vec2f& texSize,
 								IRTexture2D* pTex)
 {
-	uint index = (uint) pTex;
+	size_t index = (size_t) pTex;
 	REffectParam param;
 	param.SetTexture2D(pTex);
 	m_BatchedQuadTextures.push_back(param);
@@ -306,7 +306,7 @@ CDFXParams::AddBatchedQuadParams(const gmtl::Vec3f& pos, const gmtl::Vec2f& size
 //}
 
 BatchedQuadParams* 
-CDFXParams::GetBatchedQuadParams(uint index)
+CDFXParams::GetBatchedQuadParams(size_t index)
 {
 	BatchedQuadMap::iterator itr = m_BatchedQuads.find(index);
 	if(itr != m_BatchedQuads.end())

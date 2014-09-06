@@ -33,6 +33,12 @@ CFFileSystemWin32::DoCheckFileExists(const wchar* pFileName)
 	return FALSE;
 }
 
+void CFFileSystemWin32::DoResolvePath(wstring& srcDest)
+{
+	wstring temp = srcDest;
+	srcDest = m_ResourcePath + _W("\\") + temp;
+}
+
 IFFile* 
 CFFileSystemWin32::DoGetFile(const wchar* pFileName)
 {
