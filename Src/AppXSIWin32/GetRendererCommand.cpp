@@ -56,7 +56,7 @@ AppComGetRenderer_Execute(XSI::CRef& in_ctxt)
 
 	InitializeRenderer();
 	
-	XSI::CValue toReturn((ULONG) (g_pRenderer.GetPtr()));	
+	XSI::CValue toReturn((XSI::CValue::siPtrType) (g_pRenderer.GetPtr()));	
 	XSI::CStatus status = g_pRenderer ? XSI::CStatus::OK : XSI::CStatus::Fail;
 	ctxt.PutAttribute(_W("ReturnValue"), toReturn);
 

@@ -22,7 +22,7 @@ struct BatchedQuadParams
 
 class CDFXParams : public IDFXParams
 {
-	typedef dense_hash_map<uint, BatchedQuadParams*> BatchedQuadMap;
+	typedef dense_hash_map<size_t, BatchedQuadParams*> BatchedQuadMap;
 
 private: 
 	const gmtl::Matrix44f* m_pView;
@@ -135,10 +135,10 @@ public:
 	//void AddBatchedQuadParams(const gmtl::Vec3f& pos, const gmtl::Vec2f& size,
 	//						const gmtl::Vec2f& texPos, const gmtl::Vec2f& texSize,
 	//						IRTexture2D* pTex);
-	void AddBatchedQuadVertexParams(uint index, const gmtl::Vec3f& pos, const gmtl::Vec2f& size,
+	void AddBatchedQuadVertexParams(size_t index, const gmtl::Vec3f& pos, const gmtl::Vec2f& size,
 								const gmtl::Vec2f& texPos, const gmtl::Vec2f& texSize);
 								
-	BatchedQuadParams* GetBatchedQuadParams(uint index);
+	BatchedQuadParams* GetBatchedQuadParams(size_t index);
 	REffectParam* GetQuadTexture(uint index);
 	uint GetNumOfBatchedQuadParams();
 			

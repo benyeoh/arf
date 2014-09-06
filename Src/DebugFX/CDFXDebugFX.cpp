@@ -318,7 +318,7 @@ CDFXDebugFX::Flush()
 	_LOOPi(numBatches)
 	{
 		REffectParam* pTexParam = m_Params.GetQuadTexture(i);
-		BatchedQuadParams* pParam = m_Params.GetBatchedQuadParams((uint)(size_t) pTexParam->pTex);
+		BatchedQuadParams* pParam = m_Params.GetBatchedQuadParams((size_t) pTexParam->pTex);
 		uint numBatchedQuads = (uint) pParam->quadPos.size();
 		
 		numOfBatchesSoFar = 0;
