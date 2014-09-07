@@ -32,6 +32,8 @@ public:
 
 public:
 	const char* GetShaderCode();
+	uint GetShaderCodeLength();
+
 	const char* GetName();
 
 	void SetName(IByteBuffer* pName);

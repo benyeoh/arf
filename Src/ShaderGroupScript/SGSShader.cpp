@@ -23,6 +23,11 @@ const char* SGSShader::GetShaderCode()
 	return m_pShaderCode ? (const char*) m_pShaderCode->GetData() : NULL;
 }
 
+uint SGSShader::GetShaderCodeLength()
+{
+	return m_pShaderCode ? m_pShaderCode->GetDataLength() : 0;
+}
+
 void SGSShader::SetName(IByteBuffer* pName)
 {
 	m_pName = pName;

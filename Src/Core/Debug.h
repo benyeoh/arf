@@ -24,11 +24,16 @@ _NAMESPACE_BEGIN
 #define _W2(x)			_W(x)
 #define __WFILE__		_W2(__FILE__)
 
-#define _TRACE	___Trace
-#define _VARARG ___VarArg
-#define _LOG	___Log
+#define _TRACE_NOARG	___TraceNoArg
+#define _TRACE			___Trace
+#define _VARARG			___VarArg
 
 #if defined(_WINDOWS_)
+	inline void __cdecl ___TraceNoArg(const wchar* pStr)
+	{
+		OutputDebugString(pStr);
+	}
+
 	inline void __cdecl ___Trace(const wchar *sFormat, ...)
 	{
 		va_list vl;
@@ -38,9 +43,14 @@ _NAMESPACE_BEGIN
 		vswprintf_s(sTraceString, sFormat, vl);
 		va_end(vl);
 		_DEBUG_ASSERT(wcslen(sTraceString) < 500);
-		OutputDebugString(sTraceString);
+		___TraceNoArg(sTraceString);
 	}
 #else
+	inline void __cdecl ___TraceNoArg(const wchar* pStr)
+	{
+		fwprintf(stderr, pStr);
+	}
+	
 	inline void __cdecl ___Trace(const wchar *sFormat, ...)
 	{
 		va_list vl;
@@ -50,23 +60,9 @@ _NAMESPACE_BEGIN
 		vswprintf_s(sTraceString, sFormat, vl);
 		va_end(vl);
 		_DEBUG_ASSERT(wcslen(sTraceString) < 500);
-		fwprintf(stderr, sTraceString);
+		___TraceNoArg(sTraceString);
 	}
 #endif
-
-typedef void (*LogFn)(const wchar*);
-
-inline void ___Log(LogFn fn, const wchar* sFormat, ...)
-{
-	va_list vl;
-	wchar sTraceString[1024];
-
-	va_start(vl, sFormat);
-	vswprintf_s(sTraceString, sFormat, vl);
-	va_end(vl);
-	_DEBUG_ASSERT(wcslen(sTraceString) < 500);
-	fn(sTraceString);
-}
 
 #if defined(_DEBUG)
 
@@ -77,7 +73,6 @@ inline void ___Log(LogFn fn, const wchar* sFormat, ...)
 	#undef	_DEBUG_LOG
 	
 	#define _DEBUG_TRACE	___Trace
-	#define _DEBUG_LOG		___Log
 	
 	#if defined(_WINDOWS_)
 		#define _DEBUG_ASSERT( expr )  \

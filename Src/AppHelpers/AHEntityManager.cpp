@@ -121,7 +121,7 @@ void AHEntityManager::UpdateThreaded(int updatePhase)
 		if(numToDispatch < 0)
 			numToDispatch = 0;
 		
-		_DEBUG_ASSERT(numToDispatch < _NUM_JOBS);
+		_DEBUG_ASSERT(((uint)numToDispatch) < _NUM_JOBS);
 		
 		_LOOPi(numToDispatch)
 		{

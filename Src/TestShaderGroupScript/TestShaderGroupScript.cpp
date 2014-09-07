@@ -4,6 +4,7 @@
 #include "stdafx.h"
 
 IFFileSystemPtr g_pFileSystem;
+IPPlatformPtr g_pPlatform;
 
 class AppCallback : public IAppCallback
 {
@@ -53,11 +54,11 @@ public:
 			uint pathLen = g_pFileSystem->ResolvePath(pMsg, fullPath, MAX_STR_SIZE);
 			_DEBUG_ASSERT(pathLen < MAX_STR_SIZE);
 
-			_TRACE(fullPath);
+			_TRACE_NOARG(fullPath);
 		}
 		else
 		{
-			_TRACE(pMsg);
+			_TRACE_NOARG(pMsg);
 		}
 	}
 };
@@ -158,8 +159,10 @@ void RunTest(const wchar* pFilePath)
 	AppendData(pTestScriptData, pTestScriptFile);
 
 	SGSScript script;
+	g_pPlatform->GetTimer().BeginSample();
 	boolean isSuccess = scriptParser.Compile(script, pTestScriptData, &s_AppCallback, pFilePath);
-
+	g_pPlatform->GetTimer().EndSample();
+	
 	if(!isSuccess)
 	{
 		s_AppCallback.Log(_W(">>>>>>>>>>>>>>>>>>> Failed to compile script: "));
@@ -195,18 +198,9 @@ void RunTest(const wchar* pFilePath)
 			{
 				wstring toPrint = _W("");
 
-				uint i = 0;
-				while(pCodeStr[i])
+				_LOOPi(pShader->GetShaderCodeLength())
 				{
-					if(pCodeStr[i] != '\n')
-						toPrint	+= pCodeStr[i];
-					else
-					{
-						s_AppCallback.Log(toPrint.c_str());
-						toPrint = _W("\n");
-					}
-
-					i++;
+					toPrint	+= pCodeStr[i];
 				}
 
 				s_AppCallback.Log(toPrint.c_str());
@@ -238,6 +232,9 @@ void RunTest(const wchar* pFilePath)
 		}
 
 		s_AppCallback.Log(_W("\n\n ================= Script Dump End ================================\n\n"));
+		wchar buf[256];
+		swprintf(buf, _W("Compile Time: %f ms\n\n"), (float) g_pPlatform->GetTimer().GetTimeElapsed() * 1000.0f);
+		s_AppCallback.Log(buf);
 	}
 }
 
@@ -280,10 +277,17 @@ int _tmain(int argc, _TCHAR* argv[])
 		g_pFileSystem->Open(path.c_str());
 	}
 
+	Module hPlatform = InitializeModule(_W("PlatformWin32.dll"), &allocFns);
+
+	CreatePlatformFn CreatePlatform = (CreatePlatformFn) GetFunction(hPlatform, "CreatePlatform");
+	g_pPlatform = CreatePlatform();
+
 	RunTest(_W("[dat]\\UnitTestMisc\\TestShaderGroupScript\\TestScript.sgs"));
 
+	g_pPlatform = NULL;
 	g_pFileSystem = NULL;
-	
+
+	ShutdownModule(hPlatform);
 	ShutdownModule(hFileSystem);
 
 	g_pAllocator->DumpLeaks();
