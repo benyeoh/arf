@@ -67,7 +67,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ISGSUserFunction.h" />
-    <ClInclude Include="SGSAnnotation.h" />
     <ClInclude Include="SGSExpression.h" />
     <ClInclude Include="SGSFunctionFromFile.h" />
     <ClInclude Include="SGSParameter.h" />
@@ -81,7 +80,6 @@
     <ClInclude Include="ShaderGroupScript.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SGSAnnotation.cpp" />
     <ClCompile Include="SGSExpression.cpp" />
     <ClCompile Include="SGSFunctionFromFile.cpp" />
     <ClCompile Include="SGSParameter.cpp" />

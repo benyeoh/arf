@@ -20,7 +20,6 @@
 #include "SGSParameter.h"
 #include "SGSPass.h"
 #include "SGSTechnique.h"
-#include "SGSAnnotation.h"
 #include "SGSShader.h"
 #include "SGSScript.h"
 #include "ISGSUserFunction.h"

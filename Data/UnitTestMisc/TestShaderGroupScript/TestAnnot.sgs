@@ -1,0 +1,18 @@
+#define ANNOT_TEST_1 4
+#define ANNOT_TEST_2 5
+
+parameter g_Something
+{
+	int semantic = ANNOT_TEST_1; 
+	float min = 5 * 0.0f + 1; 
+	float max = 1.0f;
+	string s = "Something";
+}
+	
+parameter g_Something2
+{
+	int semantic = ANNOT_TEST_2; 
+	float min = 5 * 0.0f + 1; 
+	float max = 1.0f;
+	string s = "Something2";
+}

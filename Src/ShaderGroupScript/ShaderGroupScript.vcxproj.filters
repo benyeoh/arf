@@ -25,9 +25,6 @@
     <ClInclude Include="SGSShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SGSAnnotation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SGSParameter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -59,9 +56,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SGSShader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SGSAnnotation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SGSParameter.cpp">
