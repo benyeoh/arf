@@ -585,7 +585,7 @@ void InitLights()
 	//g_PointLight[6].color	= gmtl::Vec4f(0.0f, 0.8f, 0.8f, 1.0f);
 	//g_PointLight[7].color	= gmtl::Vec4f(0.0f, 0.8f, 0.8f, 1.0f);
 
-	float piInc = gmtl::Math::TWO_PI / NUM_POINT_LIGHTS;
+	float piInc = gmtl::Math::TWO_PI / (NUM_POINT_LIGHTS ? NUM_POINT_LIGHTS : 1);
 	_LOOPi(NUM_POINT_LIGHTS)
 	{
 		float x = cos(piInc * i) * 2.0f;

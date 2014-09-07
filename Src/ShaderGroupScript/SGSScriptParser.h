@@ -139,6 +139,8 @@ private:
 	boolean IsHexNumber(char c);
 	boolean IsNumber(char c);
 	boolean IsLetterOrUnderscore(char c);
+	
+	boolean ConsumeMultiNewline(SGSParseContext& context);
 
 	boolean TryMatchToken(const char* pStr, uint length, const WordMatchEntry& token);
 	void SkipWhitespaceAndComments(SGSParseContext& context);

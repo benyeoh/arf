@@ -23,15 +23,15 @@
 
 #include <memory>                   
 #include <string>
-#include <sstream>
+//#include <sstream>
 #include <vector>
 #include <map>
 #include <algorithm>
 #include <stdarg.h>
 #include <stdio.h>
-#include <utility> 
+//#include <utility> 
 #include <functional>                
-#include <hash_map>
+//#include <hash_map>
 #include <assert.h>
 #include <iterator>           
 

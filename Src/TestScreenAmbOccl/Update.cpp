@@ -350,7 +350,7 @@ void ProcessInput()
 	//g_pShadowPointLight->Update(g_PointLight.pos);
 	//g_pShadowPointLight->SetRange(1.0f / g_PointLight.invRange);
 
-	float piInc = gmtl::Math::TWO_PI / NUM_POINT_LIGHTS;
+	float piInc = gmtl::Math::TWO_PI / (NUM_POINT_LIGHTS ? NUM_POINT_LIGHTS : 1);
 	_LOOPi(NUM_POINT_LIGHTS)
 	{
 		float x = cos(piInc * i + amount) * 2.0f;

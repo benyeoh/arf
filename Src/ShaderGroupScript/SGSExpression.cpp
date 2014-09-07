@@ -618,7 +618,7 @@ SGSValue SGSExpression::ResolveInfix(Context& context, SGSValue& lhs)
 	case OP_DIV:	return Div(lhs, ResolveNext(context, GetBindingPower(OP_DIV)));
 	case OP_MUL:	return Mul(lhs, ResolveNext(context, GetBindingPower(OP_MUL)));
 	case OP_OR:		return Or(lhs, ResolveNext(context, GetBindingPower(OP_OR)));
-	case OP_AND:	return And(lhs, ResolveNext(context, GetBindingPower(OP_OR)));
+	case OP_AND:	return And(lhs, ResolveNext(context, GetBindingPower(OP_AND)));
 	case OP_LOGICAL_OR:		return LogOr(lhs, ResolveNext(context, GetBindingPower(OP_LOGICAL_OR)));
 	case OP_LOGICAL_AND:	return LogAnd(lhs, ResolveNext(context, GetBindingPower(OP_LOGICAL_AND)));
 	}

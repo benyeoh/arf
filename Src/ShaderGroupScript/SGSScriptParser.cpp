@@ -13,6 +13,29 @@
 
 _NAMESPACE_BEGIN
 
+boolean IsNewline(char c)
+{
+	return (c == '\r' || c == '\n');
+}
+
+int CheckMultiNewline(const char* pStr)
+{
+	if(pStr[0] == '\n' && pStr[1] == '\r')
+	{
+		return 2;
+	}
+	else if(pStr[0] == '\r' && pStr[1] == '\n')
+	{
+		return 2;
+	}
+	else if(IsNewline(pStr[0]))
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
 struct SGSFunctionEntry
 {
 	const static uint MAX_NUM_PARAMETERS = 8;
@@ -145,8 +168,12 @@ struct SGSParseContext
 			int lineNum = 1;
 			_LOOPj(stack.curAdvance[i])
 			{
-				if(stack.pCurStr[i][j] == '\n')
+				int numChars = CheckMultiNewline(&(stack.pCurStr[i][j]));
+				if(numChars > 0)
 					lineNum++;
+
+				if(numChars > 1)
+					j++;
 			}
 
 			stack.errorLineNum[stack.numErrors] = lineNum;
@@ -179,7 +206,8 @@ struct SGSParseContext
 	{
 		stack.curAdvance[stack.curStack] += length;
 		_DEBUG_ASSERT(stack.curAdvance[stack.curStack] <= stack.curStrLength[stack.curStack]);
-		if(stack.curAdvance[stack.curStack] >= stack.curStrLength[stack.curStack])
+		if(stack.curAdvance[stack.curStack] >= stack.curStrLength[stack.curStack] ||
+		   stack.pCurStr[stack.curStack][stack.curAdvance[stack.curStack]] == 0)
 			stack.curStack--;
 	}
 
@@ -380,11 +408,10 @@ void SGSScriptParser::SkipWhitespaceAndComments(SGSParseContext& context)
 			if(matchEntry.tokenEntry.tokenType == COMMENT_LINE)
 			{
 				context.AdvanceAndPopCurStr(matchEntry.strLen);
-				while(context.GetCurStr()[0] && context.GetCurStr()[0] != '\n')
+				while(context.GetCurStr()[0] && !IsNewline(context.GetCurStr()[0]))
 					context.AdvanceAndPopCurStr(1);
 
-				if(context.GetCurStr()[0] == '\n')
-					context.AdvanceAndPopCurStr(1);
+				ConsumeMultiNewline(context);
 			}
 			else if(matchEntry.tokenEntry.tokenType == COMMENT_BLOCK_BEGIN)
 			{
@@ -465,7 +492,7 @@ boolean SGSScriptParser::IsHexNumber(char c)
 
 boolean SGSScriptParser::IsWhitespace(char c)
 {
-	return (c == ' ' || c == '\r' || c == '\n' || c == '\t');
+	return (c == ' ' || c == '\t' || IsNewline(c));
 }
 
 boolean SGSScriptParser::IsWhitespaceAndNull(char c)
@@ -476,6 +503,13 @@ boolean SGSScriptParser::IsWhitespaceAndNull(char c)
 boolean SGSScriptParser::IsOperator(char c)
 {
 	return (!IsLetterOrUnderscore(c) && !IsNumber(c) && !IsWhitespace(c));
+}
+
+boolean SGSScriptParser::ConsumeMultiNewline(SGSParseContext& context)
+{
+	int numChars = CheckMultiNewline(context.GetCurStr());
+	context.AdvanceAndPopCurStr(numChars);
+	return numChars > 0 ? TRUE : FALSE;
 }
 
 boolean SGSScriptParser::TryParseIdentifierOrKeyword(const char* pStr, WordMatchEntry* pMatchedToken)
@@ -519,13 +553,18 @@ boolean SGSScriptParser::TryParseIdentifierOrKeyword(const char* pStr, WordMatch
 boolean SGSScriptParser::TryParseIdentifierOrKeywordOrDefine(SGSParseContext& context, WordMatchEntry* pMatchedToken)
 {
 	WordMatchEntry defEntry;
-	boolean isDefinePushed = FALSE;
+	boolean isDefinePushed;
 	boolean isIDFound = FALSE;
 	do
 	{
+		isDefinePushed = FALSE;
 		isIDFound = TryParseIdentifier(context.GetCurStr(), &defEntry);
 		if(isIDFound)
+		{
 			isDefinePushed = TryPushDefineParameter(context, defEntry.tokenEntry.pSymbol, defEntry.strLen);
+			SkipWhitespaceAndComments(context);
+		}
+
 	} while(isDefinePushed);
 
 	return TryParseIdentifierOrKeyword(context.GetCurStr(), pMatchedToken);
@@ -574,13 +613,19 @@ boolean SGSScriptParser::TryParseOperator(const char* pStr, WordMatchEntry* pMat
 boolean SGSScriptParser::TryParseOperatorOrDefine(SGSParseContext& context, WordMatchEntry* pMatchedToken)
 {
 	WordMatchEntry defEntry;
-	boolean isDefinePushed = FALSE;
+	boolean isDefinePushed;
 	boolean isIDFound = FALSE;
 	do
 	{
+		isDefinePushed = FALSE;
+
 		isIDFound = TryParseIdentifier(context.GetCurStr(), &defEntry);
 		if(isIDFound)
+		{			
 			isDefinePushed = TryPushDefineParameter(context, defEntry.tokenEntry.pSymbol, defEntry.strLen);
+			SkipWhitespaceAndComments(context);
+		}
+
 	} while(isDefinePushed);
 
 	return TryParseOperator(context.GetCurStr(), pMatchedToken);
@@ -638,7 +683,7 @@ boolean SGSScriptParser::TryParseHexInteger(const char* pStr, WordMatchEntry* pM
 		}
 
 		pMatchedToken->strLen = curLength;
-		pMatchedToken->tokenEntry.pSymbol = NULL;
+		pMatchedToken->tokenEntry.pSymbol = pStr;
 		pMatchedToken->tokenEntry.tokenType = HEX_NUM;
 		return TRUE;
 	}
@@ -715,13 +760,19 @@ boolean SGSScriptParser::TryParseNumber(const char* pStr, WordMatchEntry* pMatch
 boolean SGSScriptParser::TryParseNumberOrDefine(SGSParseContext& context, WordMatchEntry* pMatchedToken)
 {
 	WordMatchEntry defEntry;
-	boolean isDefinePushed = FALSE;
+	boolean isDefinePushed;
 	boolean isIDFound = FALSE;
 	do
 	{
+		isDefinePushed = FALSE;
+
 		isIDFound = TryParseIdentifier(context.GetCurStr(), &defEntry);
 		if(isIDFound)
+		{
 			isDefinePushed = TryPushDefineParameter(context, defEntry.tokenEntry.pSymbol, defEntry.strLen);
+			SkipWhitespaceAndComments(context);
+		}
+
 	} while(isDefinePushed);
 
 	return TryParseNumber(context.GetCurStr(), pMatchedToken);
@@ -752,13 +803,19 @@ boolean SGSScriptParser::TryParseIdentifier(const char* pStr, WordMatchEntry* pM
 boolean SGSScriptParser::TryParseIdentifierOrDefine(SGSParseContext& context, WordMatchEntry* pMatchedToken)
 {
 	WordMatchEntry entry;
-	boolean isDefinePushed = FALSE;
 	boolean isIDFound = FALSE;
+	boolean isDefinePushed;
 	do
 	{
+		isDefinePushed = FALSE;
+
 		isIDFound = TryParseIdentifier(context.GetCurStr(), &entry);
 		if(isIDFound)
+		{
 			isDefinePushed = TryPushDefineParameter(context, entry.tokenEntry.pSymbol, entry.strLen);
+			SkipWhitespaceAndComments(context);
+		}
+
 	} while(isDefinePushed);
 
 	if(isIDFound)
@@ -778,7 +835,7 @@ boolean SGSScriptParser::TryParseStringLiteral(const char* pStr, WordMatchEntry*
 			curLength += entry.strLen;
 
 			boolean isFound = FALSE;
-			while(pStr[curLength] && pStr[curLength] != '\n')
+			while(pStr[curLength] && !IsNewline(pStr[curLength]))
 			{
 				if(TryMatchToken(pStr + curLength, m_Tokens[QUOTE].strLen, m_Tokens[QUOTE]))
 				{
@@ -801,13 +858,18 @@ boolean SGSScriptParser::TryParseStringLiteral(const char* pStr, WordMatchEntry*
 boolean SGSScriptParser::TryParseStringLiteralOrDefine(SGSParseContext& context, WordMatchEntry* pMatchedToken)
 {
 	WordMatchEntry defEntry;
-	boolean isDefinePushed = FALSE;
+	boolean isDefinePushed;
 	boolean isIDFound = FALSE;
 	do
 	{
+		isDefinePushed = FALSE;
 		isIDFound = TryParseIdentifier(context.GetCurStr(), &defEntry);
 		if(isIDFound)
+		{
 			isDefinePushed = TryPushDefineParameter(context, defEntry.tokenEntry.pSymbol, defEntry.strLen);
+			SkipWhitespaceAndComments(context);
+		}
+
 	} while(isDefinePushed);
 
 	return TryParseStringLiteral(context.GetCurStr(), pMatchedToken);
@@ -821,12 +883,12 @@ void SGSScriptParser::ExpectDefineParameter(SGSParseContext& context)
 	{
 		curLength = idEntry.strLen;
 		
-		context.AdvanceAndPopCurStr(idEntry.strLen);
-		SkipWhitespaceAndComments(context);
+		//context.AdvanceAndPopCurStr(idEntry.strLen);
+		//SkipWhitespaceAndComments(context);
 
 		// Parse line
 		uint defineLength = 0;
-		while(context.GetCurStr()[defineLength] && context.GetCurStr()[defineLength] != '\n')
+		while(context.GetCurStr()[curLength + defineLength] && !IsNewline(context.GetCurStr()[curLength + defineLength]))
 		{
 			defineLength++;	
 		}
@@ -834,16 +896,16 @@ void SGSScriptParser::ExpectDefineParameter(SGSParseContext& context)
 		if(defineLength > 0)
 		{
 			IByteBufferPtr pDefineData = _NEW CByteBuffer(defineLength+1);
-			memcpy(pDefineData->GetData(), context.GetCurStr(), defineLength);
-			((char*)pDefineData->GetData())[defineLength] = 0;
+			AppendData(pDefineData, context.GetCurStr() + curLength, defineLength);
+			AppendData(pDefineData, (char)0);
 
 			CRCDataPtrKey key;
-			key.Set(pDefineData->GetData(), pDefineData->GetDataLength());
+			key.Set(idEntry.tokenEntry.pSymbol, idEntry.strLen);
 
 			context.defines.Add(key, pDefineData);
 		}
 
-		context.AdvanceAndPopCurStr(defineLength);
+		context.AdvanceAndPopCurStr(curLength + defineLength);
 	}
 	else
 	{
@@ -895,6 +957,8 @@ void SGSScriptParser::ExpectIncludeParameter(SGSParseContext& context)
 			IByteBufferPtr pIncludeData = context.pAppCallback->GetFileData(filePath);
 			if(pIncludeData)
 			{
+				// Append a null string term
+				AppendData(pIncludeData, (char)0);
 				context.includes.Add(key, pIncludeData);
 				ppIncludeData = context.includes.Get(key);
 			}
@@ -1101,8 +1165,6 @@ boolean SGSScriptParser::TryExpectCodeBlock(SGSParseContext& context, IByteBuffe
 
 				if(numCloses == 0 && context.GetCurStr() && TryMatchToken(context.GetCurStr(), m_Tokens[BLOCK_END].strLen, m_Tokens[BLOCK_END]))
 				{
-					// Add terminator
-					AppendData(pData, (char)0);
 					context.AdvanceAndPopCurStr(m_Tokens[BLOCK_END].strLen);
 					*ppCode = pData;
 					(*ppCode)->AddRef();
@@ -1127,11 +1189,10 @@ boolean SGSScriptParser::TryExpectCodeBlock(SGSParseContext& context, IByteBuffe
 					case DATA_VAL:						
 					case STRING_VAL:
 						{
+							*ppCode = val.pData;
 							if(val.pData)
-							{
-								*ppCode = val.pData;
 								(*ppCode)->AddRef();
-							}
+	
 							break;
 						}
 					}
@@ -1184,8 +1245,7 @@ boolean SGSScriptParser::TryExpectExpression(SGSParseContext& context, SGSExpres
 					expr.PushValue(valEntry);
 				}
 			}
-
-			if(numRes == 0)
+			else
 			{
 				// Error already in ExecuteFunction
 				isFinished = TRUE;
@@ -1210,8 +1270,8 @@ boolean SGSScriptParser::TryExpectExpression(SGSParseContext& context, SGSExpres
 			case DIV_OP:	expr.PushDiv();		break;
 			case OR_OP:		expr.PushOr();		break;
 			case AND_OP:	expr.PushAnd();		break;
-			case BOOLEAN_OR:	expr.PushLogAnd();	break;
-			case BOOLEAN_AND:	expr.PushLogOr();	break;
+			case BOOLEAN_OR:	expr.PushLogOr();	break;
+			case BOOLEAN_AND:	expr.PushLogAnd();	break;
 			case GROUP_BEGIN:	expr.PushExprBegin(); break;
 			case GROUP_END:		expr.PushExprEnd();	break;
 			case STATEMENT_END_OP: isFinished = TRUE; break;
@@ -1564,11 +1624,12 @@ boolean SGSScriptParser::TryExpectShaderBlock(SGSParseContext& context)
 					break;
 				}
 
-				IByteBuffer* pTempBuf;
+				IByteBuffer* pTempBuf = NULL;
 				if(TryExpectCodeBlock(context, &pTempBuf))
 				{
 					pCodeBuffer = pTempBuf;
-					pTempBuf->Release();
+					if(pTempBuf)
+						pTempBuf->Release();
 
 					if(isCodeBlockDefined)
 					{
@@ -1774,6 +1835,8 @@ boolean SGSScriptParser::Compile(SGSScript& dest, IByteBuffer* pData, IAppCallba
 	SGSParseContext context;
 	context.pMainFile = pFilePath ? pFilePath : _W("Mem Buffer");
 	context.pAppCallback = pAppCallback;
+
+	AppendData(pData, (char) 0);
 	context.PushAndSetCurStr((const char*) pData->GetData(), pData->GetDataLength(), NULL, 0);
 	if(ExpectProg(context))
 	{
