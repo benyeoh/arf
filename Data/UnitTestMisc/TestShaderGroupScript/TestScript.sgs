@@ -161,17 +161,16 @@ shader s1
 	code = FromFile("[dat]/UnitTestMisc/TestShaderGroupScript/TestShader1.hlsl"); //, 1);
 }
 
-annotation a0
-{	
-	parameter g_WorldProjMat
-	{
-		int semantic = WORLD_PROJ; float min = 5 * 0.0f + 1; float max = 1.0f;
-		bool isInit = true || (false);
-		int xxx = (0x1 | 0x2 | 0x4 | 0x8) & 0xFFFFFFFF;
-		string s = "World Projection";
-	}
+#include "[dat]/UnitTestMisc/TestShaderGroupScript/TestAnnot.sgs"
 
-	parameter g_ProjMat { int semantic = CAMERA_POS; float min = 0.0f; float max = 1.0f; bool isInit = true; string s = "Projection"; }
+parameter g_WorldProjMat
+{
+	int semantic = WORLD_PROJ; float min = 5 * 0.0f + 1; float max = 1.0f;
+	bool isInit = true || (false);
+	int xxx = (0x1 | 0x2 | 0x4 | 0x8) & 0xFFFFFFFF;
+	string s = "World Projection";
 }
+
+parameter g_ProjMat { int semantic = CAMERA_POS; float min = 0.0f; float max = 1.0f; bool isInit = true; string s = "Projection"; }
 
 #define X fff

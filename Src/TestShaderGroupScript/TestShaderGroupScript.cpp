@@ -210,25 +210,12 @@ void RunTest(const wchar* pFilePath)
 			s_AppCallback.Log(_W("}\n\n"));
 		}
 
-		// Print annotations
-		_LOOPi(script.GetNumOfAnnotations())
+		// Print parameters
+		_LOOPi(script.GetNumOfParameters())
 		{
-			s_AppCallback.Log(_W("annotation "));
-			SGSAnnotation* pAnnot = script.GetAnnotation(i);
-
-			wchar wStr[1024];
-			ASCIIToUnicode(pAnnot->GetName(), wStr, 1024);
-			s_AppCallback.Log(wStr);
-			s_AppCallback.Log(_W("\n{"));
-
-			_LOOPj(pAnnot->GetNumParameters())
-			{
-				s_AppCallback.Log(_W("\n\t"));
-				SGSParameter& param = pAnnot->GetParameter(j);
-				PrintParameter(param, _W("\n\t"));	
-			}
-
-			s_AppCallback.Log(_W("\n}\n\n"));
+			s_AppCallback.Log(_W("\n"));
+			SGSParameter* pParam = script.GetParameter(i);
+			PrintParameter(*pParam, _W("\n"));	
 		}
 
 		s_AppCallback.Log(_W("\n\n ================= Script Dump End ================================\n\n"));

@@ -125,7 +125,7 @@ private:
 
 	boolean TryExpectTechniqueBlock(SGSParseContext& context);
 	boolean TryExpectShaderBlock(SGSParseContext& context);
-	boolean TryExpectAnnotBlock(SGSParseContext& context);
+	boolean TryExpectParameterBlock(SGSParseContext& context);
 
 	boolean TryExpectPreprocessor(SGSParseContext& context);
 	void ExpectIncludeParameter(SGSParseContext& context);
@@ -163,7 +163,6 @@ private:
 	boolean TryExpectPass(SGSParseContext& context, SGSPass& pass);
 	boolean TryExpectCodeBlock(SGSParseContext& context, IByteBuffer** ppCode);
 	boolean TryExpectFunction(SGSParseContext& context, SGSFunctionEntry& entry);
-	boolean TryExpectParameter(SGSParseContext& context, SGSParameter& parameter);
 	boolean TryExpectProperty(SGSParseContext& context, SGSProperty& property);
 	boolean TryExpectValue(SGSParseContext& context, SGSValue& val);
 	boolean TryExpectExpression(SGSParseContext& context, SGSExpression& expr);

@@ -99,33 +99,20 @@ struct SGSParseStack
 
 struct SGSParseContext
 {
-	const static uint MAX_NUM_SHADERS		= 32;
-	const static uint MAX_NUM_ANNOTATIONS	= 24;
-	const static uint MAX_NUM_TECHS			= 24;
-
 	DenseChainedHashMap<CRCDataPtrKey, IByteBufferPtr, HashCRCDataPtrKey> defines;
 	DenseChainedHashMap<CRCDataPtrKey, IByteBufferPtr, HashCRCDataPtrKey> includes;
 
 	IAppCallback* pAppCallback;
 	SGSParseStack stack;
 
-	SGSShader shaders[MAX_NUM_SHADERS];
-	int numShaders;
-
-	SGSAnnotation annotations[MAX_NUM_ANNOTATIONS];
-	int numAnnotations;
-
-	SGSTechnique techniques[MAX_NUM_TECHS];
-	int numTechniques;
+	SGSScript* pTheScript;
 
 	const wchar* pMainFile;
 
 	SGSParseContext()
-		: numShaders(0)
-		, numAnnotations(0)
-		, numTechniques(0)
-		, pAppCallback(NULL)
+		: pAppCallback(NULL)
 		, pMainFile(NULL)
+		, pTheScript(NULL)
 	{
 		defines.Initialize(8, 0.7f);
 		includes.Initialize(8, 0.7f);
@@ -133,21 +120,20 @@ struct SGSParseContext
 
 	void PushShader(IByteBuffer* pName, IByteBuffer* pData)
 	{
-		shaders[numShaders].SetName(pName);
-		shaders[numShaders].SetShaderCode(pData);
-		numShaders++;
+		SGSShader shader;
+		shader.SetName(pName);
+		shader.SetShaderCode(pData);
+		pTheScript->AddShader(shader);
 	}
 
-	void PushAnnotation(SGSAnnotation& annot)
+	void PushParameter(SGSParameter& param)
 	{
-		annotations[numAnnotations] = annot;
-		numAnnotations++;
+		pTheScript->AddParameter(param);
 	}
 
 	void PushTechnique(SGSTechnique& tech)
 	{
-		techniques[numTechniques] = tech;
-		numTechniques++;
+		pTheScript->AddTechnique(tech);
 	}
 
 	void PushErrorStr(const wchar* pErrorStr)
@@ -1433,11 +1419,13 @@ boolean SGSScriptParser::TryExpectProperty(SGSParseContext& context, SGSProperty
 	return FALSE;
 }
 
-boolean SGSScriptParser::TryExpectParameter(SGSParseContext& context, SGSParameter& parameter)
+boolean SGSScriptParser::TryExpectParameterBlock(SGSParseContext& context)
 {
 	WordMatchEntry matchToken;
 	if(TryParseIdentifierOrKeywordOrDefine(context, &matchToken) && (matchToken.tokenEntry.tokenType == PARAMETER_BLOCK))
 	{
+		SGSParameter parameter;
+
 		context.AdvanceAndPopCurStr(matchToken.strLen);
 		SkipWhitespaceAndComments(context);
 		if(TryParseIdentifierOrKeywordOrDefine(context, &matchToken) && (matchToken.tokenEntry.tokenType == IDENTIFIER))
@@ -1468,6 +1456,7 @@ boolean SGSScriptParser::TryExpectParameter(SGSParseContext& context, SGSParamet
 				if(isEnd)
 				{
 					context.AdvanceAndPopCurStr(matchToken.strLen);
+					context.PushParameter(parameter);
 					break;
 				}
 
@@ -1502,80 +1491,6 @@ boolean SGSScriptParser::TryExpectParameter(SGSParseContext& context, SGSParamet
 	}
 
 	return FALSE;
-}
-
-boolean SGSScriptParser::TryExpectAnnotBlock(SGSParseContext& context)
-{
-	WordMatchEntry matchToken;
-	if(TryParseIdentifierOrKeywordOrDefine(context, &matchToken) && (matchToken.tokenEntry.tokenType == ANNOTATION_BLOCK))
-	{
-		SGSAnnotation annot;
-		
-		context.AdvanceAndPopCurStr(matchToken.strLen);
-		SkipWhitespaceAndComments(context);
-		if(TryParseIdentifierOrDefine(context, &matchToken))
-		{
-			IByteBufferPtr pNameBuffer = _NEW CByteBuffer(matchToken.strLen+1);
-			AppendData(pNameBuffer, (const void*) matchToken.tokenEntry.pSymbol, matchToken.strLen);
-			AppendData(pNameBuffer, (char)0);
-
-			annot.SetName(pNameBuffer);
-
-			context.AdvanceAndPopCurStr(matchToken.strLen);
-			SkipWhitespaceAndComments(context);
-		}
-		else
-		{
-			context.PushErrorStr(_W("Identifier expected"));
-		}
-
-		if(TryParseOperatorOrDefine(context, &matchToken) && (matchToken.tokenEntry.tokenType == BLOCK_BEGIN))
-		{
-			context.AdvanceAndPopCurStr(matchToken.strLen);
-
-			while(true)
-			{
-				SkipWhitespaceAndComments(context);
-				boolean isEnd = TryParseOperatorOrDefine(context, &matchToken) && (matchToken.tokenEntry.tokenType == BLOCK_END);
-				if(isEnd)
-				{
-					context.AdvanceAndPopCurStr(matchToken.strLen);
-					context.PushAnnotation(annot);
-					break;
-				}
-
-				if(!context.GetCurStr())
-				{
-					context.PushErrorStr(_W("Annotation block end expected"));
-					break;
-				}
-
-				SGSParameter parameter;
-				if(TryExpectParameter(context, parameter))
-				{
-					annot.AddParameter(parameter);
-				}
-				else if(TryExpectPreprocessor(context))
-				{
-
-				}
-				else
-				{
-					context.PushErrorStr(_W("Parameter expected"));
-					break;
-				}
-			}
-		}
-		else
-		{
-			context.PushErrorStr(_W("Annotation block begin expected"));
-		}
-
-		return TRUE;
-	}
-
-	return FALSE;
-
 }
 
 boolean SGSScriptParser::TryExpectShaderBlock(SGSParseContext& context)
@@ -1811,7 +1726,7 @@ boolean SGSScriptParser::ExpectProg(SGSParseContext& context)
 		SkipWhitespaceAndComments(context);
 		boolean IsSucceeded = TryExpectPreprocessor(context);
 		if(!IsSucceeded) IsSucceeded = TryExpectShaderBlock(context); 
-		if(!IsSucceeded) IsSucceeded = TryExpectAnnotBlock(context); 
+		if(!IsSucceeded) IsSucceeded = TryExpectParameterBlock(context); 
 		if(!IsSucceeded) IsSucceeded = TryExpectTechniqueBlock(context); 
 		if(!IsSucceeded) context.PushErrorStr(_W("Unknown command in main block"));
 	}
@@ -1835,26 +1750,12 @@ boolean SGSScriptParser::Compile(SGSScript& dest, IByteBuffer* pData, IAppCallba
 	SGSParseContext context;
 	context.pMainFile = pFilePath ? pFilePath : _W("Mem Buffer");
 	context.pAppCallback = pAppCallback;
+	context.pTheScript = &dest;
 
 	AppendData(pData, (char) 0);
 	context.PushAndSetCurStr((const char*) pData->GetData(), pData->GetDataLength(), NULL, 0);
 	if(ExpectProg(context))
 	{
-		_LOOPi(context.numShaders)
-		{
-			dest.AddShader( context.shaders[i] );
-		}
-
-		_LOOPi(context.numAnnotations)
-		{
-			dest.AddAnnotation( context.annotations[i] );
-		}
-
-		_LOOPi(context.numTechniques)
-		{
-			dest.AddTechnique( context.techniques[i] );
-		}
-
 		return TRUE;
 	}
 	else
