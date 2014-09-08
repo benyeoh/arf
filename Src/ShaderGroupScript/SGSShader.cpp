@@ -13,17 +13,17 @@
 
 _NAMESPACE_BEGIN
 
-const char* SGSShader::GetName()
+const char* SGSShader::GetName() const
 {
 	return m_pName ? (const char*) m_pName->GetData() : NULL;
 }
 
-const char* SGSShader::GetShaderCode()
+const char* SGSShader::GetShaderCode() const
 {
 	return m_pShaderCode ? (const char*) m_pShaderCode->GetData() : NULL;
 }
 
-uint SGSShader::GetShaderCodeLength()
+uint SGSShader::GetShaderCodeLength() const
 {
 	return m_pShaderCode ? m_pShaderCode->GetDataLength() : 0;
 }

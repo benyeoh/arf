@@ -18,7 +18,7 @@ struct ISGSUserFunction
 	_PURE( const char* GetName() )
 	_PURE( void GetParameterSig(eSGSValueType** ppParamTypes, uint& numParams) )
 	
-	_PURE( boolean Execute(SGSValue* parameters, int numParameters, SGSValue* pResults, int& numResults) )
+	_PURE( boolean Execute(const SGSScript* pSrc, SGSValue* parameters, int numParameters, SGSValue* pResults, int& numResults) )
 };
 
 _NAMESPACE_END

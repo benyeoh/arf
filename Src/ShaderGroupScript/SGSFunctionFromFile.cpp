@@ -13,7 +13,7 @@
 
 _NAMESPACE_BEGIN
 
-boolean SGSFunctionFromFile::Execute(SGSValue* parameters, int numParameters, SGSValue* pResults, int& numResults)
+boolean SGSFunctionFromFile::Execute(const SGSScript* pSrc, SGSValue* parameters, int numParameters, SGSValue* pResults, int& numResults)
 {
 	_DEBUG_ASSERT(numParameters == NUM_PARAMS);
 

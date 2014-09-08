@@ -41,7 +41,7 @@ public:
 
 	void AddPass(const SGSPass& pass);
 	uint GetNumPasses() { return m_NumPasses; }
-	const SGSPass& GetPass(uint index) { _DEBUG_ASSERT(index < MAX_NUM_PASSES); return m_Passes[index]; }
+	SGSPass& GetPass(uint index) { _DEBUG_ASSERT(index < MAX_NUM_PASSES); return m_Passes[index]; }
 
 	//inline SGSTechnique& operator =(const SGSTechnique& rhs)
 	//{

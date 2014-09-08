@@ -174,3 +174,16 @@ parameter g_WorldProjMat
 parameter g_ProjMat { int semantic = CAMERA_POS; float min = 0.0f; float max = 1.0f; bool isInit = true; string s = "Projection"; }
 
 #define X fff
+
+technique t0
+{
+	pass p0
+	{
+		//vertex_shader = compile("s1", "ObjectAccumVS");		// Implicitly shaderName(Main)
+		pixel_shader = Compile("s0", "SuperPixelPS");
+		
+		alphablend = true;
+		zwriteenable = false;
+		colorwriteenable = 0xF;		
+	}
+}
