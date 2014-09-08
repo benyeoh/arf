@@ -41,7 +41,7 @@ public:
 
 	void AddProperty(const SGSProperty& prop);
 	uint GetNumProperties() { return (uint) m_Properties.size(); }
-	const SGSProperty& GetProperty(uint index) { return m_Properties[index]; }
+	SGSProperty& GetProperty(uint index) { return m_Properties[index]; }
 
 	inline SGSPass& operator =(const SGSPass& rhs)
 	{

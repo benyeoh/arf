@@ -68,6 +68,48 @@ AppCallback s_AppCallback;
 ICMMemAllocatorPtr g_pAllocator;
 _DECL_CORE_MEM_ALLOC_FNS(g_pAllocator)
 
+struct TestCompileFn : public ISGSUserFunction
+{
+	IAppCallback* pCallback;
+	eSGSValueType m_ParamSigTypes[2];		
+
+	TestCompileFn()
+	{
+		pCallback = NULL;
+		m_ParamSigTypes[0] = STRING_VAL;
+		m_ParamSigTypes[1] = STRING_VAL;
+	}
+
+	const char* GetName() { return "Compile"; }
+
+	void GetParameterSig(eSGSValueType** ppParamTypes, uint& numParams)
+	{
+		*ppParamTypes = m_ParamSigTypes;
+		numParams = 2;
+	}
+
+	boolean Execute(const SGSScript* pSrc, SGSValue* parameters, int numParameters, SGSValue* pResults, int& numResults)
+	{
+		_DEBUG_ASSERT(numParameters == 2);
+
+		_LOOPi(pSrc->GetNumOfShaders())
+		{
+			const SGSShader* pShader = pSrc->GetShader(i);
+			if( strcmp(pShader->GetName(), (const char*) parameters[0].pData->GetData()) == 0 )
+			{
+				CByteBuffer* pBuf = _NEW CByteBuffer();
+				AppendData(pBuf, pShader->GetShaderCode(), 32);
+				AppendData(pBuf, (char)0);
+				pResults[0].SetString(pBuf);
+				numResults = 1;
+				return TRUE;
+			}
+		}
+
+		return FALSE;
+	}
+};
+
 void PrintProperty(SGSProperty& prop)
 {
 	SGSValue resolveVal = prop.expr.Resolve();
@@ -125,6 +167,53 @@ void PrintProperty(SGSProperty& prop)
 	}
 }
 
+void PrintPass(SGSPass& pass, const wchar* pNewLinePreamble)
+{
+	s_AppCallback.Log(_W("pass "));
+
+	wchar wStr[1024];
+	ASCIIToUnicode(pass.GetName(), wStr, 1024);
+	s_AppCallback.Log(wStr);
+	s_AppCallback.Log(pNewLinePreamble);
+	s_AppCallback.Log(_W("{"));
+
+	wstring preamble = pNewLinePreamble;
+	preamble += _W("\t");
+
+	_LOOPi(pass.GetNumProperties())
+	{
+		s_AppCallback.Log(preamble.c_str());
+		PrintProperty(pass.GetProperty(i));
+		s_AppCallback.Log(_W(";"));
+	}
+
+	s_AppCallback.Log(pNewLinePreamble);
+	s_AppCallback.Log(_W("}"));
+}
+
+void PrintTechnique(SGSTechnique& tech, const wchar* pNewLinePreamble)
+{
+	s_AppCallback.Log(_W("technique "));
+
+	wchar wStr[1024];
+	ASCIIToUnicode(tech.GetName(), wStr, 1024);
+	s_AppCallback.Log(wStr);
+	s_AppCallback.Log(pNewLinePreamble);
+	s_AppCallback.Log(_W("{"));
+
+	wstring preamble = pNewLinePreamble;
+	preamble += _W("\t");
+
+	_LOOPi(tech.GetNumPasses())
+	{
+		s_AppCallback.Log(preamble.c_str());
+		PrintPass(tech.GetPass(i), preamble.c_str());
+	}
+
+	s_AppCallback.Log(pNewLinePreamble);
+	s_AppCallback.Log(_W("}"));
+}
+
 void PrintParameter(SGSParameter& param, const wchar* pNewLinePreamble)
 {
 	s_AppCallback.Log(_W("parameter "));
@@ -151,8 +240,12 @@ void PrintParameter(SGSParameter& param, const wchar* pNewLinePreamble)
 
 void RunTest(const wchar* pFilePath)
 {
+	TestCompileFn testCompileFn;
+	testCompileFn.pCallback = &s_AppCallback;
+
 	SGSScriptParser scriptParser;
 	scriptParser.Initialize();
+	scriptParser.AddUserFunction(&testCompileFn);
 
 	IFFilePtr pTestScriptFile = g_pFileSystem->GetFile(pFilePath);
 	IByteBufferPtr pTestScriptData = _NEW CByteBuffer(256);
@@ -216,6 +309,14 @@ void RunTest(const wchar* pFilePath)
 			s_AppCallback.Log(_W("\n"));
 			SGSParameter* pParam = script.GetParameter(i);
 			PrintParameter(*pParam, _W("\n"));	
+		}
+
+		// Print technique
+		_LOOPi(script.GetNumOfTechniques())
+		{
+			s_AppCallback.Log(_W("\n"));
+			SGSTechnique* pTech = script.GetTechnique(i);
+			PrintTechnique(*pTech, _W("\n"));	
 		}
 
 		s_AppCallback.Log(_W("\n\n ================= Script Dump End ================================\n\n"));

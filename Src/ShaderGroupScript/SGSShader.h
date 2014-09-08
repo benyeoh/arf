@@ -31,10 +31,10 @@ public:
 	}
 
 public:
-	const char* GetShaderCode();
-	uint GetShaderCodeLength();
+	const char* GetShaderCode() const;
+	uint GetShaderCodeLength() const;
 
-	const char* GetName();
+	const char* GetName() const;
 
 	void SetName(IByteBuffer* pName);
 	void SetShaderCode(IByteBuffer* pCode);

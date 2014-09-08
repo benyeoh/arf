@@ -39,7 +39,7 @@ public:
 	const char* GetName() { return "FromFile"; }
 
 	void GetParameterSig(eSGSValueType** ppParamTypes, uint& numParams) { *ppParamTypes = m_ParamSigTypes, numParams = NUM_PARAMS; }
-	boolean Execute(SGSValue* parameters, int numParameters, SGSValue* pResults, int& numResults);
+	boolean Execute(const SGSScript* pSrc, SGSValue* parameters, int numParameters, SGSValue* pResults, int& numResults);
 };
 
 _NAMESPACE_END

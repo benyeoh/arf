@@ -373,7 +373,7 @@ boolean SGSScriptParser::ExecuteFunction(SGSParseContext& context, SGSFunctionEn
 		}
 	}
 	
-	boolean success = pUserFn->Execute(entry.parameters, entry.numParameters, pResults, numResults);
+	boolean success = pUserFn->Execute(context.pTheScript, entry.parameters, entry.numParameters, pResults, numResults);
 	if(!success)
 		context.PushErrorStr(_W("Function failed to execute"));
 
