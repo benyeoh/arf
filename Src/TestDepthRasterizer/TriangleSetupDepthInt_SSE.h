@@ -182,12 +182,8 @@ _FORCE_INLINE int ClipPoly1Plane(__m128 src[8], int numSrc, __m128 dst[8], int i
 	return numDst;
 }
 
-_FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, const __m128& v2, gmtl::VecA4f* pExtraTriangleOutVertices)
-{
-	// TODO: This NEEDS to be clipped against the guard band, not some arbitrary viewport range!
-	// Might produce seams at triangle edges!!!!!!!!!!
-	const static float VIEWPORT_CLIP_RCP = 1.0f / 160.0f;
-
+_FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, const __m128& v2, float guardBand, gmtl::VecA4f* pExtraTriangleOutVertices)
+{	
 	__m128 dst[8];
 	__m128 src[8];
 	__m128 tVal[2];
@@ -220,7 +216,7 @@ _FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, con
 	vZ = src[2];
 	vW = src[3];
 	_MM_TRANSPOSE4_PS(vX, vY, vZ, vW);
-	tVal[0] = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(VIEWPORT_CLIP_RCP)), vW );
+	tVal[0] = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(guardBand)), vW );
 	insideOutsideMask = _mm_movemask_ps( _mm_cmpge_ps(tVal[0], _mm_setzero_ps()) );
 	if(numDst > 4)
 	{
@@ -234,7 +230,7 @@ _FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, con
 		vZ = src[6];
 		vW = src[7];
 		_MM_TRANSPOSE4_PS(vX, vY, vZ, vW);
-		tVal[1] = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(VIEWPORT_CLIP_RCP)), vW );
+		tVal[1] = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(guardBand)), vW );
 		insideOutsideMask |= _mm_movemask_ps( _mm_cmpge_ps(tVal[1], _mm_setzero_ps()) ) << 4;
 	}
 
@@ -252,7 +248,7 @@ _FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, con
 	vZ = src[2];
 	vW = src[3];
 	_MM_TRANSPOSE4_PS(vX, vY, vZ, vW);
-	tVal[0] = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(-VIEWPORT_CLIP_RCP)), vW );
+	tVal[0] = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(-guardBand)), vW );
 	insideOutsideMask = _mm_movemask_ps( _mm_cmpge_ps(tVal[0], _mm_setzero_ps()) );
 	if(numDst > 4)
 	{
@@ -266,7 +262,7 @@ _FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, con
 		vZ = src[6];
 		vW = src[7];
 		_MM_TRANSPOSE4_PS(vX, vY, vZ, vW);
-		tVal[1] = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(-VIEWPORT_CLIP_RCP)), vW );
+		tVal[1] = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(-guardBand)), vW );
 		insideOutsideMask |= _mm_movemask_ps( _mm_cmpge_ps(tVal[1], _mm_setzero_ps()) ) << 4;
 	}
 
@@ -284,7 +280,7 @@ _FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, con
 	vZ = src[2];
 	vW = src[3];
 	_MM_TRANSPOSE4_PS(vX, vY, vZ, vW);
-	tVal[0] = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(VIEWPORT_CLIP_RCP)), vW );
+	tVal[0] = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(guardBand)), vW );
 	insideOutsideMask = _mm_movemask_ps( _mm_cmpge_ps(tVal[0], _mm_setzero_ps()) );
 	if(numDst > 4)
 	{
@@ -298,7 +294,7 @@ _FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, con
 		vZ = src[6];
 		vW = src[7];
 		_MM_TRANSPOSE4_PS(vX, vY, vZ, vW);
-		tVal[1] = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(VIEWPORT_CLIP_RCP)), vW );
+		tVal[1] = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(guardBand)), vW );
 		insideOutsideMask |= _mm_movemask_ps( _mm_cmpge_ps(tVal[1], _mm_setzero_ps()) ) << 4;
 	}
 
@@ -316,7 +312,7 @@ _FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, con
 	vZ = src[2];
 	vW = src[3];
 	_MM_TRANSPOSE4_PS(vX, vY, vZ, vW);
-	tVal[0] = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-VIEWPORT_CLIP_RCP)), vW );
+	tVal[0] = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-guardBand)), vW );
 	insideOutsideMask = _mm_movemask_ps( _mm_cmpge_ps(tVal[0], _mm_setzero_ps()) );
 	if(numDst > 4)
 	{
@@ -330,7 +326,7 @@ _FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, con
 		vZ = src[6];
 		vW = src[7];
 		_MM_TRANSPOSE4_PS(vX, vY, vZ, vW);
-		tVal[1] = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-VIEWPORT_CLIP_RCP)), vW );
+		tVal[1] = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-guardBand)), vW );
 		insideOutsideMask |= _mm_movemask_ps( _mm_cmpge_ps(tVal[1], _mm_setzero_ps()) ) << 4;
 	}
 
@@ -608,21 +604,26 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 	int isNotNearClippedMask = _mm_movemask_ps(isNotNearClippedV0);
 	int isAllNearClippedMask = ~isNotNearClippedMask;
 
+	const float GUARD_BAND_LIMIT = 1.0f / 160.0f;
+
+	int isNotGuardBandClipped = _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
+	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
+
 	// Warning: All fixed point integers need to be clipped to [-16384, 16383] in order to avoid overflows
 	// Do viewport transform
-	vX = _mm_div_ps( vX, vW );	
+	vX = _mm_div_ps( vX, vW );
 	vX = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(0.5f * bufferWidth)), _mm_set1_ps(0.5f * bufferWidth - 0.5f / bufferWidth) );
 
 	// TODO: Do guardband and viewport check in homogeneous space
-	const float GUARD_BAND_LIMIT = 32000.0f;
-	int isNotGuardBandClipped = _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vX, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
+	//const float GUARD_BAND_LIMIT = 32000.0f;
+//	int isNotGuardBandClipped = _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vX, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 
 	fxPtX[0] = _mm_cvtps_epi32(vX); 
 
 	// Viewport transform for Y (also flip Y so Y starts from top in viewport space)
 	vY = _mm_div_ps( vY, vW );
 	vY = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-0.5f * bufferHeight)), _mm_set1_ps(0.5f * bufferHeight - 0.5f / bufferHeight) );
-	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vY, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
+	//isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vY, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 
 	fxPtY[0] = _mm_cvtps_epi32(vY); 
 
@@ -644,14 +645,17 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 	isNotNearClippedMask &= isNotNearClippedMaskV1;
 	isAllNearClippedMask &= ~isNotNearClippedMaskV1;
 
+	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
+	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
+
 	vX = _mm_div_ps( vX, vW );
 	vX = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(0.5f * bufferWidth)), _mm_set1_ps(0.5f * bufferWidth - 0.5f / bufferWidth) );
-	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vX, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
+	//isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vX, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 	fxPtX[1] = _mm_cvtps_epi32(vX); 
 
 	vY = _mm_div_ps( vY, vW );
 	vY = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-0.5f * bufferHeight)), _mm_set1_ps(0.5f * bufferHeight - 0.5f / bufferHeight) );
-	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vY, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
+//	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vY, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 	fxPtY[1] = _mm_cvtps_epi32(vY); 
 
 	inter0 = _mm_unpacklo_epi32(fxPtX[1], fxPtY[1]);
@@ -672,14 +676,17 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 	isNotNearClippedMask &= isNotNearClippedMaskV2;
 	isAllNearClippedMask &= ~isNotNearClippedMaskV2;
 
+	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
+	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
+
 	vX = _mm_div_ps( vX, vW );
 	vX = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(0.5f * bufferWidth)), _mm_set1_ps(0.5f * bufferWidth - 0.5f / bufferWidth) );
-	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vX, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
+	//isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vX, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 	fxPtX[2] = _mm_cvtps_epi32(vX); 
 
 	vY = _mm_div_ps( vY, vW );
 	vY = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-0.5f * bufferHeight)), _mm_set1_ps(0.5f * bufferHeight - 0.5f / bufferHeight) );
-	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vY, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
+	//isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vY, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 	fxPtY[2] = _mm_cvtps_epi32(vY); 
 
 	inter0 = _mm_unpacklo_epi32(fxPtX[2], fxPtY[2]);
@@ -808,7 +815,7 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 			__m128 v1 = _mm_load_ps( (float*) (pVertices + pTriIndices[1]) );	// V1 of tri1
 			__m128 v2 = _mm_load_ps( (float*) (pVertices + pTriIndices[2]) );	// V2 of tri1
 
-			pCurClippedTriVertices = ClipTriangle(v0, v1, v2, pCurClippedTriVertices);
+			pCurClippedTriVertices = ClipTriangle(v0, v1, v2, GUARD_BAND_LIMIT, pCurClippedTriVertices);
 			isClippedMask &= (isClippedMask - 1);    
 		}
 
