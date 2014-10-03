@@ -13,7 +13,6 @@
 
 _NAMESPACE_BEGIN 
 
-#pragma optimize("", off)
 template<uint binWidth, uint binHeight, uint bufferWidth, uint bufferHeight, uint numContexts>
 void TilesRasterizeDepthInt(const TriangleBin* pBins, const uint* pNumTrisInBins, float* pDepthBuffer, int binStartX, int binStartY)
 {
@@ -953,14 +952,14 @@ LABEL_PROCESS_TRIANGLES:
 
                     for(int j=0; j < numX; j+=2)
                     {
-						__m128 farPlane = _mm_set_ps1(FAR_PLANE);
-						__m128 nearPlane = _mm_set_ps1(NEAR_PLANE);
-						__m128 nearMinusFar = _mm_sub_ps(nearPlane, farPlane);
+						//__m128 farPlane = _mm_set_ps1(FAR_PLANE);
+						//__m128 nearPlane = _mm_set_ps1(NEAR_PLANE);
+						//__m128 nearMinusFar = _mm_sub_ps(nearPlane, farPlane);
 
                         __m128i mask = _mm_or_si128(_mm_or_si128(alpha, beta), gamma);
 
-						__m128 denom1 = _mm_rcp_ps( _mm_add_ps( _mm_mul_ps(depth, nearMinusFar), farPlane ) );
-						__m128 linearDepth = _mm_mul_ps( nearPlane, denom1 );
+						//__m128 denom1 = _mm_rcp_ps( _mm_add_ps( _mm_mul_ps(depth, nearMinusFar), farPlane ) );
+						//__m128 linearDepth = _mm_mul_ps( nearPlane, denom1 );
 					
                         __m128 previousDepthValue = _mm_load_ps(&pDepthBuffer[index]);
                         __m128 mergedDepth = _mm_min_ps(depth, previousDepthValue);
@@ -976,8 +975,8 @@ LABEL_PROCESS_TRIANGLES:
                         gamma = _mm_add_epi32(gamma, aa2Inc);
                         depth = _mm_add_ps(depth, depthXInc);
 
-						denom1 = _mm_rcp_ps( _mm_add_ps( _mm_mul_ps(depth, nearMinusFar), farPlane ) );
-						linearDepth = _mm_mul_ps( nearPlane, denom1 );
+						//denom1 = _mm_rcp_ps( _mm_add_ps( _mm_mul_ps(depth, nearMinusFar), farPlane ) );
+						//linearDepth = _mm_mul_ps( nearPlane, denom1 );
 
                         mask = _mm_or_si128(_mm_or_si128(alpha, beta), gamma);
 
