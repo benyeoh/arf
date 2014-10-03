@@ -767,7 +767,7 @@ void RenderQuadInt()
 
 	memset(g_pNumTrisInBins, 0, NUM_BINS_Y * NUM_BINS_X * 1 * sizeof(uint));
 
-	const static float PLANE_SIZE = 12.0f;
+	const static float PLANE_SIZE = 120.00f;
 
     gmtl::VecA4f pos[4];
     pos[0][0] = -PLANE_SIZE; pos[0][1] = -5.0f; pos[0][2] = -PLANE_SIZE; pos[0][3] = 1.0f;
@@ -779,7 +779,7 @@ void RenderQuadInt()
 	//pos[0][0] = -1.0f; pos[0][1] = 1.0f; pos[0][2] = 0.9f; pos[0][3] = 1.0f;
 	//pos[1][0] = 1.0f; pos[1][1] = 1.0f; pos[1][2] = 0.9f; pos[1][3] = 1.0f;
 	//pos[2][0] = 1.0f; pos[2][1] = -1.0f; pos[2][2] = 0.9f; pos[2][3] = 1.0f;
-	//pos[3][0] = -1.0f; pos[3][1] = -1.0f; pos[3][2] = 0.9f; pos[3][3] = 1.0f;
+	//pos[3][0] = -1.0f; pos[3][1] = -1.0f; pos[3][2] = 0.9f; pos[3][3] = 1.0f;	
 
 	ushort indices[6] = { 0, 1, 2, 0, 2, 3 };
 
@@ -806,7 +806,7 @@ void RenderQuadInt()
 	TransformVecW1(&viewProj, &pos[2], &pos[2]);
 	TransformVecW1(&viewProj, &pos[3], &pos[3]);
 
-    TriangleSetupDepthIntBatch<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H>((gmtl::VecA4f*) &(pos[0]), indices, 1, g_pTriBins, g_pNumTrisInBins);
+    TriangleSetupDepthIntBatch<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H>((gmtl::VecA4f*) &(pos[0]), indices, 2, g_pTriBins, g_pNumTrisInBins);
 
 	g_NumTriangles = 0;
 
