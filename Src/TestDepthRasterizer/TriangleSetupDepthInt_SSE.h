@@ -550,7 +550,7 @@ _FORCE_INLINE gmtl::VecA4f* ClipTriangle(const __m128& v0, const __m128& v1, con
 //}
 
 template<uint binWidth, uint binHeight, uint bufferWidth, uint bufferHeight>
-_FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const ushort* pIndices, TriangleBin* pBins, uint* pNumTrisInBins, int numTrisToProcess, gmtl::VecA4f* pClippedTriVertices, uint* pNumClippedTris)
+_FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const ushort* pIndices, TriangleBin* pBins, uint* pNumTrisInBins, int numTrisToProcess, gmtl::VecA4f* pClippedTriVertices=NULL, uint* pNumClippedTris=NULL, boolean isUseClipping=FALSE)
 {
 	_DEBUG_ASSERT((numTrisToProcess > 0) && (numTrisToProcess <= 4));
 
@@ -612,7 +612,7 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 	// Warning: All fixed point integers need to be clipped to [-16384, 16383] in order to avoid overflows
 	// Do viewport transform
 	vX = _mm_div_ps( vX, vW );
-	vX = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(0.5f * bufferWidth)), _mm_set1_ps(0.5f * bufferWidth - 0.5f / bufferWidth) );
+	vX = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(0.5f * bufferWidth)), _mm_set1_ps(0.5f * bufferWidth - 0.5f) );
 
 	// TODO: Do guardband and viewport check in homogeneous space
 	//const float GUARD_BAND_LIMIT = 32000.0f;
@@ -622,7 +622,7 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 
 	// Viewport transform for Y (also flip Y so Y starts from top in viewport space)
 	vY = _mm_div_ps( vY, vW );
-	vY = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-0.5f * bufferHeight)), _mm_set1_ps(0.5f * bufferHeight - 0.5f / bufferHeight) );
+	vY = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-0.5f * bufferHeight)), _mm_set1_ps(0.5f * bufferHeight - 0.5f) );
 	//isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vY, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 
 	fxPtY[0] = _mm_cvtps_epi32(vY); 
@@ -649,12 +649,12 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
 
 	vX = _mm_div_ps( vX, vW );
-	vX = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(0.5f * bufferWidth)), _mm_set1_ps(0.5f * bufferWidth - 0.5f / bufferWidth) );
+	vX = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(0.5f * bufferWidth)), _mm_set1_ps(0.5f * bufferWidth - 0.5f) );
 	//isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vX, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 	fxPtX[1] = _mm_cvtps_epi32(vX); 
 
 	vY = _mm_div_ps( vY, vW );
-	vY = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-0.5f * bufferHeight)), _mm_set1_ps(0.5f * bufferHeight - 0.5f / bufferHeight) );
+	vY = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-0.5f * bufferHeight)), _mm_set1_ps(0.5f * bufferHeight - 0.5f) );
 //	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vY, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 	fxPtY[1] = _mm_cvtps_epi32(vY); 
 
@@ -680,12 +680,12 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
 
 	vX = _mm_div_ps( vX, vW );
-	vX = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(0.5f * bufferWidth)), _mm_set1_ps(0.5f * bufferWidth - 0.5f / bufferWidth) );
+	vX = _mm_add_ps( _mm_mul_ps(vX, _mm_set1_ps(0.5f * bufferWidth)), _mm_set1_ps(0.5f * bufferWidth - 0.5f) );
 	//isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vX, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 	fxPtX[2] = _mm_cvtps_epi32(vX); 
 
 	vY = _mm_div_ps( vY, vW );
-	vY = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-0.5f * bufferHeight)), _mm_set1_ps(0.5f * bufferHeight - 0.5f / bufferHeight) );
+	vY = _mm_add_ps( _mm_mul_ps(vY, _mm_set1_ps(-0.5f * bufferHeight)), _mm_set1_ps(0.5f * bufferHeight - 0.5f) );
 	//isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_cmpgt_ps(vY, _mm_set1_ps(-GUARD_BAND_LIMIT)) ) );
 	fxPtY[2] = _mm_cvtps_epi32(vY); 
 
@@ -751,11 +751,7 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 	__m128 tmpAccept = _mm_castsi128_ps( _mm_and_si128( _mm_and_si128(isFront, isInsideBoundsX), isInsideBoundsY) );
 	__m128 accept = tmpAccept;//_mm_and_ps(_mm_and_ps(isNotNearClippedV1, isNotNearClippedV2), _mm_and_ps(isNotNearClippedV3, tmpAccept));
 
-	// If this is inlined, all these should be compiled out
-	if(!pClippedTriVertices)
-		isNotClippedMask = 0xF;
-
-	uint triMask = isNotClippedMask & validTriMask & _mm_movemask_ps(accept);
+	uint triMask = isUseClipping ? isNotClippedMask & validTriMask & _mm_movemask_ps(accept) : validTriMask & _mm_movemask_ps(accept);
 
 	// Add each valid triangle to bin
 	while(triMask)
@@ -799,8 +795,8 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 	//
 	// TODO: We should also not bother if a triangle is entirely outside the bounds of the viewport
 	// We should do this in homogeneous space and avoid (back-projected) perspective divide
-	int isClippedMask = ~isNotClippedMask & validTriMask & ~isAllNearClippedMask;
-	if(pClippedTriVertices && isClippedMask)
+	int isClippedMask = (~isNotClippedMask & ~isAllNearClippedMask) & validTriMask;
+	if(isUseClipping && isClippedMask)
 	{
 		gmtl::VecA4f* pCurClippedTriVertices = pClippedTriVertices;
 
@@ -847,7 +843,7 @@ void TriangleSetupDepthIntBatch(const gmtl::VecA4f* pVertices, const ushort* pIn
         if((numTrisGather + numTrisProcessed) > numTriangles)
             numTrisGather = numTriangles - numTrisProcessed;
 
-		ProcessTrianglesDepthInt<binWidth, binHeight, bufferWidth, bufferHeight>(pVertices, pIndices + numTrisProcessed*3, pBins, pNumTrisInBins, numTrisGather, clippedTriVerts, &numClippedTris);
+		ProcessTrianglesDepthInt<binWidth, binHeight, bufferWidth, bufferHeight>(pVertices, pIndices + numTrisProcessed*3, pBins, pNumTrisInBins, numTrisGather, clippedTriVerts, &numClippedTris, TRUE);
 
         numTrisProcessed += 4;
 
@@ -858,7 +854,7 @@ void TriangleSetupDepthIntBatch(const gmtl::VecA4f* pVertices, const ushort* pIn
 			if((numClippedTrisGather + numClippedTrisProcessed) > numClippedTris)
 				numClippedTrisGather = numClippedTris - numClippedTrisProcessed;
 
-			ProcessTrianglesDepthInt<binWidth, binHeight, bufferWidth, bufferHeight>(clippedTriVerts + numClippedTrisProcessed*3, clippedTriIndices, pBins, pNumTrisInBins, numClippedTrisGather, NULL, NULL);
+			ProcessTrianglesDepthInt<binWidth, binHeight, bufferWidth, bufferHeight>(clippedTriVerts + numClippedTrisProcessed*3, clippedTriIndices, pBins, pNumTrisInBins, numClippedTrisGather, NULL, NULL, FALSE);
 
 			numClippedTrisProcessed += 4;
 		}
