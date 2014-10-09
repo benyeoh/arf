@@ -604,7 +604,11 @@ _FORCE_INLINE void ProcessTrianglesDepthInt(const gmtl::VecA4f* pVertices, const
 	int isNotNearClippedMask = _mm_movemask_ps(isNotNearClippedV0);
 	int isAllNearClippedMask = ~isNotNearClippedMask;
 
-	const float GUARD_BAND_LIMIT = 1.0f / 160.0f;
+	// This gives us a viewport guard band of up to 30000 pixels, assuming a viewport of size bufferWidth
+	// We need to set the GUARD_BAND_PIXELS to be something less than 32767 since we later pack the x/y
+	// into one 32-bit integer for performance reasons
+	const float GUARD_BAND_PIXELS = 30000.0f;
+	const float GUARD_BAND_LIMIT = 1.0f / ((GUARD_BAND_PIXELS / bufferWidth - 0.5f) * 2.0f);
 
 	int isNotGuardBandClipped = _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vX, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
 	isNotGuardBandClipped &= _mm_movemask_ps( _mm_and_ps( _mm_cmplt_ps( _mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), vW ), _mm_cmpgt_ps(_mm_mul_ps(vY, _mm_set1_ps(GUARD_BAND_LIMIT)), _mm_xor_ps(vW, _mm_set1_ps(-0.0))) ) );
