@@ -1,0 +1,8 @@
+
+define OCCLUDER_ACCUM 33
+
+desc = Screen Space, SH Exponential Occlusion Accum
+
+begin_group OCCLUDER_ACCUM
+	mat = [mat]\ScreenSpaceAccumSHOccl.bam
+end_group
