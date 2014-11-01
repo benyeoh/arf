@@ -427,7 +427,7 @@ struct IREffectTemplate : public IRResource
 {
 	_PURE( uint GetNumOfInstancedParams(uint techIndex) )
 	_PURE( uint GetInstancedParamSemantic(uint techIndex, uint paramIndex) )
-	_PURE( void ApplyInstancedParams(const REffectParam* pEffectParams) )
+	//_PURE( void ApplyInstancedParams(const REffectParam* pEffectParams) )
 
 	_PURE( uint GetNumOfDynamicParams(uint techIndex) )
 	_PURE( uint GetDynamicParamSemantic(uint techIndex, uint paramIndex) )
@@ -442,11 +442,11 @@ struct IREffectTemplate : public IRResource
 	_PURE( const wchar* GetConstantParamDescName(uint paramIndex, uint descIndex) )
 	_PURE( REffectParam GetConstantParamDefaultValue(uint paramIndex) )
 	
-	_PURE( void BeginTechnique(uint techIndex) )
-	_PURE( void BeginPass(uint passIndex) )
+	//_PURE( void BeginTechnique(uint techIndex) )
+	//_PURE( void BeginPass(uint passIndex) )
 
-	_PURE( void EndTechnique() )
-	_PURE( void EndPass() )
+	//_PURE( void EndTechnique() )
+	//_PURE( void EndPass() )
 
 	_PURE( uint GetNumOfPasses(uint techIndex) )
 	_PURE( uint GetNumOfTechs() )
@@ -467,6 +467,9 @@ struct IREffect : public IRResource
 	_PURE( const REffectParam* GetParam(uint index) const )
 	_PURE( void SetTemplateFileName(const wchar* pFileName) )
 	_PURE( const wchar* GetTemplateFileName() const )
+
+	_PURE( void ApplyRenderState(uint techIndex, REffectParam* pDynamicParams) )
+	_PURE( void ResetRenderState() )
 };
 
 

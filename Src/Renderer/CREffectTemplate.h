@@ -13,6 +13,12 @@
 
 _NAMESPACE_BEGIN
 
+struct REffectState
+{
+	int tech;
+	int pass;
+};
+
 class CREffectTemplate : public CRResource< IREffectTemplate >
 {
 protected:
@@ -33,7 +39,6 @@ public:
 protected:
 	_PURE( uint DoGetNumOfInstancedParams(uint techIndex) )
 	_PURE( uint DoGetInstancedParamSemantic(uint techIndex, uint paramIndex) )
-	_PURE( void DoApplyInstancedParams(const REffectParam* pEffectParams) )
 	_PURE( uint DoGetInstancedParamNumDesc(uint techIndex, uint paramIndex) )
 	_PURE( REffectParam DoGetInstancedParamDesc(uint techIndex, uint paramIndex, uint descIndex) )
 	_PURE( const wchar* DoGetInstancedParamDescName(uint techIndex, uint paramIndex, uint descIndex) )
@@ -41,17 +46,19 @@ protected:
 	_PURE( uint DoGetNumOfDynamicParams(uint techIndex) )
 	_PURE( uint DoGetDynamicParamSemantic(uint techIndex, uint paramIndex) )
 	_PURE( eREffectParamType DoGetDynamicParamType(uint techIndex, uint paramIndex) )
-	_PURE( void DoApplyDynamicParams(const REffectParam* pEffectParams, const REffectParam* pToCompare) )
-	_PURE( void DoApplyDynamicParams(const REffectParam* pEffectParams) )
 		
 	_PURE( uint DoGetNumOfConstantParams() )
 	_PURE( int DoGetConstantParamIndex(uint semantic) )
-	_PURE( void DoApplyConstantParams(const REffectParam* pEffectParams) )
 	_PURE( eREffectParamType DoGetConstantParamType(uint paramIndex) )
 	_PURE( uint DoGetConstantParamSemantic(uint paramIndex) )
-	
-	_PURE( void DoBeginTechnique(uint techIndex) )
-	_PURE( void DoBeginPass(uint passIndex) )
+
+	_PURE( void DoApplyDynamicParams(const REffectState& state, const REffectParam* pEffectParams, const REffectParam* pToCompare) )
+	_PURE( void DoApplyDynamicParams(const REffectState& state, const REffectParam* pEffectParams) )
+	_PURE( void DoApplyConstantParams(const REffectState& state, const REffectParam* pEffectParams) )
+	_PURE( void DoApplyInstancedParams(const REffectState& state, const REffectParam* pEffectParams) )
+
+	_PURE( void DoBeginTechnique(const REffectState& state) )
+	_PURE( void DoBeginPass(const REffectState& state) )
 	_PURE( void DoEndTechnique() )
 	_PURE( void DoEndPass() )
 	_PURE( uint DoGetNumOfPasses(uint techIndex) )
@@ -65,7 +72,6 @@ protected:
 public:
 	uint GetNumOfInstancedParams(uint techIndex);
 	uint GetInstancedParamSemantic(uint techIndex, uint paramIndex);
-	void ApplyInstancedParams(const REffectParam* pEffectParams);
 	uint GetInstancedParamNumDesc(uint techIndex, uint paramIndex);
 	REffectParam GetInstancedParamDesc(uint techIndex, uint paramIndex, uint descIndex);
 	const wchar* GetInstancedParamDescName(uint techIndex, uint paramIndex, uint descIndex);
@@ -73,21 +79,23 @@ public:
 	uint GetNumOfDynamicParams(uint techIndex);
 	uint GetDynamicParamSemantic(uint techIndex, uint paramIndex);
 	eREffectParamType GetDynamicParamType(uint techIndex, uint paramIndex);
-	void ApplyDynamicParams(const REffectParam* pEffectParams, const REffectParam* pToCompare);
-	void ApplyDynamicParams(const REffectParam* pEffectParams);
 	
 	uint GetNumOfConstantParams();
 	int GetConstantParamIndex(uint semantic);
 	uint GetConstantParamSemantic(uint paramIndex);
-	void ApplyConstantParams(const REffectParam* pEffectParams);
 	eREffectParamType GetConstantParamType(uint paramIndex);
 	uint GetConstantParamNumDesc(uint paramIndex);
 	REffectParam GetConstantParamDesc(uint paramIndex, uint descIndex);
 	const wchar* GetConstantParamDescName(uint paramIndex, uint descIndex);
 	REffectParam GetConstantParamDefaultValue(uint paramIndex);
 
-	void BeginTechnique(uint techIndex);
-	void BeginPass(uint passIndex);
+	void ApplyConstantParams(const REffectState& state, const REffectParam* pEffectParams);
+	void ApplyDynamicParams(const REffectState& state, const REffectParam* pEffectParams, const REffectParam* pToCompare);
+	void ApplyDynamicParams(const REffectState& state, const REffectParam* pEffectParams);
+	void ApplyInstancedParams(const REffectState& state, const REffectParam* pEffectParams);
+
+	void BeginTechnique(const REffectState& state);
+	void BeginPass(const REffectState& state);
 	
 	void EndTechnique();
 	void EndPass();

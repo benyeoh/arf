@@ -73,7 +73,7 @@ InitializeRenderer()
 
 	if(!g_pRenderer)
 	{
-		g_hRenderer = InitializeModule(_W("RendererD3D.dll"), NULL);
+		g_hRenderer = InitializeModule(_W("Renderer.dll"), NULL);
 
 		CreateRendererFn CreateRendererD3D = (CreateRendererFn) GetFunction(g_hRenderer, "CreateRenderer");
 		g_pRenderer = CreateRendererD3D();

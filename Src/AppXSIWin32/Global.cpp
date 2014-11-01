@@ -24,7 +24,7 @@ AppCallback s_AppCallback;
 void
 AllocateGlobalData()
 {
-	g_hFileSystem = ::LoadLibrary(_W("FileSystemWin32.dll"));
+	g_hFileSystem = ::LoadLibrary(_W("FileSystem.dll"));
 	_DEBUG_ASSERT(g_hFileSystem);
 
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) ::GetProcAddress(g_hFileSystem, "CreateFileSystem");
@@ -55,7 +55,7 @@ AllocateGlobalData()
 	g_pFileSystem->AddMnemonic(_W("mat"), _W("data\\materials"));
 	g_pFileSystem->AddMnemonic(_W("dat"), _W("data"));
 
-	g_hRenderer = ::LoadLibrary(_W("RendererD3D.dll"));
+	g_hRenderer = ::LoadLibrary(_W("Renderer.dll"));
 	CreateRendererFn CreateRendererD3D = (CreateRendererFn)::GetProcAddress(g_hRenderer, "CreateRenderer");
 	g_pRenderer = CreateRendererD3D();
 	_DEBUG_ASSERT(g_pRenderer);

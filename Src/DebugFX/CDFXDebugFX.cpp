@@ -49,15 +49,13 @@ int  SortLess(const void* pL, const void* pR)
 void 
 CDFXDebugFX::BeginWireFrame()
 {
-	m_pWireFrame->GetTemplate()->BeginTechnique(0);
-	m_pWireFrame->GetTemplate()->BeginPass(0);
+	m_pWireFrame->ApplyRenderState(0, NULL);
 }
 
 void 
 CDFXDebugFX::EndWireFrame()
 {
-	m_pWireFrame->GetTemplate()->EndPass();
-	m_pWireFrame->GetTemplate()->EndTechnique();
+	m_pWireFrame->ResetRenderState();
 }
 
 

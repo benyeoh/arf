@@ -337,7 +337,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	MemAllocFns allocFns = GetCoreMemoryBindings();
 	_BIND_TO_GLOBAL_ALLOC(allocFns);
 
-	Module hFileSystem	= InitializeModule(_W("FileSystemWin32.dll"), &allocFns);
+	Module hFileSystem	= InitializeModule(_W("FileSystem.dll"), &allocFns);
 		
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) GetFunction(hFileSystem, "CreateFileSystem");
 	g_pFileSystem = CreateFileSystem();
@@ -365,7 +365,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		g_pFileSystem->Open(path.c_str());
 	}
 
-	Module hPlatform = InitializeModule(_W("PlatformWin32.dll"), &allocFns);
+	Module hPlatform = InitializeModule(_W("Platform.dll"), &allocFns);
 
 	CreatePlatformFn CreatePlatform = (CreatePlatformFn) GetFunction(hPlatform, "CreatePlatform");
 	g_pPlatform = CreatePlatform();

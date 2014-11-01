@@ -13,17 +13,6 @@
 
 _NAMESPACE_BEGIN
 
-#define _PARTIAL_HASH(val) \
-{ \
-	uint k = val; \
-	k *= m; \
-	k ^= k >> r; \
-	k *= m; \
-	\
-	h *= m; \
-	h ^= k; \
-}
-
 //void RInstancedKey::Set(uint index, RRenderOp* pOp)
 //{
 //	const uint m = 0x5bd1e995;
@@ -313,11 +302,7 @@ CRRenderGroup::AddDrawOp(IRVertexBufferGroup* pVBGroup,
 		}
 		else
 		{
-			const uint m = 0x5bd1e995;
-			const int r = 24;
-
-			// Initialize the hash to a 'random' value
-			uint h = 1234567 ^ 12;
+			uint hashVal = MurmurHashAccumInit();
 
 			//_PARTIAL_HASH(pRenderOp->pVBGroup);
 			//_PARTIAL_HASH(pRenderOp->pIB);
@@ -326,16 +311,26 @@ CRRenderGroup::AddDrawOp(IRVertexBufferGroup* pVBGroup,
 			//_PARTIAL_HASH(pRenderOp->pass);
 
 			uint numDynamicParams = pCREffectTemplate->GetNumOfDynamicParams(techUsed);
+			uint length = 0;
+
 			_LOOPi(numDynamicParams)
 			{
 				switch(pParams[i].type)
 				{
 				case EPT_FLOAT:
 				case EPT_INT:	
-				case EPT_BOOL:	
+					hashVal = MurmurHashAccum((uint) pParams[i].intVal, hashVal);
+					length++;
+					break;
+
+				case EPT_BOOL:
+					hashVal = MurmurHashAccum((uint) pParams[i].boolVal, hashVal);
+					length++;
+					break;
+
 				case EPT_VOID_P:
 				case EPT_TEX2D_P:
-				//case EPT_TEXRT_P:
+					//case EPT_TEXRT_P:
 				case EPT_TEXCUBE_P:		
 				case EPT_MAT44_P:
 				case EPT_MAT33_P:
@@ -344,16 +339,18 @@ CRRenderGroup::AddDrawOp(IRVertexBufferGroup* pVBGroup,
 				case EPT_VEC3_P:
 				case EPT_VEC2_P:
 				case EPT_STRING:
-					_PARTIAL_HASH(pParams[i].intVal);
+					size_t hashPtr = (size_t) pParams[i].pVal;
+					_LOOPi(sizeof(size_t) / sizeof(uint))
+					{
+						hashVal = MurmurHashAccum( (uint) (hashPtr >> (i * sizeof(uint) * 8)), hashVal );
+					}
+
+					length += sizeof(size_t) / sizeof(uint);
 					break;
 				}
 			}
 
-			h ^= h >> 13;
-			h *= m;
-			h ^= h >> 15;
-
-			pRenderOp->opHash = h;
+			pRenderOp->opHash = MurmurHashAccumEnd(hashVal, length);
 
 			//AddToRenderGroupInstanced(*m_RenderGroups[groupIndex], &(pParams[numDynamicParams]), numInstancedParams, pRenderOp);
 		}
@@ -413,11 +410,7 @@ void CRRenderGroup::FillDrawOp(RRenderOp* pDest,
 		}
 		else
 		{
-			const uint m = 0x5bd1e995;
-			const int r = 24;
-
-			// Initialize the hash to a 'random' value
-			uint h = 1234567 ^ 12;
+			uint hashVal = MurmurHashAccumInit();
 
 			//_PARTIAL_HASH(pRenderOp->pVBGroup);
 			//_PARTIAL_HASH(pRenderOp->pIB);
@@ -426,13 +419,23 @@ void CRRenderGroup::FillDrawOp(RRenderOp* pDest,
 			//_PARTIAL_HASH(pRenderOp->pass);
 
 			uint numDynamicParams = pCREffectTemplate->GetNumOfDynamicParams(techUsed);
+			uint length = 0;
+
 			_LOOPi(numDynamicParams)
 			{
 				switch(pParams[i].type)
 				{
 				case EPT_FLOAT:
 				case EPT_INT:	
-				case EPT_BOOL:	
+					hashVal = MurmurHashAccum((uint) pParams[i].intVal, hashVal);
+					length++;
+					break;
+
+				case EPT_BOOL:
+					hashVal = MurmurHashAccum((uint) pParams[i].boolVal, hashVal);
+					length++;
+					break;
+
 				case EPT_VOID_P:
 				case EPT_TEX2D_P:
 				//case EPT_TEXRT_P:
@@ -444,16 +447,18 @@ void CRRenderGroup::FillDrawOp(RRenderOp* pDest,
 				case EPT_VEC3_P:
 				case EPT_VEC2_P:
 				case EPT_STRING:
-					_PARTIAL_HASH(pParams[i].intVal);
+					size_t hashPtr = (size_t) pParams[i].pVal;
+					_LOOPi(sizeof(size_t) / sizeof(uint))
+					{
+						hashVal = MurmurHashAccum( (uint) (hashPtr >> (i * sizeof(uint) * 8)), hashVal );
+					}
+
+					length += sizeof(size_t) / sizeof(uint);
 					break;
 				}
 			}
 
-			h ^= h >> 13;
-			h *= m;
-			h ^= h >> 15;
-
-			pRenderOp->opHash = h;
+			pRenderOp->opHash = MurmurHashAccumEnd(hashVal, length);
 
 			//AddToRenderGroupInstanced(*m_RenderGroups[groupIndex], &(pParams[numDynamicParams]), numInstancedParams, pRenderOp);
 		}
@@ -480,138 +485,72 @@ CRRenderGroup::DrawRenderOp( RRenderOp* pOp )
 
 	_DEBUG_ASSERT( pEffectTemplate );
 
-	if(m_pPrevOp)
+	CREffect* pPrevEffect = m_pPrevOp ? (CREffect*)(m_pPrevOp->pEffect) : NULL;
+	CREffectTemplate* pPrevEffectTemplate = m_pPrevOp ? (CREffectTemplate*)(m_pPrevOp->pEffectTemplate) : NULL; 
+	
+	REffectState state;
+	state.tech = pOp->technique;
+	state.pass = 0;
+
+	if((pEffectTemplate == pPrevEffectTemplate) && pOp->technique == m_pPrevOp->technique)
 	{
-		CREffect* pPrevEffect = (CREffect*)(m_pPrevOp->pEffect);
-		_DEBUG_ASSERT( pPrevEffect );
-		CREffectTemplate* pPrevEffectTemplate = (CREffectTemplate*)(m_pPrevOp->pEffectTemplate); 
-		_DEBUG_ASSERT( pPrevEffectTemplate );
-
-		// Same effect
-		if(pPrevEffect == pEffect)
+		uint numPasses = pEffectTemplate->GetNumOfPasses(pOp->technique);
+		if(numPasses == 1)
 		{
-			// Same technique
-			if(m_pPrevOp->technique == pOp->technique)
-			{
-				uint numPasses = pEffectTemplate->GetNumOfPasses(pOp->technique);
-				if(numPasses <= 1)
-				{
-					pEffectTemplate->ApplyDynamicParams(pOp->params, m_pPrevOp->params);
-					m_pRenderer->RenderPrimitive(pOp);
-				}
-				else
-				{
-					pPrevEffectTemplate->EndPass();
-					pEffectTemplate->ApplyDynamicParams(pOp->params, m_pPrevOp->params);
-					pEffectTemplate->BeginPass(0);
-					m_pRenderer->RenderPrimitive(pOp);
+			if(pEffect != pPrevEffect)
+				pEffectTemplate->ApplyConstantParams(state, pEffect->GetParams());
 
-					_LOOPi(numPasses - 1)
-					{
-						pEffectTemplate->EndPass();
-						// pEffectTemplate->ApplyDynamicParams(pOp->params);
-						pEffectTemplate->BeginPass(i+1);		
-						m_pRenderer->RenderPrimitive(pOp);
-					}
-				}
-			}
-			// Different technique
-			else
-			{
-				pPrevEffectTemplate->EndPass();
-				pPrevEffectTemplate->EndTechnique();
-
-				pEffectTemplate->BeginTechnique(pOp->technique);
-
-				pEffectTemplate->ApplyConstantParams(pEffect->GetParams());
-				pEffectTemplate->ApplyDynamicParams(pOp->params, m_pPrevOp->params);
-
-				pEffectTemplate->BeginPass(0);
-				m_pRenderer->RenderPrimitive(pOp);
-
-				uint numPasses = pEffectTemplate->GetNumOfPasses(pOp->technique);
-				_LOOPi(numPasses - 1)
-				{
-					pEffectTemplate->EndPass();
-					// pEffectTemplate->ApplyDynamicParams(pOp->params);
-					pEffectTemplate->BeginPass(i+1);		
-					m_pRenderer->RenderPrimitive(pOp);
-				}
-			}
-		}
-		else // Different effect
+			pEffectTemplate->ApplyDynamicParams(state, pOp->params, m_pPrevOp->params);
+			m_pRenderer->RenderPrimitive(pOp);
+		}			
+		else
 		{
-			// Same template and technique
-			if(pPrevEffectTemplate == pEffectTemplate && pOp->technique == m_pPrevOp->technique)
+			pPrevEffectTemplate->EndPass();
+
+			pEffectTemplate->BeginPass(state);
+			pEffectTemplate->ApplyConstantParams(state, pEffect->GetParams());
+			pEffectTemplate->ApplyDynamicParams(state, pOp->params, m_pPrevOp->params);
+			m_pRenderer->RenderPrimitive(pOp);
+
+			_LOOPi(numPasses - 1)
 			{
-				uint numPasses = pEffectTemplate->GetNumOfPasses(pOp->technique);
-				if(numPasses <= 1)
-				{
-					pEffectTemplate->ApplyConstantParams(pEffect->GetParams());			
-					pEffectTemplate->ApplyDynamicParams(pOp->params, m_pPrevOp->params);
-					m_pRenderer->RenderPrimitive(pOp);
-				}
-				else
-				{
-					pPrevEffectTemplate->EndPass();
-					pEffectTemplate->ApplyConstantParams(pEffect->GetParams());
-					pEffectTemplate->ApplyDynamicParams(pOp->params, m_pPrevOp->params);
-					pEffectTemplate->BeginPass(0);
-					m_pRenderer->RenderPrimitive(pOp);
+				pEffectTemplate->EndPass();
 
-					_LOOPi(numPasses - 1)
-					{
-						pEffectTemplate->EndPass();
-						// pEffectTemplate->ApplyDynamicParams(pOp->params);
-						pEffectTemplate->BeginPass(i+1);		
-						m_pRenderer->RenderPrimitive(pOp);
-					}
-				}
-			}
-			// Different template or technique
-			else	
-			{
-				pPrevEffectTemplate->EndPass();
-				pPrevEffectTemplate->EndTechnique();
-
-				pEffectTemplate->BeginTechnique(pOp->technique);
-
-				pEffectTemplate->ApplyConstantParams(pEffect->GetParams());
-				pEffectTemplate->ApplyDynamicParams(pOp->params);
-
-				pEffectTemplate->BeginPass(0);
+				state.pass = i+1;
+				pEffectTemplate->BeginPass(state);
+				pEffectTemplate->ApplyConstantParams(state, pEffect->GetParams());
+				pEffectTemplate->ApplyDynamicParams(state, pOp->params);
 				m_pRenderer->RenderPrimitive(pOp);
-				uint numPasses = pEffectTemplate->GetNumOfPasses(pOp->technique);
-
-				_LOOPi(numPasses - 1)
-				{
-					pEffectTemplate->EndPass();
-					// pEffectTemplate->ApplyDynamicParams(pOp->params);
-					pEffectTemplate->BeginPass(i+1);		
-					m_pRenderer->RenderPrimitive(pOp);
-				}
 			}
 		}
 	}
 	else
 	{
-		pEffectTemplate->BeginTechnique(pOp->technique);
-		pEffectTemplate->ApplyConstantParams(pEffect->GetParams());
-		pEffectTemplate->ApplyDynamicParams(pOp->params);	// TODO:
-		pEffectTemplate->BeginPass(0);
+		if(pPrevEffectTemplate)
+		{
+			pPrevEffectTemplate->EndPass();
+			pPrevEffectTemplate->EndTechnique();
+		}
 
+		pEffectTemplate->BeginTechnique(state);
+		pEffectTemplate->BeginPass(state);
+		pEffectTemplate->ApplyConstantParams(state, pEffect->GetParams());
+		pEffectTemplate->ApplyDynamicParams(state, pOp->params);
 		m_pRenderer->RenderPrimitive(pOp);
+
 		uint numPasses = pEffectTemplate->GetNumOfPasses(pOp->technique);
-		
 		_LOOPi(numPasses - 1)
 		{
 			pEffectTemplate->EndPass();
-			// pEffectTemplate->ApplyDynamicParams(pOp->params);
-			pEffectTemplate->BeginPass(i+1);		
+
+			state.pass = i+1;
+			pEffectTemplate->BeginPass(state);		
+			pEffectTemplate->ApplyConstantParams(state, pEffect->GetParams());
+			pEffectTemplate->ApplyDynamicParams(state, pOp->params);
 			m_pRenderer->RenderPrimitive(pOp);
 		}
-	}
-
+	}	
+			
 	// Set the reference render op
 	m_pPrevOp = pOp;
 }

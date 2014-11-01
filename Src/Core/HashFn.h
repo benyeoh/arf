@@ -231,6 +231,41 @@ inline uint MurmurHash2(uint* pData, uint length)
 	return h;
 }
 
+inline uint MurmurHash3AccumInit()
+{
+	return 1234567 ^ 12;//0x5bd1e995;	
+}
+
+inline uint MurmurHash3Accum(uint data, uint curHash)
+{
+	const uint c1 = 0xcc9e2d51;
+	const uint c2 = 0x1b873593;
+
+	uint k1 = data;
+	k1 *= c1; 
+	k1 = __rot(k1, 15); 
+	k1 *= c2; 
+
+	curHash ^= k1;
+	curHash = __rot(curHash, 13);
+	curHash = curHash * 5 + 0xe6546b64;
+
+	return curHash;
+}
+
+inline uint MurmurHash3AccumEnd(uint curHash, uint length)
+{
+	curHash ^= (length * sizeof(uint));
+
+	curHash ^= curHash >> 16;
+	curHash *= 0x85ebca6b;
+	curHash ^= curHash >> 13;
+	curHash *= 0xc2b2ae35;
+	curHash ^= curHash >> 16;
+
+	return curHash;
+}
+
 inline uint MurmurHash3(uint* pData, uint length)
 {
 	uint h1 = 1234567 ^ 12;//0x5bd1e995;
@@ -261,7 +296,11 @@ inline uint MurmurHash3(uint* pData, uint length)
 	return h1;
 }
 
+
 #define MurmurHash	MurmurHash3
+#define MurmurHashAccumInit		MurmurHash3AccumInit
+#define MurmurHashAccum			MurmurHash3Accum
+#define MurmurHashAccumEnd		MurmurHash3AccumEnd
 
 inline uint MurmurHashSizeT(size_t value)
 {

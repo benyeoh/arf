@@ -66,7 +66,7 @@ CREffectD3DTemplate::DoGetInstancedParamSemantic(uint techIndex, uint paramIndex
 }
 	
 void 
-CREffectD3DTemplate::DoApplyInstancedParams(const REffectParam* pEffectParams)
+CREffectD3DTemplate::DoApplyInstancedParams(const REffectState& state, const REffectParam* pEffectParams)
 {
 	//_DEBUG_ASSERT(m_CurTech >=0);
 	//_DEBUG_ASSERT(m_CurTech < (int)(GetNumOfTechs()));
@@ -99,13 +99,18 @@ CREffectD3DTemplate::DoApplyInstancedParams(const REffectParam* pEffectParams)
 }
 
 void 
-CREffectD3DTemplate::DoApplyDynamicParams(const REffectParam* pEffectParams)
+CREffectD3DTemplate::DoApplyDynamicParams(const REffectState& state, const REffectParam* pEffectParams)
 {
-	_DEBUG_ASSERT(m_CurTech >=0);
-	_DEBUG_ASSERT(m_CurTech < (int)(GetNumOfTechs()));
+	// TODO: We require that passes in a technique must be executed in-order
+	// This check assumes that (so we don't re-set redundant state changes)
+	if(state.pass > 0)
+		return;
+
+	_DEBUG_ASSERT(state.tech >=0);
+	_DEBUG_ASSERT(state.tech < (int)(GetNumOfTechs()));
 	
 	uint start = 0;
-	REffectTechD3D& curTech = m_Techniques[m_CurTech];
+	REffectTechD3D& curTech = m_Techniques[state.tech];
 	uint numParams = ((uint)(curTech.varyingParams.size()));
 	
 	_LOOPi( numParams )
@@ -220,20 +225,24 @@ CREffectD3DTemplate::DoApplyDynamicParams(const REffectParam* pEffectParams)
 		}
 	}
 
-	if(m_CurPass >= 0)
-		m_pD3DEffect->CommitChanges();
+	m_pD3DEffect->CommitChanges();
 }
 
 void 
-CREffectD3DTemplate::DoApplyDynamicParams(const REffectParam* pEffectParams, const REffectParam* pToCompare)
+CREffectD3DTemplate::DoApplyDynamicParams(const REffectState& state, const REffectParam* pEffectParams, const REffectParam* pToCompare)
 {
+	// TODO: We require that passes in a technique must be executed in-order
+	// This check assumes that (so we don't re-set redundant state changes)
+	if(state.pass > 0)
+		return;
+
 	//_DEBUG_ASSERT(pEffectParams);
-	_DEBUG_ASSERT(m_CurTech >=0);
-	_DEBUG_ASSERT(m_CurTech < (int)(GetNumOfTechs()));
+	_DEBUG_ASSERT(state.tech >=0);
+	_DEBUG_ASSERT(state.tech < (int)(GetNumOfTechs()));
 	//_DEBUG_ASSERT( ((uint)(m_Techniques[m_CurTech].varyingParams.size())) == length );
 	
 	uint start = 0;
-	REffectTechD3D& curTech = m_Techniques[m_CurTech];
+	REffectTechD3D& curTech = m_Techniques[state.tech];
 	uint numParams = ((uint)(curTech.varyingParams.size()));
 	
 	_LOOPi( numParams )
@@ -371,8 +380,7 @@ CREffectD3DTemplate::DoApplyDynamicParams(const REffectParam* pEffectParams, con
 		}
 	}
 	
-	if(m_CurPass >= 0)
-		m_pD3DEffect->CommitChanges();
+	m_pD3DEffect->CommitChanges();
 }
 
 uint 
@@ -416,18 +424,23 @@ CREffectD3DTemplate::DoGetConstantParamSemantic(uint paramIndex)
 }
 
 void 
-CREffectD3DTemplate::DoApplyConstantParams(const REffectParam* pEffectParams)
+CREffectD3DTemplate::DoApplyConstantParams(const REffectState& state, const REffectParam* pEffectParams)
 {
+	// TODO: We require that passes in a technique must be executed in-order
+	// This check assumes that (so we don't re-set redundant state changes)
+	if(state.pass > 0)
+		return;
+
 //	_DEBUG_ASSERT(pEffectParams);
-	_DEBUG_ASSERT(m_CurTech >= 0);
-	_DEBUG_ASSERT(m_CurTech < (int)(GetNumOfTechs()));
+	_DEBUG_ASSERT(state.tech >= 0);
+	_DEBUG_ASSERT(state.tech < (int)(GetNumOfTechs()));
 //	_DEBUG_ASSERT( ((uint)(m_Techniques[m_CurTech].constantParams.size())) == length );	
 	
-	uint numParams = ((uint)(m_Techniques[m_CurTech].constantParams.size()));
+	uint numParams = ((uint)(m_Techniques[state.tech].constantParams.size()));
 	
 	_LOOPi( numParams )
 	{
-		uint paramIndex = m_Techniques[m_CurTech].constantParams[i];
+		uint paramIndex = m_Techniques[state.tech].constantParams[i];
 
 		D3DXHANDLE paramHandle = m_D3DConstantParams[paramIndex].hParam;
 		const REffectParam& curParam = pEffectParams[paramIndex];
@@ -644,9 +657,11 @@ CREffectD3DTemplate::DoGetInstancedParamDescName(uint techIndex, uint paramIndex
 }
 
 void 
-CREffectD3DTemplate::DoBeginTechnique(uint techIndex)
+CREffectD3DTemplate::DoBeginTechnique(const REffectState& state)
 {
-	_DEBUG_ASSERT(techIndex < (uint)(m_Techniques.size()));
+	int techIndex = state.tech;
+
+	_DEBUG_ASSERT(techIndex < (int) (m_Techniques.size()));
 	
 	HRESULT hr = m_pD3DEffect->SetTechnique(m_Techniques[techIndex].hTech); _DEBUG_ASSERT(SUCCEEDED(hr));
 	hr = m_pD3DEffect->Begin(NULL, 
@@ -655,27 +670,23 @@ CREffectD3DTemplate::DoBeginTechnique(uint techIndex)
 							 D3DXFX_DONOTSAVESHADERSTATE );	
 	
 	_DEBUG_ASSERT(SUCCEEDED(hr));
-	
-	m_CurTech = techIndex;	
 }
 
 void 
-CREffectD3DTemplate::DoBeginPass(uint passIndex)
+CREffectD3DTemplate::DoBeginPass(const REffectState& state)
 {
+	int passIndex = state.pass;
+
 	_DEBUG_ASSERT(m_pStateManager);
 	
 	m_pStateManager->PushStateStack();
 	HRESULT hr = m_pD3DEffect->BeginPass(passIndex);	_DEBUG_ASSERT(SUCCEEDED(hr));
-
-	m_CurPass = passIndex;
 }
 
 void 
 CREffectD3DTemplate::DoEndTechnique()
 {
 	HRESULT hr = m_pD3DEffect->End(); _DEBUG_ASSERT(SUCCEEDED(hr));
-
-	m_CurTech = R_UNKNOWN;
 }
 
 void 
@@ -685,8 +696,6 @@ CREffectD3DTemplate::DoEndPass()
 
 	HRESULT hr = m_pD3DEffect->EndPass();	_DEBUG_ASSERT(SUCCEEDED(hr));
 	m_pStateManager->PopStateStack();
-	
-	m_CurPass = R_UNKNOWN;
 }
 
 uint 
@@ -1389,10 +1398,6 @@ CREffectD3DTemplate::OnLostDevice()
 {
 	_DEBUG_TRACE(_W("Lost effect template: %s\n"), GetResourceName());
 
-	//m_Type = R_UNKNOWN;
-	m_CurTech = R_UNKNOWN;
-	m_CurPass = R_UNKNOWN;
-	
 	//m_Techniques.clear();
 	//m_D3DConstantParams.clear();
 	//m_D3DDynamicParams.clear();

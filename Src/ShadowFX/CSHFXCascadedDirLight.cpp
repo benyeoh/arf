@@ -790,9 +790,7 @@ void CSHFXCascadedDirLight::Flush()
 			// Perform blur if needed
 			if(m_pBlur1Effect[i] || m_pBlur2Effect[i])
 			{
-				IREffectTemplate* pTemplate = m_p2DPipeSetupEffect->GetTemplate();
-				pTemplate->BeginTechnique(0);
-				pTemplate->BeginPass(0);
+				m_p2DPipeSetupEffect->ApplyRenderState(0, NULL);
 
 				if(m_pBlur1Effect[i])
 					m_pBlur1Group[i]->Flush();
@@ -800,8 +798,7 @@ void CSHFXCascadedDirLight::Flush()
 				if(m_pBlur2Effect[i])
 					m_pBlur2Group[i]->Flush();
 
-				pTemplate->EndPass();
-				pTemplate->EndTechnique();
+				m_p2DPipeSetupEffect->ResetRenderState();
 			}
 		}
 	}

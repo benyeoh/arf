@@ -34,6 +34,16 @@ _DECLARE_SMARTPTR(ID3D11ShaderResourceView)
 _DECLARE_SMARTPTR(ID3D11UnorderedAccessView)
 _DECLARE_SMARTPTR(ID3D11Buffer)
 _DECLARE_SMARTPTR(ID3D11Resource)
+_DECLARE_SMARTPTR(ID3D11VertexShader)
+_DECLARE_SMARTPTR(ID3D11PixelShader)
+_DECLARE_SMARTPTR(ID3D11GeometryShader)
+_DECLARE_SMARTPTR(ID3D11HullShader)
+_DECLARE_SMARTPTR(ID3D11DomainShader)
+_DECLARE_SMARTPTR(ID3D11ComputeShader)
+_DECLARE_SMARTPTR(ID3D11BlendState)
+_DECLARE_SMARTPTR(ID3D11RasterizerState)
+_DECLARE_SMARTPTR(ID3D11DepthStencilState)
+_DECLARE_SMARTPTR(ID3D11DeviceChild)
 
 class CRRendererD3D11;
 
@@ -73,5 +83,6 @@ _NAMESPACE_END
 #include "CRVertexBufferD3D11.h"
 #include "CRIndexBufferD3D11.h"
 #include "CRTextureCubeD3D11.h"
+#include "CREffectTemplateD3D11.h"
 #include "CRResourceMgrD3D11.h"
 #include "CRRendererD3D11.h"

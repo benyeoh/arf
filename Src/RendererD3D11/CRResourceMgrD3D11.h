@@ -16,18 +16,62 @@ _NAMESPACE_BEGIN
 class CRResourceMgrD3D11 : public CRResourceMgr
 {
 private:
+	struct InputLayoutKey
+	{
+		const static int MAX_NUM_ELEMS = 16;
+		uint hashVal;
+		size_t vsPtr;
+		D3D11_INPUT_ELEMENT_DESC desc[MAX_NUM_ELEMS];
+		uint numElems;
+
+		bool operator==(const InputLayoutKey& other) const
+		{
+			bool isEqual = (vsPtr == other.vsPtr) && (numElems == other.numElems);
+			if(isEqual)
+			{
+				_LOOPi(numElems)
+				{
+					isEqual &&= (desc[i].AlignedByteOffset == other.desc[i].AlignedByteOffset);
+					isEqual &&= (desc[i].Format == other.desc[i].Format);
+					isEqual &&= (desc[i].InputSlot == other.desc[i].InputSlot);
+					isEqual &&= (desc[i].InputSlotClass == other.desc[i].InputSlotClass);
+					isEqual &&= (desc[i].InstanceDataStepRate == other.desc[i].InstanceDataStepRate);
+					isEqual &&= (desc[i].SemanticIndex == other.desc[i].SemanticIndex);
+					isEqual &&= (strcmp(pDesc[i].SemanticName, other.desc[i].SemanticName) == 0);
+				}
+			}
+
+			return isEqual;
+		}
+	};
+
+	struct InputLayoutKeyHash
+	{
+		inline uint operator() (const InputLayoutKey& key) { return key.hashVal; }
+	};
+
+private:
+	DenseChainedHashMap<InputLayoutKey, ID3D11InputLayout*, InputLayoutKeyHash> m_InputLayoutMap;
 
 public:
 	CRResourceMgrD3D11(CRRenderer* pRenderer)
 		: CRResourceMgr(pRenderer)
 	{
+		CREffectTemplateD3D11::__Initialize();
+
+		m_InputLayoutMap.Initialize(32, 0.8f);
 	}
 
 	virtual ~CRResourceMgrD3D11()
 	{
+		// TODO: Delete effects first
+		// ... 
+
+		CREffectTemplateD3D11::__Shutdown();
 	}
 
 protected:
+	void ComputeInputLayoutHash(InputLayoutKey& dest, ID3D11VertexShader* pVS, D3D11_INPUT_ELEMENT_DESC* pDesc, uint numElems);
 
 	//IDirect3DVolumeTexture9* CreateD3DVolumeTexture(uint width, 
 	//	uint height,
@@ -55,7 +99,6 @@ protected:
 
 	ID3D11Buffer* CreateD3DVertexBuffer(uint bufferLen, D3D11_USAGE usage);
 	ID3D11Buffer* CreateD3DIndexBuffer(uint bufferLen, D3D11_USAGE usage);
-	//ID3DXEffect* CreateD3DEffectFromData(byte* pData, uint length);
 
 protected:
 	IRRenderGroup* DoCreateRenderGroup(RenderOpSort sortFn, uint maxRenderOps); 
@@ -114,6 +157,9 @@ public:
 	ID3D11Buffer* CreateOffscreenIB(const D3D11_BUFFER_DESC& desc);
 	ID3D11Buffer* CreateOffscreenVB(const D3D11_BUFFER_DESC& desc);
 	CRTextureRTD3D11* CreateRenderTargetFromResource(ID3D11Resource* pRes, D3D11_RENDER_TARGET_VIEW_DESC* pDesc);
+
+	ID3D11InputLayout* CreateInputLayout(CREffectTemplateD3D11* pTemplate, D3D11_INPUT_ELEMENT_DESC* pDesc, uint numElems);
+	void RemoveInputLayout(ID3D11VertexShader* pKey, D3D11_INPUT_ELEMENT_DESC* pDesc, uint numElems);
 };
 
 _NAMESPACE_END

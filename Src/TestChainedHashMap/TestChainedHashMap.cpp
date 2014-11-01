@@ -229,7 +229,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	MemAllocFns allocFns = GetCoreMemoryBindings();
 	_BIND_TO_GLOBAL_ALLOC(allocFns);
 
-	Module hPlatform	= InitializeModule(_W("PlatformWin32.dll"), &allocFns);
+	Module hPlatform	= InitializeModule(_W("Platform.dll"), &allocFns);
 	
 	CreatePlatformFn CreatePlatform = (CreatePlatformFn) GetFunction(hPlatform, "CreatePlatform");
 	IPPlatformPtr pPlatform = CreatePlatform();

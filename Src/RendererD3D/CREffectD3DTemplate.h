@@ -64,10 +64,7 @@ private:
 	ParamList m_D3DConstantParams;
 	ParamList m_D3DInstancedParams;
 	//EffectDescList m_EffectDesc;
-	
-	int m_CurTech;
-	int m_CurPass;
-	
+		
 	RD3DEffectStateManagerPtr m_pStateManager;
 
 	//------------------------------------------------------------------------------
@@ -88,8 +85,6 @@ private:
 public:
 	CREffectD3DTemplate(CRRenderer* pRenderer)
 		: CREffectTemplate(pRenderer)
-		, m_CurTech(R_UNKNOWN)
-		, m_CurPass(R_UNKNOWN)
 		, m_pStateManager(NULL)
 	{
 	}
@@ -111,7 +106,6 @@ private:
 protected:
 	uint DoGetNumOfInstancedParams(uint techIndex);
 	uint DoGetInstancedParamSemantic(uint techIndex, uint paramIndex);
-	void DoApplyInstancedParams(const REffectParam* pEffectParams);
 	uint DoGetInstancedParamNumDesc(uint techIndex, uint paramIndex);
 	REffectParam DoGetInstancedParamDesc(uint techIndex, uint paramIndex, uint descIndex);
 	const wchar* DoGetInstancedParamDescName(uint techIndex, uint paramIndex, uint descIndex);
@@ -119,22 +113,25 @@ protected:
 	uint DoGetNumOfDynamicParams(uint techIndex);
 	uint DoGetDynamicParamSemantic(uint techIndex, uint paramIndex);
 	eREffectParamType DoGetDynamicParamType(uint techIndex, uint paramIndex);
-	void DoApplyDynamicParams(const REffectParam* pEffectParams, const REffectParam* pToCompare);
-	void DoApplyDynamicParams(const REffectParam* pEffectParams);
 	
 	uint DoGetNumOfConstantParams();
 	int DoGetConstantParamIndex(uint semantic);
 	uint DoGetConstantParamSemantic(uint paramIndex);
 	REffectParam DoGetConstantParamDefaultValue(uint paramIndex);
 	
-	void DoApplyConstantParams(const REffectParam* pEffectParams);
 	eREffectParamType DoGetConstantParamType(uint paramIndex);
 	uint DoGetConstantParamNumDesc(uint paramIndex);
 	REffectParam DoGetConstantParamDesc(uint paramIndex, uint descIndex);
 	const wchar* DoGetConstantParamDescName(uint paramIndex, uint descIndex);
 
-	void DoBeginTechnique(uint techIndex);
-	void DoBeginPass(uint passIndex);
+	void DoApplyConstantParams(const REffectState& state, const REffectParam* pEffectParams);
+	void DoApplyDynamicParams(const REffectState& state, const REffectParam* pEffectParams, const REffectParam* pToCompare);
+	void DoApplyDynamicParams(const REffectState& state, const REffectParam* pEffectParams);
+	void DoApplyInstancedParams(const REffectState& state, const REffectParam* pEffectParams);
+
+	void DoBeginTechnique(const REffectState& state);
+	void DoBeginPass(const REffectState& state);
+	
 	void DoEndTechnique();
 	void DoEndPass();
 	uint DoGetNumOfPasses(uint techIndex);

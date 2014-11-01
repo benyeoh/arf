@@ -41,8 +41,8 @@ namespace MaterialEditor
             ARFManaged.CoreMemoryManaged.MemAllocator memAlloc = ARFManaged.CoreMemoryManaged.Main.CreateMemAllocator();
 
             ARFManaged.CoreManaged.Main.Initialize(memAlloc);
-            ARFManaged.RendererManaged.Main.Initialize("RendererD3D.dll", memAlloc);
-            ARFManaged.MaterialGenManaged.Main.Initialize("MaterialGenD3D.dll", memAlloc);
+            ARFManaged.RendererManaged.Main.Initialize("Renderer.dll", memAlloc);
+            ARFManaged.MaterialGenManaged.Main.Initialize("MaterialGen.dll", memAlloc);
 
             //ResolveEventHandler translator = new ResolveEventHandler(CurrentDomain_TypeResolveEventHandler);
             //AppDomain.CurrentDomain.TypeResolve += translator;

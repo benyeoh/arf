@@ -78,13 +78,9 @@ void CDEFXLightGroup::Flush()
 		m_pGroup->AddToList(m_Contexts[i].pContext->GetDataBuffer(), m_Contexts[i].pContext->GetNumUsedData());
 	}
 
-	m_pDeferredStencil->GetTemplate()->BeginTechnique(2);
-	m_pDeferredStencil->GetTemplate()->BeginPass(0);
-
+	m_pDeferredStencil->ApplyRenderState(2, NULL);
 	m_pGroup->Flush();
-
-	m_pDeferredStencil->GetTemplate()->EndPass();
-	m_pDeferredStencil->GetTemplate()->EndTechnique();
+	m_pDeferredStencil->ResetRenderState();
 
 	m_pGroup->Reset();
 

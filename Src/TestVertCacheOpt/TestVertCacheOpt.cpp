@@ -91,10 +91,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	MemAllocFns allocFns = GetCoreMemoryBindings();
 	_BIND_TO_GLOBAL_ALLOC(allocFns);
 
-	Module hRenderer	= InitializeModule(_W("RendererD3D.dll"), &allocFns);
-	Module hFileSystem	= InitializeModule(_W("FileSystemWin32.dll"), &allocFns);
+	Module hRenderer	= InitializeModule(_W("Renderer.dll"), &allocFns);
+	Module hFileSystem	= InitializeModule(_W("FileSystem.dll"), &allocFns);
 	Module hBaseFX		= InitializeModule(_W("BaseFX.dll"), &allocFns);
-	Module hMatGen		= InitializeModule(_W("MaterialGenD3D.dll"), &allocFns);
+	Module hMatGen		= InitializeModule(_W("MaterialGen.dll"), &allocFns);
 		
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) GetFunction(hFileSystem, "CreateFileSystem");
 	g_pFileSystem = CreateFileSystem();

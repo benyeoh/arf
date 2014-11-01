@@ -27,9 +27,9 @@ CREffectTemplate::GetInstancedParamSemantic(uint techIndex, uint paramIndex)
 }
 	
 void 
-CREffectTemplate::ApplyInstancedParams(const REffectParam* pEffectParams)
+CREffectTemplate::ApplyInstancedParams(const REffectState& state, const REffectParam* pEffectParams)
 {
-	DoApplyInstancedParams(pEffectParams);
+	DoApplyInstancedParams(state, pEffectParams);
 }
 	
 uint 
@@ -51,17 +51,18 @@ CREffectTemplate::GetDynamicParamType(uint techIndex, uint paramIndex)
 }
 
 void 
-CREffectTemplate::ApplyDynamicParams(const REffectParam* pEffectParams, 
+CREffectTemplate::ApplyDynamicParams(const REffectState& state, 
+									 const REffectParam* pEffectParams, 
 									 const REffectParam* pToCompare)
 {
-	DoApplyDynamicParams(pEffectParams, pToCompare);
+	DoApplyDynamicParams(state, pEffectParams, pToCompare);
 	_INC_METRIC(m_pRenderer, numApplyDynamicParam);
 }
 
 void 
-CREffectTemplate::ApplyDynamicParams(const REffectParam* pEffectParams)
+CREffectTemplate::ApplyDynamicParams(const REffectState& state, const REffectParam* pEffectParams)
 {
-	DoApplyDynamicParams(pEffectParams);
+	DoApplyDynamicParams(state, pEffectParams);
 	_INC_METRIC(m_pRenderer, numApplyDynamicParam);
 }
 	
@@ -78,9 +79,9 @@ CREffectTemplate::GetConstantParamSemantic(uint paramIndex)
 }
 
 void 
-CREffectTemplate::ApplyConstantParams(const REffectParam* pEffectParams)
+CREffectTemplate::ApplyConstantParams(const REffectState& state, const REffectParam* pEffectParams)
 {
-	DoApplyConstantParams(pEffectParams);
+	DoApplyConstantParams(state, pEffectParams);
 	_INC_METRIC(m_pRenderer, numApplyConstantParam);
 }
 
@@ -137,16 +138,16 @@ CREffectTemplate::GetConstantParamIndex(uint semantic)
 //}
 
 void 
-CREffectTemplate::BeginTechnique(uint techIndex)
+CREffectTemplate::BeginTechnique(const REffectState& state)
 {
-	DoBeginTechnique(techIndex);
+	DoBeginTechnique(state);
 	_INC_METRIC(m_pRenderer, numBeginTechnique);
 }
 
 void 
-CREffectTemplate::BeginPass(uint passIndex)
+CREffectTemplate::BeginPass(const REffectState& state)
 {
-	DoBeginPass(passIndex);
+	DoBeginPass(state);
 	_INC_METRIC(m_pRenderer, numBeginPass);
 }
 

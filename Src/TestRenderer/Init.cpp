@@ -14,7 +14,7 @@
 boolean InitFileSystem()
 {
 	// Load Win32 Platform
-	g_hFileSystem = InitializeModule(_W("FileSystemWin32.dll"), &g_MemAllocFns);
+	g_hFileSystem = InitializeModule(_W("FileSystem.dll"), &g_MemAllocFns);
 	if(!g_hFileSystem) return FALSE;
 
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) GetFunction(g_hFileSystem, "CreateFileSystem");
@@ -36,7 +36,7 @@ boolean InitFileSystem()
 boolean InitInput()
 {
 	// Load Win32 Platform
-	g_hInput = InitializeModule(_W("InputWin32.dll"), &g_MemAllocFns);
+	g_hInput = InitializeModule(_W("Input.dll"), &g_MemAllocFns);
 	if(!g_hInput) return FALSE;
 
 	CreateInputFn CreateInput = (CreateInputFn) GetFunction(g_hInput, "CreateInput");
@@ -52,7 +52,7 @@ boolean InitInput()
 
 boolean InitRenderer()
 {
-	g_hRenderer = InitializeModule(_W("RendererD3D.dll"), &g_MemAllocFns);
+	g_hRenderer = InitializeModule(_W("Renderer.dll"), &g_MemAllocFns);
 	if(!g_hRenderer ) return FALSE;
 
 	CreateRendererFn CreateRendererD3D = (CreateRendererFn) GetFunction(g_hRenderer, "CreateRenderer");
@@ -119,7 +119,7 @@ boolean InitRenderer()
 
 boolean InitPlatform()
 {
-	g_hPlatform = InitializeModule(_W("PlatformWin32.dll"), &g_MemAllocFns);
+	g_hPlatform = InitializeModule(_W("Platform.dll"), &g_MemAllocFns);
 	if(!g_hPlatform ) return FALSE;
 
 	CreatePlatformFn createPlatform = (CreatePlatformFn) GetFunction(g_hPlatform, "CreatePlatform");

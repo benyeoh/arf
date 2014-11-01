@@ -356,9 +356,7 @@ CSEFXPipeline::BeginRenderGroup(uint groupNum)
 
 		case SEFX_GROUP_OCCLUDER_ACCUM:
 		{
-			IREffectTemplate* pTemplate = m_pOcclAccumPipeSetup->GetTemplate();
-			pTemplate->BeginTechnique(0);
-			pTemplate->BeginPass(0);
+			m_pOcclAccumPipeSetup->ApplyRenderState(0, NULL);
 			break;
 		}
 
@@ -383,9 +381,7 @@ CSEFXPipeline::EndRenderGroup(uint groupNum)
 
 		case SEFX_GROUP_OCCLUDER_ACCUM:
 		{
-			IREffectTemplate* pTemplate = m_pOcclAccumPipeSetup->GetTemplate();
-			pTemplate->EndPass();
-			pTemplate->EndTechnique();
+			m_pOcclAccumPipeSetup->ResetRenderState();
 
 			m_OcclGroup	= BFX_INVALID;
 			m_OpPool.Reset();
