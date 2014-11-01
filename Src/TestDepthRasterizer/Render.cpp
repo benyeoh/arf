@@ -942,9 +942,9 @@ void RenderAll()
 		// Render software
        // RenderSWCube(&(g_CubeWorldViewProj[0]));
         //RenderSWCubesST();
-        //RenderSWCubeInt();
-        //RenderSWCubesIntST();
-        RenderQuadInt();
+        RenderSWCubeInt();
+       // RenderSWCubesIntST();
+        //RenderQuadInt();
 		//RenderQuad();
         
 		//gmtl::VecA4f pos1;
