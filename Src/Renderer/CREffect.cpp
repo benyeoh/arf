@@ -125,4 +125,26 @@ CREffect::operator =(const CREffect& toAssign)
 	return *this;
 }
 
+void CREffect::ApplyRenderState(uint techIndex, REffectParam* pDynamicParams)
+{
+	REffectState state;
+	state.pass = 0;
+	state.tech = techIndex;
+
+	m_pTemplate->BeginTechnique(state);
+	m_pTemplate->BeginPass(state);
+	
+	if(GetNumOfParams() > 0)
+		m_pTemplate->ApplyConstantParams(state, GetParams());
+	
+	if(pDynamicParams)
+		m_pTemplate->ApplyDynamicParams(state, pDynamicParams);
+}
+
+void CREffect::ResetRenderState()
+{
+	m_pTemplate->EndPass();
+	m_pTemplate->EndTechnique();
+}
+
 _NAMESPACE_END

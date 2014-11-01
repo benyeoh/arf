@@ -327,14 +327,11 @@ CBFXPipeline::FlushAlphaBlendedGroup()
 
 	if(m_pAlphaBlended->GetNumOfDrawOps() > 0)
 	{
-		IREffectTemplate* pEffectTemplate = m_pTransSetupEffect->GetTemplate();
-		pEffectTemplate->BeginTechnique(0);
-		pEffectTemplate->BeginPass(0);
+		m_pTransSetupEffect->ApplyRenderState(0, NULL);
 
 		m_pAlphaBlended->Flush();
 
-		pEffectTemplate->EndPass();
-		pEffectTemplate->EndTechnique();
+		m_pTransSetupEffect->ResetRenderState();
 	}
 
 	m_pAlphaBlended->Reset();

@@ -296,7 +296,7 @@ boolean Initialize()
 	ShowWindow(hWnd, SW_HIDE);
 	
 	// Load Win32 File system
-	g_hFileSystem = ::LoadLibrary(_W("FileSystemWin32.dll"));
+	g_hFileSystem = ::LoadLibrary(_W("FileSystem.dll"));
 	if(!g_hFileSystem) return FALSE;
 
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) ::GetProcAddress(g_hFileSystem, "CreateFileSystem");
@@ -330,7 +330,7 @@ boolean Initialize()
 	g_pFileSystem->AddMnemonic(_W("shd"), _W("data\\shaders"));
 	g_pFileSystem->AddMnemonic(_W("mat"), _W("data\\materials"));
 	
-	g_hRenderer = ::LoadLibrary(_W("RendererD3D.dll"));
+	g_hRenderer = ::LoadLibrary(_W("Renderer.dll"));
 	if(!g_hRenderer ) return FALSE;
 
 	CreateRendererFn CreateRendererD3D = (CreateRendererFn)::GetProcAddress(g_hRenderer, "CreateRenderer");
@@ -360,7 +360,7 @@ boolean Initialize()
 	}
 	
 	IMGMaterialGen* pGen = NULL;
-	g_hMatGen = LoadDLL(&pGen, _W("MaterialGenD3D.dll"), "CreateMaterialGen");
+	g_hMatGen = LoadDLL(&pGen, _W("MaterialGen.dll"), "CreateMaterialGen");
 	
 	g_pMatGen = pGen;	
 	g_pMatGen->Initialize(g_RFeedback);

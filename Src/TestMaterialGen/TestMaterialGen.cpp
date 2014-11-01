@@ -27,7 +27,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	AppCallback* pCallback = _NEW AppCallback;
 	
-	Module hFileSystem = InitializeModule(_W("FileSystemWin32.dll"), &allocFns);
+	Module hFileSystem = InitializeModule(_W("FileSystem.dll"), &allocFns);
 
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) GetFunction(hFileSystem, "CreateFileSystem");
 
@@ -41,7 +41,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	g_pFileSystem->AddMnemonic(_W("tex"), _W("data\\textures"));
 	g_pFileSystem->AddMnemonic(_W("dat"), _W("data"));
 
-	Module hMaterialGen = InitializeModule(_W("MaterialGenD3D.dll"), &allocFns);
+	Module hMaterialGen = InitializeModule(_W("MaterialGen.dll"), &allocFns);
 	
 	CreateMaterialGenFn CreateMaterialGen = (CreateMaterialGenFn) GetFunction(hMaterialGen, "CreateMaterialGen");
 	_DEBUG_ASSERT(CreateMaterialGen);

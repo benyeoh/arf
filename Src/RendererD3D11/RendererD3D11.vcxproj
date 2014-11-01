@@ -43,11 +43,13 @@
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>D:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;$(LibraryPath)</LibraryPath>
     <IncludePath>D:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(IncludePath)</IncludePath>
+    <TargetName>Renderer</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>D:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <TargetName>Renderer</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -83,6 +85,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CRDepthBufferD3D11.h" />
+    <ClInclude Include="CREffectTemplateD3D11.h" />
     <ClInclude Include="CRIndexBufferD3D11.h" />
     <ClInclude Include="CRRendererD3D11.h" />
     <ClInclude Include="CRResourceMgrD3D11.h" />
@@ -98,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CRDepthBufferD3D11.cpp" />
+    <ClCompile Include="CREffectTemplateD3D11.cpp" />
     <ClCompile Include="CRIndexBufferD3D11.cpp" />
     <ClCompile Include="CRRendererD3D11.cpp" />
     <ClCompile Include="CRResourceMgrD3D11.cpp" />

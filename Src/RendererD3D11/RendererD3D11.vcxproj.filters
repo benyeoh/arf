@@ -52,6 +52,9 @@
     <ClInclude Include="CRVertexBufferGroupD3D11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CREffectTemplateD3D11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RendererD3D11Framework.cpp" />
@@ -86,6 +89,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CRVertexBufferGroupD3D11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CREffectTemplateD3D11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -123,7 +123,7 @@ AllocateGlobalData()
 	//g_pFileSystem->AddMnemonic(_W("eff"), _W("data\\effects"));
 	//g_pFileSystem->AddMnemonic(_W("dat"), _W("data"));
 
-	//g_hRenderer = ::LoadLibrary(_W("RendererD3D.dll"));
+	//g_hRenderer = ::LoadLibrary(_W("Renderer.dll"));
 	//CreateRendererFn CreateRendererD3D = (CreateRendererFn)::GetProcAddress(g_hRenderer, "CreateRenderer");
 	//g_pRenderer = CreateRendererD3D();
 	//_DEBUG_ASSERT(g_pRenderer);	
@@ -204,7 +204,7 @@ InitializeMaterialGen()
 
 	if(!g_pMatGen)
 	{
-		g_hMatGen = InitializeModule(_W("MaterialGenD3D.dll"), NULL);
+		g_hMatGen = InitializeModule(_W("MaterialGen.dll"), NULL);
 		_DEBUG_ASSERT(g_hMatGen);
 
 		CreateMaterialGenFn CreateMaterialGen = (CreateMaterialGenFn) GetFunction(g_hMatGen, "CreateMaterialGen");

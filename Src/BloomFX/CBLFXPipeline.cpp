@@ -80,9 +80,7 @@ CBLFXPipeline::BeginRenderGroup(uint groupNum)
 	{
 		case BLFX_GROUP_BRIGHT_PASS_DOWN_SAMPLE:
 		{
-			IREffectTemplate* pEffectTemplate = m_p2DPipeSetupEffect->GetTemplate();
-			pEffectTemplate->BeginTechnique(0);
-			pEffectTemplate->BeginPass(0);	
+			m_p2DPipeSetupEffect->ApplyRenderState(0, NULL);
 			
 			// Do a blit here
 			m_pBloomFX->GetRenderer().GetBackBuffer(m_pBloomFX->GetDownSampledSource());
@@ -117,9 +115,7 @@ CBLFXPipeline::BeginRenderGroup(uint groupNum)
 		case BLFX_GROUP_STAR_V_COMPOSE:
 		case BLFX_GROUP_STAR_H_COMPOSE:
 		{
-			IREffectTemplate* pEffectTemplate = m_pAdditivePipeSetupEffect->GetTemplate();
-			pEffectTemplate->BeginTechnique(0);
-			pEffectTemplate->BeginPass(0);
+			m_pAdditivePipeSetupEffect->ApplyRenderState(0, NULL);
 			break;
 		}
 				
@@ -161,9 +157,7 @@ CBLFXPipeline::EndRenderGroup(uint groupNum)
 		case BLFX_GROUP_STAR_V_COMPOSE:
 		case BLFX_GROUP_STAR_H_COMPOSE:
 		{
-			IREffectTemplate* pEffectTemplate = m_pAdditivePipeSetupEffect->GetTemplate();
-			pEffectTemplate->EndPass();
-			pEffectTemplate->EndTechnique();
+			m_pAdditivePipeSetupEffect->ResetRenderState();
 			break;
 		}
 
@@ -173,9 +167,7 @@ CBLFXPipeline::EndRenderGroup(uint groupNum)
 			//pEffectTemplate->EndPass();
 			//pEffectTemplate->EndTechnique();
 			
-			IREffectTemplate* pEffectTemplate = m_p2DPipeSetupEffect->GetTemplate();
-			pEffectTemplate->EndPass();
-			pEffectTemplate->EndTechnique();
+			m_p2DPipeSetupEffect->ResetRenderState();
 			break;
 		}
 						

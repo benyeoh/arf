@@ -113,7 +113,7 @@ void PrintToFileDir(const gmtl::Vec3f* pSamples, uint numSamplesPerSide)
 boolean InitFileSystem()
 {
 	// Load Win32 Platform
-	g_hFileSystem = InitializeModule(_W("FileSystemWin32.dll"), NULL);
+	g_hFileSystem = InitializeModule(_W("FileSystem.dll"), NULL);
 	if(!g_hFileSystem) return FALSE;
 
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) GetFunction(g_hFileSystem, "CreateFileSystem");

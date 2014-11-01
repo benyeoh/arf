@@ -45,7 +45,7 @@ InitializeFileSystem()
 
 	if(!g_pFileSystem)
 	{
-		g_hFileSystem = InitializeModule(_W("FileSystemWin32.dll"), NULL);
+		g_hFileSystem = InitializeModule(_W("FileSystem.dll"), NULL);
 		_DEBUG_ASSERT(g_hFileSystem);
 
 		CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) GetFunction(g_hFileSystem, "CreateFileSystem");

@@ -91,7 +91,7 @@ void Uninitialize()
 boolean Initialize()
 {
 	// Load Win32 File system
-	g_hFileSystem = ::LoadLibrary(_W("FileSystemWin32.dll"));
+	g_hFileSystem = ::LoadLibrary(_W("FileSystem.dll"));
 	if(!g_hFileSystem) return FALSE;
 
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) ::GetProcAddress(g_hFileSystem, "CreateFileSystem");

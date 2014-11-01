@@ -14,7 +14,7 @@
 boolean InitFileSystem()
 {
 	// Load Win32 Platform
-	g_hFileSystem = ::LoadLibrary(_W("FileSystemWin32.dll"));
+	g_hFileSystem = ::LoadLibrary(_W("FileSystem.dll"));
 	if(!g_hFileSystem) return FALSE;
 
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) ::GetProcAddress(g_hFileSystem, "CreateFileSystem");
@@ -36,7 +36,7 @@ boolean InitFileSystem()
 boolean InitInput()
 {
 	// Load Win32 Platform
-	g_hInput = ::LoadLibrary(_W("InputWin32.dll"));
+	g_hInput = ::LoadLibrary(_W("Input.dll"));
 	if(!g_hInput) return FALSE;
 
 	CreateInputFn CreateInput = (CreateInputFn) ::GetProcAddress(g_hInput, "CreateInput");
@@ -52,7 +52,7 @@ boolean InitInput()
 
 boolean InitMatGen()
 {
-	g_hMatGen = ::LoadLibrary(_W("MaterialGenD3D.dll"));
+	g_hMatGen = ::LoadLibrary(_W("MaterialGen.dll"));
 	if(!g_hMatGen) return FALSE;
 
 	CreateMaterialGenFn CreateMaterialGen = (CreateMaterialGenFn)::GetProcAddress(g_hMatGen, "CreateMaterialGen");
@@ -80,7 +80,7 @@ boolean InitBaseFX()
 
 boolean InitRenderer()
 {
-	g_hRenderer = ::LoadLibrary(_W("RendererD3D.dll"));
+	g_hRenderer = ::LoadLibrary(_W("Renderer.dll"));
 	if(!g_hRenderer ) return FALSE;
 
 	CreateRendererFn CreateRendererD3D = (CreateRendererFn)::GetProcAddress(g_hRenderer, "CreateRenderer");
@@ -138,7 +138,7 @@ void InitFontFX()
 
 boolean InitPlatform()
 {
-	g_hPlatform = ::LoadLibrary(_W("PlatformWin32.dll"));
+	g_hPlatform = ::LoadLibrary(_W("Platform.dll"));
 	if(!g_hPlatform ) return FALSE;
 
 	CreatePlatformFn createPlatform = (CreatePlatformFn)::GetProcAddress(g_hPlatform, "CreatePlatform");

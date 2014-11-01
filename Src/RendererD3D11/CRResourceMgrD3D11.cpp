@@ -34,7 +34,7 @@ ID3D11Buffer* CRResourceMgrD3D11::CreateD3DVertexBuffer(uint bufferLen, D3D11_US
 	HRESULT hr = pDevice->CreateBuffer(&desc, NULL, &pBuffer);
 	_DEBUG_ASSERT(SUCCEEDED(hr));
 
-	pBuffer->AddRef();
+	//pBuffer->AddRef();
 
 	return pBuffer;
 }
@@ -62,7 +62,7 @@ ID3D11Buffer* CRResourceMgrD3D11::CreateD3DIndexBuffer(uint bufferLen, D3D11_USA
 	HRESULT hr = pDevice->CreateBuffer(&desc, NULL, &pBuffer);
 	_DEBUG_ASSERT(SUCCEEDED(hr));
 
-	pBuffer->AddRef();
+	//pBuffer->AddRef();
 
 	return pBuffer;
 }
@@ -173,3 +173,65 @@ ID3D11Buffer* CRResourceMgrD3D11::CreateOffscreenIB(const D3D11_BUFFER_DESC& des
 	return pIB;
 }
 
+void CRResourceMgrD3D11::ComputeInputLayoutKey(InputLayoutKey& dest, ID3D11VertexShader* pVS, D3D11_INPUT_ELEMENT_DESC* pDesc, uint numElems)
+{
+	// TODO: We use the vertex shader ptr and the vertex desc to check for the input layout
+	// But it should really be the input layout in the vertex shader
+	size_t vsPtr = (size_t) pVS;
+	_DEBUG_COMPILE_ASSERT((sizeof(D3D11_INPUT_ELEMENT_DESC) % sizeof(uint)) == 0);
+
+	uint curHash = MurmurHash3AccumInit();
+	_LOOPi(sizeof(size_t) / sizeof(uint))
+	{
+		uint* pData = (uint*) &vsPtr;
+		curHash = MurmurHashAccum(pData[i], curHash);
+	}
+
+	uint totalNumData = numElems * (sizeof(D3D11_INPUT_ELEMENT_DESC) / sizeof(uint));
+	_LOOPi(totalNumData)
+	{
+		uint* pData = (uint*) pDesc;
+		curHash = MurmurHashAccum(pData[i], curHash);
+	}
+
+	uint hashVal = MurmurHashAccumEnd(curHash, totalNumData);
+
+	dest.hashVal = hashVal;
+	dest.numElems = numElems;
+	dest.vsPtr = vsPtr;
+	_LOOPi(numElems)
+	{
+		dest.desc[i] = pDesc[i];
+	}
+}
+
+void CRResourceMgrD3D11::RemoveInputLayout(ID3D11VertexShader* pKey, D3D11_INPUT_ELEMENT_DESC* pDesc, uint numElems)
+{
+	InputLayoutKey inputLayoutKey;
+	ComputeInputLayoutKey(inputLayoutKey, pKey, pDesc, numElems);
+	
+	m_InputLayoutMap.Remove(inputLayoutKey);
+}
+
+ID3D11InputLayout* CRResourceMgrD3D11::CreateInputLayout(CREffectTemplateD3D11* pTemplate, D3D11_INPUT_ELEMENT_DESC* pDesc, uint numElems)
+{
+	InputLayoutKey inputLayoutKey;
+	ComputeInputLayoutKey(inputLayoutKey, pTemplate->GetVertexShader(), pDesc, numElems);
+
+	// Create an input layout 
+	ID3D11InputLayout** ppInputLayout = m_InputLayoutMap.Get(inputLayoutKey);
+	if(!ppInputLayout)
+	{
+		void* pShaderByteCode = pTemplate->GetVertexShaderByteCode();
+		uint byteCodeLength = pTemplate->GetVertexShaderByteCodeLength();
+
+		ID3D11Device* pDevice = ((CRRendererD3D11*)m_pRenderer)->GetDevice();
+		ID3D11InputLayout* pInputLayout;
+		HRESULT hr = pDevice->CreateInputLayout(pDesc, numElems, pShaderByteCode, byteCodeLength, ppInputLayout);
+		_DEBUG_ASSERT(SUCCEEDED(hr));
+
+		m_InputLayoutMap.Add(inputLayoutKey, *ppInputLayout);
+	}
+
+	return *pInputLayout;
+}

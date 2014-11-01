@@ -14,7 +14,7 @@
 boolean InitFileSystem()
 {
 	// Load Win32 Platform
-	g_hFileSystem = InitializeModule(_W("FileSystemWin32.dll"), &g_MemAllocFns);
+	g_hFileSystem = InitializeModule(_W("FileSystem.dll"), &g_MemAllocFns);
 	if(!g_hFileSystem) return FALSE;
 
 	CreateFileSystemFn CreateFileSystem = (CreateFileSystemFn) GetFunction(g_hFileSystem, "CreateFileSystem");
@@ -36,7 +36,7 @@ boolean InitFileSystem()
 boolean InitInput()
 {
 	// Load Win32 Platform
-	g_hInput = InitializeModule(_W("InputWin32.dll"), &g_MemAllocFns);
+	g_hInput = InitializeModule(_W("Input.dll"), &g_MemAllocFns);
 	if(!g_hInput) return FALSE;
 
 	CreateInputFn CreateInput = (CreateInputFn) GetFunction(g_hInput, "CreateInput");
@@ -52,7 +52,7 @@ boolean InitInput()
 
 boolean InitMatGen()
 {
-	g_hMatGen = InitializeModule(_W("MaterialGenD3D.dll"), &g_MemAllocFns);
+	g_hMatGen = InitializeModule(_W("MaterialGen.dll"), &g_MemAllocFns);
 	if(!g_hMatGen) return FALSE;
 
 	CreateMaterialGenFn CreateMaterialGen = (CreateMaterialGenFn) GetFunction(g_hMatGen, "CreateMaterialGen");
@@ -116,7 +116,7 @@ void InitShadowFX()
 
 boolean InitRenderer()
 {
-	g_hRenderer = InitializeModule(_W("RendererD3D.dll"), &g_MemAllocFns);
+	g_hRenderer = InitializeModule(_W("Renderer.dll"), &g_MemAllocFns);
 	if(!g_hRenderer ) return FALSE;
 
 	CreateRendererFn CreateRendererD3D = (CreateRendererFn) GetFunction(g_hRenderer, "CreateRenderer");
@@ -183,7 +183,7 @@ void InitFontFX()
 
 boolean InitPlatform()
 {
-	g_hPlatform = InitializeModule(_W("PlatformWin32.dll"), &g_MemAllocFns);
+	g_hPlatform = InitializeModule(_W("Platform.dll"), &g_MemAllocFns);
 	if(!g_hPlatform ) return FALSE;
 
 	CreatePlatformFn createPlatform = (CreatePlatformFn) GetFunction(g_hPlatform, "CreatePlatform");
@@ -513,6 +513,33 @@ void InitAppHelpers()
 			    AHEntity* pEntity = CreateEntity(_W("[msh]\\TestAppHelpers\\floor.mls"), gmtl::VecA3f(curX, 0.0f, curY), gmtl::VecA3f(0.0f, 0.0f, 1.0f));
                 AHRenderComponent* pComp = (AHRenderComponent*) pEntity->GetComponent(COMP_RENDER);
                 pCachedMeshList = pComp->GetMeshList();
+
+				//IFFilePtr pFile = g_pFileSystem->GetFile(_W("[shd]\\TestAppHelpers\\TestAppHelpersAccumSelfIllumInst.mgp"));
+				//IByteBufferPtr pSave = _NEW CByteBuffer();
+				//AppendData(pSave, pFile);
+
+				//CRCDataKey key;
+				//wstring fileName = _W("[shd]\\TestAppHelpers\\TestAppHelpersAccumSelfIllumInst.mgp");
+				//key.Set(fileName.c_str(), (uint) (sizeof(wchar) * fileName.length()));
+				//IBFXMaterialGroupTemplate* pMatTemplate = g_pBaseFX->GetResourceMgr().CreateMaterialGroupTemplate(&key, pSave, _W("[shd]\\TestAppHelpers\\TestAppHelpersAccumSelfIllumInst.mgp"));
+
+				//REffectParam params[256];
+				//uint semantics[256];
+				//_LOOP(paramIndex, pCachedMeshList->meshes[0].pMatGroup->GetNumOfParams())
+				//{
+				//	pCachedMeshList->meshes[0].pMatGroup->GetParam(paramIndex, params[paramIndex]);
+				//	semantics[paramIndex] = pCachedMeshList->meshes[0].pMatGroup->GetSemantic(paramIndex);
+				//}
+
+				//ComputeBFXMatGroupTemplateDataKey(pMatTemplate, params, pCachedMeshList->meshes[0].pMatGroup->GetNumOfParams(), key);
+				//pCachedMeshList->meshes[0].pMatGroup = g_pBaseFX->GetResourceMgr().CreateMaterialGroup(&key, pMatTemplate, params, semantics, pCachedMeshList->meshes[0].pMatGroup->GetNumOfParams());
+
+				//pFile = g_pFileSystem->GetFile(_W("[msh]\\TestAppHelpers\\floor_inst.mls"));
+				//pSave->SetDataLength(0);
+				//SaveBFXUMeshList(pCachedMeshList, pSave);
+				//pFile->Open(FO_WRITE_ONLY);
+				//pFile->Write(pSave->GetData(), pSave->GetDataLength());
+				//pFile->Close();
             }
             else
             {

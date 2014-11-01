@@ -312,9 +312,7 @@ CSAOFXPipeline::BeginRenderGroup(uint groupNum)
     {
         case SAOFX_GROUP_AO:
         {
-            IREffectTemplate* pTemplate = m_p2DEffect->GetTemplate();
-            pTemplate->BeginTechnique(0);
-            pTemplate->BeginPass(0);     
+            m_p2DEffect->ApplyRenderState(0, NULL);  
             break;
         }
 
@@ -362,10 +360,8 @@ CSAOFXPipeline::EndRenderGroup(uint groupNum)
 
         case SAOFX_GROUP_UPSAMPLE:
         {            
-            IREffectTemplate* pTemplate = m_p2DEffect->GetTemplate();
-            pTemplate->EndPass();
-            pTemplate->EndTechnique();
-
+			m_p2DEffect->ResetRenderState();
+            
             m_UpsampleGroup = BFX_INVALID;
             break;
         }

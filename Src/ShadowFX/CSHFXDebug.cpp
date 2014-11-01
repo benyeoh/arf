@@ -195,16 +195,14 @@ CSHFXDebug::RenderCascSM(const gmtl::Vec4f& screenSpacePos, const IRTexture2D* p
 	m_pDebugGroup->AddDrawOp(m_pQuadVBGroup, m_pQuadIB, m_pSMDebugEffect, effectParams, 0, RVarData());	
 
 	// Draw now
-	IREffectTemplate* pEffectTemplate = m_p2DPipeSetupEffect->GetTemplate();
-	pEffectTemplate->BeginTechnique(0);
-	pEffectTemplate->BeginPass(0);
+	m_p2DPipeSetupEffect->ApplyRenderState(0, NULL);
 
 	m_pDebugGroup->Flush();
 	m_pDebugGroup->Reset();
 
-	pEffectTemplate->EndPass();
-	pEffectTemplate->EndTechnique();
+	m_p2DPipeSetupEffect->ResetRenderState();
 }
+
 void 
 CSHFXDebug::RenderPLSM(const gmtl::Vec4f& screenSpacePos, const IRTexture2D* pPLSM)
 {
@@ -300,15 +298,12 @@ CSHFXDebug::RenderPLSM(const gmtl::Vec4f& screenSpacePos, const IRTexture2D* pPL
 	m_pDebugGroup->AddDrawOp(m_pQuadVBGroup, m_pQuadIB, m_pSMDebugEffect, effectParams, 0, RVarData());
 
 	// Draw now
-	IREffectTemplate* pEffectTemplate = m_p2DPipeSetupEffect->GetTemplate();
-	pEffectTemplate->BeginTechnique(0);
-	pEffectTemplate->BeginPass(0);
+	m_p2DPipeSetupEffect->ApplyRenderState(0, NULL);
 
 	m_pDebugGroup->Flush();
 	m_pDebugGroup->Reset();
 
-	pEffectTemplate->EndPass();
-	pEffectTemplate->EndTechnique();
+	m_p2DPipeSetupEffect->ResetRenderState();
 }
 
 

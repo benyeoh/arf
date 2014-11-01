@@ -38,6 +38,9 @@ public:
 	void SetTemplate(CREffectTemplate* pTemplate);	
 	IREffectTemplate* GetTemplate();	
 	
+	void ApplyRenderState(uint techIndex, REffectParam* pDynamicParams);
+	void ResetRenderState();
+
 	void SetParam(const REffectParam& param, uint index);
 	uint GetNumOfParams() const;
 	const REffectParam* GetParam(uint index) const;

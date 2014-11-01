@@ -11,7 +11,6 @@
 
 #include "stdafx.h"
 
-
 void FastDepthClear()
 {
     //_DEBUG_ASSERT((RASTERIZE_BUFFER_W & 0xF) == 0);
@@ -117,10 +116,10 @@ void CubeVertexTransformBatchInt(const gmtl::MatrixA44f& worldViewProj, const fl
         xmm2 = _mm_add_ps(xmm2, xmm7);
         xmm0 = _mm_add_ps(xmm0, xmm2);
 
-        __m128 notNearClip = _mm_cmpge_ps( _mm_shuffle_ps(xmm0, xmm0, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setzero_ps() );
-        __m128 wRcp = ( _mm_shuffle_ps(xmm0, xmm0, _MM_SHUFFLE(3, 3, 3, 3)) );
-        xmm0 = _mm_div_ps( xmm0, wRcp );
-        xmm0 = _mm_and_ps( xmm0, notNearClip );
+        //__m128 notNearClip = _mm_cmpge_ps( _mm_shuffle_ps(xmm0, xmm0, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setzero_ps() );
+        //__m128 wRcp = ( _mm_shuffle_ps(xmm0, xmm0, _MM_SHUFFLE(3, 3, 3, 3)) );
+        //xmm0 = _mm_div_ps( xmm0, wRcp );
+        //xmm0 = _mm_and_ps( xmm0, notNearClip );
 
         _mm_store_ps(pOut, xmm0);
 
@@ -160,15 +159,15 @@ void CubeVertexTransformBatchInt(const gmtl::MatrixA44f& worldViewProj, const fl
         xmm2 = _mm_add_ps(xmm2, xmm7);		
         xmm3 = _mm_add_ps(xmm3, xmm7);
 
-        __m128 notNearClip = _mm_cmpge_ps( _mm_shuffle_ps(xmm2, xmm2, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setzero_ps() );
-        __m128 wRcp = ( _mm_shuffle_ps(xmm2, xmm2, _MM_SHUFFLE(3, 3, 3, 3)) );
-        xmm2 = _mm_div_ps( xmm2, wRcp );
-        xmm2 = _mm_and_ps( xmm2, notNearClip );
+        //__m128 notNearClip = _mm_cmpge_ps( _mm_shuffle_ps(xmm2, xmm2, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setzero_ps() );
+        //__m128 wRcp = ( _mm_shuffle_ps(xmm2, xmm2, _MM_SHUFFLE(3, 3, 3, 3)) );
+        //xmm2 = _mm_div_ps( xmm2, wRcp );
+        //xmm2 = _mm_and_ps( xmm2, notNearClip );
 
-        notNearClip = _mm_cmpge_ps( _mm_shuffle_ps(xmm3, xmm3, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setzero_ps() );
-        wRcp = ( _mm_shuffle_ps(xmm3, xmm3, _MM_SHUFFLE(3, 3, 3, 3)) );
-        xmm3 = _mm_div_ps( xmm3, wRcp );
-        xmm3 = _mm_and_ps( xmm3, notNearClip );
+        //notNearClip = _mm_cmpge_ps( _mm_shuffle_ps(xmm3, xmm3, _MM_SHUFFLE(2, 2, 2, 2)), _mm_setzero_ps() );
+        //wRcp = ( _mm_shuffle_ps(xmm3, xmm3, _MM_SHUFFLE(3, 3, 3, 3)) );
+        //xmm3 = _mm_div_ps( xmm3, wRcp );
+        //xmm3 = _mm_and_ps( xmm3, notNearClip );
 
         _mm_store_ps(pOut, xmm2);
         _mm_store_ps(pOut + outPosStride, xmm3);
@@ -304,8 +303,6 @@ struct RenderJobInt : public IPRunnable
     int binIndex;
     int Run()
     {
-        //_mm_setcsr( _mm_getcsr() | 0x8040 );
-
         TilesRasterizeDepthUnrollXInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, NUM_BIN_CONTEXTS>
             (&(g_pTriBins[binIndex]), &(g_pNumTrisInBins[binIndex]), g_pRasterizeDepthBuffer, binIndex % NUM_BINS_X, binIndex / NUM_BINS_X);
 
@@ -384,7 +381,7 @@ struct TransformAndSetupIntJob : public IPRunnable
 
     int Run()
     {
-        _mm_setcsr( _mm_getcsr() | 0x8040 );
+		//_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
         _DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_W % BIN_WIDTH) == 0 );
         _DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_H % BIN_HEIGHT) == 0 );
@@ -410,6 +407,11 @@ struct TransformAndSetupIntJob : public IPRunnable
             CubeVertexTransformBatchInt(cubeWorldViewProj, g_CubeVertices, CUBE_VERTEX_STRIDE, &postCubeVertices[i * 4 * NUM_CUBE_VERTICES], 4, NUM_CUBE_VERTICES);
             TriangleSetupDepthIntBatch<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H>((gmtl::VecA4f*) &(postCubeVertices[i * 4 * NUM_CUBE_VERTICES]), g_CubeIndices, 12, pTriBins, pNumTrisInBins);
         }
+
+		//_LOOPi(numCubes)
+		//{
+		//	TriangleSetupDepthIntBatch<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H>((gmtl::VecA4f*) &(postCubeVertices[i * 4 * NUM_CUBE_VERTICES]), g_CubeIndices, 12, pTriBins, pNumTrisInBins);
+		//}
 
         return 0;
     }
@@ -524,8 +526,8 @@ void RenderSWCube(const gmtl::MatrixA44f* pCubeWorldViewProj)
 
 void RenderSWCubesST()
 {
-    _mm_setcsr( _mm_getcsr() | 0x8040 );
-
+	//_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+   
     double swStart = g_pPlatform->GetTimer().GetTime();
 
     _LOOPi(NUM_CUBES)
@@ -758,14 +760,28 @@ void RenderQuad()
 
 void RenderQuadInt()
 {
-    //gmtl::VecA4f pos1;
-    //pos1[0] = -1.0f; pos1[1] = 1.0f; pos1[2] = 0.997f; pos1[3] = 1.0f;
-    //gmtl::VecA4f pos2;
-    //pos2[0] = 1.0f; pos2[1] = 1.0f; pos2[2] = 0.997f; pos2[3] = 1.0f;
-    //gmtl::VecA4f pos3;
-    //pos3[0] = -1.0f; pos3[1] = -1.0f; pos3[2] = 0.997f; pos3[3] = 1.0f;
-    //gmtl::VecA4f pos4;
-    //pos4[0] = 1.0f; pos4[1] = -1.0f; pos4[2] = 0.997f; pos4[3] = 1.0f;
+	_DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_W % BIN_WIDTH) == 0 );
+	_DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_H % BIN_HEIGHT) == 0 );
+
+	double swStart = g_pPlatform->GetTimer().GetTime();
+
+	memset(g_pNumTrisInBins, 0, NUM_BINS_Y * NUM_BINS_X * 1 * sizeof(uint));
+
+	const static float PLANE_SIZE = 120.00f;
+
+    gmtl::VecA4f pos[4];
+    pos[0][0] = -PLANE_SIZE; pos[0][1] = -5.0f; pos[0][2] = -PLANE_SIZE; pos[0][3] = 1.0f;
+    pos[1][0] = PLANE_SIZE; pos[1][1] = -5.0f; pos[1][2] = -PLANE_SIZE; pos[1][3] = 1.0f;
+ 	pos[2][0] = PLANE_SIZE; pos[2][1] = -5.0f; pos[2][2] = PLANE_SIZE; pos[2][3] = 1.0f;
+    pos[3][0] = -PLANE_SIZE; pos[3][1] = -5.0f; pos[3][2] = PLANE_SIZE; pos[3][3] = 1.0f;
+
+	//gmtl::VecA4f pos[4];
+	//pos[0][0] = -1.0f; pos[0][1] = 1.0f; pos[0][2] = 0.9f; pos[0][3] = 1.0f;
+	//pos[1][0] = 1.0f; pos[1][1] = 1.0f; pos[1][2] = 0.9f; pos[1][3] = 1.0f;
+	//pos[2][0] = 1.0f; pos[2][1] = -1.0f; pos[2][2] = 0.9f; pos[2][3] = 1.0f;
+	//pos[3][0] = -1.0f; pos[3][1] = -1.0f; pos[3][2] = 0.9f; pos[3][3] = 1.0f;	
+
+	ushort indices[6] = { 0, 1, 2, 0, 2, 3 };
 
     //_DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_W % BIN_WIDTH) == 0 );
     //_DEBUG_COMPILE_ASSERT( (RASTERIZE_BUFFER_H % BIN_HEIGHT) == 0 );
@@ -783,30 +799,31 @@ void RenderQuadInt()
 
     ////MatMatMult(&wvpViewport, &viewportMat, &cubeWorldViewProj);
 
-    //_LOOPi(NUM_CUBES)
-    //{
-    //    const gmtl::MatrixA44f& cubeWorldViewProj = g_CubeWorldViewProj[i];
+	gmtl::MatrixA44f viewProj;
+	MatMatMult(&viewProj, &g_Proj, &g_View);
+	TransformVecW1(&viewProj, &pos[0], &pos[0]);
+	TransformVecW1(&viewProj, &pos[1], &pos[1]);
+	TransformVecW1(&viewProj, &pos[2], &pos[2]);
+	TransformVecW1(&viewProj, &pos[3], &pos[3]);
 
-    //    // Transform also to viewport space
-    //   // gmtl::MatrixA44f wvpViewport;
-    //    //MatMatMult(&wvpViewport, &viewportMat, &cubeWorldViewProj);
+    TriangleSetupDepthIntBatch<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H>((gmtl::VecA4f*) &(pos[0]), indices, 2, g_pTriBins, g_pNumTrisInBins);
 
-    //    CubeVertexTransformBatchInt(cubeWorldViewProj, g_CubeVertices, CUBE_VERTEX_STRIDE, &postCubeVertices[i * 4 * NUM_CUBE_VERTICES], 4, NUM_CUBE_VERTICES);
-    //    TriangleSetupDepthIntBatch<BIN_WIDTH, BIN_WIDTH, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H>((gmtl::VecA4f*) &(postCubeVertices[i * 4 * NUM_CUBE_VERTICES]), g_CubeIndices, 12, g_pTriBins, g_pNumTrisInBins);
-    //}
+	g_NumTriangles = 0;
 
-    //_LOOPi(NUM_BINS_Y)
-    //{
-    //    _LOOPj(NUM_BINS_X)
-    //    {
-    //        TilesRasterizeDepthInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, 1>(g_pTriBins, g_pNumTrisInBins, g_pRasterizeDepthBuffer, j, i);
-    //    }
-    //}
+	_LOOPi(NUM_BINS_Y)
+	{
+		_LOOPj(NUM_BINS_X)
+		{
+			TilesRasterizeDepthUnrollXInt<BIN_WIDTH, BIN_HEIGHT, RASTERIZE_BUFFER_W, RASTERIZE_BUFFER_H, 1>(&(g_pTriBins[i*NUM_BINS_X+j]), &(g_pNumTrisInBins[i*NUM_BINS_X+j]), g_pRasterizeDepthBuffer, j, i);
+			g_NumTriangles += g_pNumTrisInBins[i*NUM_BINS_X+j];
+		}
+	}
 
+	g_SWTimeElapsed += (g_pPlatform->GetTimer().GetTime() - swStart);
+	g_SWTimeElapsedPrevious[g_CurSWTimeIndex % NUM_AVG_TIMES] = g_SWTimeElapsed;
+	g_CurSWTimeIndex++;
 
-    //g_SWQuadTimeElapsed +=  (float) (g_pPlatform->GetTimer().GetTime() - timeStart);
-
-    //UntileDepthBuffer();
+	UntileDepthBuffer();
 }
 
 void RenderStats()
@@ -890,7 +907,7 @@ void RenderAll()
 	g_SWQuadTimeElapsed = 0;
 
 	memset(g_pRasterizeBuffer, 0, sizeof(byte) * RASTERIZE_BUFFER_W * RASTERIZE_BUFFER_H);
-	//FastDepthClear();
+	FastDepthClear();
 
 	g_CurIndex += g_IncRate * g_TimeDT;
 	if(g_CurIndex >= 4.0f)
@@ -923,11 +940,12 @@ void RenderAll()
 
 
 		// Render software
-        //RenderSWCube(&(g_CubeWorldViewProj[0]));
+       // RenderSWCube(&(g_CubeWorldViewProj[0]));
         //RenderSWCubesST();
-        RenderSWCubeInt();
+        //RenderSWCubeInt();
         //RenderSWCubesIntST();
-        //RenderQuad();
+        RenderQuadInt();
+		//RenderQuad();
         
 		//gmtl::VecA4f pos1;
 		//pos1[0] = -1.0f; pos1[1] = 1.0f; pos1[2] = 0.0f; pos1[3] = 1.0f;

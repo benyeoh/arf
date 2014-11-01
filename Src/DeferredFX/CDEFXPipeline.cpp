@@ -93,9 +93,7 @@ void CDEFXPipeline::Flush()
 		m_pAccumGroupAlphaTested->AddToList(m_Contexts[i].pAccumAlphaTestedContext->GetDataBuffer(), m_Contexts[i].pAccumAlphaTestedContext->GetNumUsedData());
 	}
 
-	IREffectTemplate* pTemplate = m_pDeferredStencil->GetTemplate();
-	pTemplate->BeginTechnique(1);
-	pTemplate->BeginPass(0);
+	m_pDeferredStencil->ApplyRenderState(1, NULL);
 
 	if(m_pAccumGroup->GetNumOfDrawOps() > 0)
 	{
@@ -113,8 +111,7 @@ void CDEFXPipeline::Flush()
 		//m_pAlphaTestedSetupEffect->EndTechnique();
 	}
 
-	pTemplate->EndPass();
-	pTemplate->EndTechnique();
+	m_pDeferredStencil->ResetRenderState();
 
 	m_pAccumGroup->Reset();
 	m_pAccumGroupAlphaTested->Reset();

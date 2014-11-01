@@ -37,7 +37,7 @@ class CRVertexBufferGroup;
 class CRIndexBuffer;
 class CRResourceMgr;
 
-const static uint MAX_VERTEX_DESC = 64;
+const static uint MAX_VERTEX_DESC = 32;
 
 inline uint 
 GetUsageSize(eRVDUsage usage)
@@ -49,7 +49,7 @@ GetUsageSize(eRVDUsage usage)
 	case VDU_BINORMAL:		return sizeof(float)*3;	
 	case VDU_TANGENT:		return sizeof(float)*3;
 	case VDU_BLENDINDICES:	return sizeof(byte)*4;	
-	case VDU_BLENDWEIGHT:	return sizeof(float)*4;					
+	case VDU_BLENDWEIGHT:	return sizeof(byte)*4;					
 	case VDU_COLOR:			return sizeof(byte)*4;
 	case VDU_TEXCOORDF1:		return sizeof(float);
 	case VDU_TEXCOORDF2:		return sizeof(float)*2;

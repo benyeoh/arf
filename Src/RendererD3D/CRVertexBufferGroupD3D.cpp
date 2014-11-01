@@ -46,7 +46,7 @@ CRVertexBufferGroupD3D::SetVertexElement(D3DVERTEXELEMENT9& vertElem, const RVer
 			vertElem.Usage = D3DDECLUSAGE_BLENDINDICES;	
 			break;
 		case VDU_BLENDWEIGHT:	
-			vertElem.Type = D3DDECLTYPE_FLOAT4; typeOffset+=16; 
+			vertElem.Type = D3DDECLTYPE_UBYTE4N; typeOffset+=4; 
 			vertElem.Usage = D3DDECLUSAGE_BLENDWEIGHT;	
 			break;
 		case VDU_COLOR:
