@@ -1,8 +1,0 @@
-
-define STENCIL_VOLUME 34
-
-desc = Object, SH Exponential Stencil Volume
-
-begin_group STENCIL_VOLUME
-	mat = [mat]\StencilVolumeLinearZ.bam
-end_group

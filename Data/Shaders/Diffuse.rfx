@@ -1,7 +1,0 @@
-
-desc = Diffuse
-
-begin_group LIGHTING
-	effect = [shd]\HLDL1.fx
-	effect = [shd]\PL1.fx
-end_group
