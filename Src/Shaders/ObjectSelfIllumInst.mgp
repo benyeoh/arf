@@ -1,8 +1,0 @@
-
-define BASE_LIGHTING 0
-
-desc = Object, Self Illuminated, Instancing
-
-begin_group BASE_LIGHTING
-	mat = [mat]\BaseFX\SelfIlluminatedInst.bam
-end_group

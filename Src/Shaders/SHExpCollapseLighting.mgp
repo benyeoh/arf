@@ -1,8 +1,0 @@
-
-define COLLAPSE_LIGHT 32
-
-desc = Screen Space, SH Exponential Lighting
-
-begin_group COLLAPSE_LIGHT
-	mat = [mat]\ScreenSpaceCollapseSHLight.bam
-end_group

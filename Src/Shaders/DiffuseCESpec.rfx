@@ -1,7 +1,0 @@
-
-desc = Diffuse, Specular, Env Mapping
-
-begin_group LIGHTING
-	effect = [shd]\CE_HLDL1Spec.fx
-	effect = [shd]\CE_PL1Spec.fx
-end_group

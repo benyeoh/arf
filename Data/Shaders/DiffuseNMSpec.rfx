@@ -1,7 +1,0 @@
-
-desc = Diffuse, Specular, Normal Mapping
-
-begin_group LIGHTING
-	effect = [shd]\NM_HLDL1Spec.fx
-	effect = [shd]\NM_PL1Spec.fx
-end_group	

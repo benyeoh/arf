@@ -369,12 +369,6 @@
     <X_Shader_Verifier Include="TestDepthRasterizer\ScreenTriangle.fx">
       <Filter>TestDepthRasterizer</Filter>
     </X_Shader_Verifier>
-    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMAccumSelfIllum.mgp">
-      <Filter>TestBakedSM</Filter>
-    </X_Shader_Verifier>
-    <X_Shader_Verifier Include="TestBakedSM\TestBakedSMAccumSelfIllumInst.mgp">
-      <Filter>TestBakedSM</Filter>
-    </X_Shader_Verifier>
     <X_Shader_Verifier Include="TestBaseFX\TestBaseFXLaFortuneMod.mgp">
       <Filter>TestBaseFX</Filter>
     </X_Shader_Verifier>
