@@ -85,7 +85,6 @@
     <X_Shader_Verifier Include="AppHelpers\ObjectAccumRadianceSH.mgp" />
     <X_Shader_Verifier Include="AppHelpers\PointLight.mgp" />
     <X_Shader_Verifier Include="BaseFXUtils\PoissonDiskBlur.fx" />
-    <X_Shader_Verifier Include="ObjectSelfIllum.mgp" />
     <X_Shader_Verifier Include="SHPRTCompute\InitializeOcclBlue.fx" />
     <X_Shader_Verifier Include="SHPRTCompute\InitializeOcclGreen.fx" />
     <X_Shader_Verifier Include="SHPRTCompute\InitializeOcclRed.fx" />
@@ -170,20 +169,6 @@
     <X_Shader_Verifier Include="TestRasterizer\CubeTextured.fx" />
     <X_Shader_Verifier Include="TestRasterizer\ScreenTexturedQuad.fx" />
     <X_Shader_Verifier Include="TestRasterizer\ScreenTriangle.fx" />
-    <X_Shader_Verifier Include="ObjectAccum.mgp">
-      <FileType>Document</FileType>
-    </X_Shader_Verifier>
-    <X_Shader_Verifier Include="ObjectAmbientSH.mgp">
-      <FileType>Document</FileType>
-    </X_Shader_Verifier>
-    <X_Shader_Verifier Include="ObjectParallaxSpec.mgp" />
-    <X_Shader_Verifier Include="ObjectParallaxSpecInst.mgp" />
-    <X_Shader_Verifier Include="ObjectSelfIllumInst.mgp">
-      <FileType>Document</FileType>
-    </X_Shader_Verifier>
-    <X_Shader_Verifier Include="SHExpCollapseLighting.mgp" />
-    <X_Shader_Verifier Include="SHExpOcclusionAccum.mgp" />
-    <X_Shader_Verifier Include="SHExpStencilVolume.mgp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
