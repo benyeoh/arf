@@ -249,18 +249,9 @@
     <X_Shader_Verifier Include="TestRasterizer\ScreenTriangle.fx">
       <Filter>TestRasterizer</Filter>
     </X_Shader_Verifier>
-    <X_Shader_Verifier Include="ObjectParallaxSpec.mgp" />
-    <X_Shader_Verifier Include="ObjectParallaxSpecInst.mgp" />
-    <X_Shader_Verifier Include="SHExpCollapseLighting.mgp" />
-    <X_Shader_Verifier Include="SHExpOcclusionAccum.mgp" />
-    <X_Shader_Verifier Include="SHExpStencilVolume.mgp" />
-    <X_Shader_Verifier Include="ObjectAccum.mgp" />
-    <X_Shader_Verifier Include="ObjectAmbientSH.mgp" />
     <X_Shader_Verifier Include="TestSHPRTFX\TestSHPRTFXDiffuse.mgp">
       <Filter>TestSHPRTFX</Filter>
     </X_Shader_Verifier>
-    <X_Shader_Verifier Include="ObjectSelfIllumInst.mgp" />
-    <X_Shader_Verifier Include="ObjectSelfIllum.mgp" />
     <X_Shader_Verifier Include="TestShadowFX\TestShadowFXObjectParallaxSpec.mgp">
       <Filter>TestShadowFX</Filter>
     </X_Shader_Verifier>
